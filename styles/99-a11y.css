@@ -1,0 +1,89 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   99-a11y.css — Accesibilidad. VA ÚLTIMO A PROPÓSITO.
+
+   Es el único archivo que necesita ganar a los demás, y lo hace por orden de
+   aparición (más el !important legítimo del kill-switch de reduced-motion,
+   que debe imponerse sobre cualquier transición declarada después).
+
+   Cubre los puntos 12 y 14 del checklist §9 del spec.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Foco visible (checklist §9 punto 14) ─────────────────────────────────
+   Nunca outline:none. El anillo usa border-radius sólo en el propio outline,
+   no en la forma del elemento — el spec prohíbe radios en las tarjetas.
+   --focus se invierte a #F2C014 dentro de .footer-dark (ver 01-tokens.css).
+   ────────────────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Enlace de salto ──────────────────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 12px 20px;
+  background: var(--white);
+  color: var(--link);
+  font-size: 18px;
+  transform: translateY(-120%);
+  transition: transform 0.2s;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ── Sólo para lectores de pantalla ───────────────────────────────────── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Kill-switch de movimiento (checklist §9 punto 12) ────────────────────
+   Se resuelve en CSS y no en JS a propósito: así aplica antes de que exista
+   hidratación y ningún componente nuevo puede olvidarse de respetarlo.
+   ────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .track {
+    transition: none !important;
+  }
+
+  .slider-mask {
+    transition: none !important;
+  }
+
+  .play-ring--h {
+    transition: none !important;
+  }
+
+  /* En los enlaces del dropdown se conserva el cambio de color (es feedback
+     útil) y se elimina sólo el deslizamiento de margin-left. */
+  .nav-dropdown-link {
+    transition: color 0.3s !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

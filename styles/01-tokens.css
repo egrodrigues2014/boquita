@@ -1,0 +1,79 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   01-tokens.css — Design tokens de Boquita
+   Re-tematización del spec §2.1 a la marca (marrón + dorado del logo).
+   La ESTRUCTURA del spec no cambia; sólo los valores de color.
+
+   El logo es un wordmark marrón oscuro (#3A2A1A) sobre un disco amarillo
+   dorado (#F2C014). Problema: el spec usa --primary para h2, h4, precios,
+   botones, iconos sociales y la dirección del footer, y un dorado NO pasa AA
+   como texto sobre blanco (#E8A81B sobre blanco = 2.09:1).
+
+   Solución: el ámbar se divide en TRES roles que nunca se intercambian.
+   Los ratios de esta cabecera están verificados en tests/unit/contrast.test.ts,
+   que rompe el build si alguno baja de su umbral.
+
+   REGLA (checklist §9 punto 13 del spec, reformulada para Boquita):
+     · Texto ámbar ≥24px  → --gold-display (#B07208, 4.00:1 blanco / 3.68:1 crema → AA-large)
+     · Texto ámbar <24px  → --gold-ink     (#8A5A06, 5.92:1 blanco / 5.45:1 crema → AA)
+     · --gold (#E8A81B) NUNCA es texto sobre fondo claro.
+       Sobre #3A2A1A es 6.58:1 → AA a cualquier tamaño.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Tipografías ────────────────────────────────────────────────────────
+     next/font no permite fijar el nombre de familia, así que las tres
+     font-family literales del spec §2.2 se sustituyen por estas variables.
+     Es la ÚNICA modificación textual al CSS del spec, aparte de los colores.
+     (Desvío D-12 en docs/DEVIATIONS.md) */
+  --ff-display: var(--font-display), Georgia, "Times New Roman", serif;
+  --ff-sans: var(--font-sans), system-ui, "Segoe UI", Arial, sans-serif;
+  --ff-quote: var(--font-quote), Lato, system-ui, sans-serif;
+
+  /* ── Tinta ──────────────────────────────────────────────────────────── */
+  --text-dark: #3a2a1a; /* marrón de marca: h1,h3,h5,h6, body, etiqueta de botón */
+  --body-text: #6b5b4d; /* gris cálido para <p>. Reemplaza el #707070 del spec,
+                            que sólo daba 4.61:1 sobre crema. Aquí: 6.50 / 5.99 */
+  --link: #2b1f14; /* <a> base. El spec decía #000; se templa. 16.05:1 */
+
+  /* ── Ámbar: tres roles, nunca intercambiables ───────────────────────── */
+  --gold: #e8a81b; /* SÓLO relleno sobre fondo claro (fondo de botón, badge del
+                       carrito). Y color de TEXTO de todo lo que va dentro de
+                       .footer-dark, donde da 6.58:1 */
+  --gold-display: #b07208; /* texto ámbar ≥24px: h2, h4, .text-primary, .stat-num */
+  --gold-ink: #8a5a06; /* texto ámbar <24px e interactivo: precios, enlaces,
+                           iconos, flechas del slider, teléfono */
+  --gold-line: #b07208; /* trazos: raya 16×2 del dropdown, borde de botón,
+                            línea de 160×1 del slider. 4.00:1 ≥ 3:1 no-texto ✓ */
+  --gold-bright: #f2c014; /* amarillo del logo. Decorativo SÓLO sobre oscuro
+                              (8.08:1 sobre el marrón; 1.60:1 sobre blanco) */
+
+  /* ── Superficies ────────────────────────────────────────────────────── */
+  --white: #ffffff;
+  --primary-light: #faf5ec; /* crema cálida. Reemplaza el #f5f0ec del spec */
+  --light-gray: #faf9f7;
+  --gray: #e7e0d6;
+  --dark-gray: #b5a99b;
+  --white-50: rgba(255, 255, 255, 0.5);
+  --dark-gray-50: rgba(181, 169, 155, 0.5);
+
+  /* ── Foco ───────────────────────────────────────────────────────────── */
+  --focus: #8a5a06;
+}
+
+/* ── El truco del contexto oscuro ──────────────────────────────────────────
+   En vez de escribir overrides de color por todo 18-footer.css, se re-declaran
+   los tokens de tinta sobre el bloque oscuro. Toda regla que use var(--gold-ink)
+   se invierte automáticamente y sigue cumpliendo AA.
+
+   ⚠ La tarjeta CTA crema debe vivir en .cta-wrapper, HERMANO de .footer-dark,
+   nunca anidada dentro — si se anida hereda estos tokens y el solape se rompe.
+   ────────────────────────────────────────────────────────────────────────── */
+.footer-dark {
+  --gold-ink: #e8a81b; /* 6.58:1 sobre #3A2A1A → AA a 18px ✓ */
+  --gold-display: #f2c014; /* 8.08:1 → AAA ✓ */
+  --gold-line: #e8a81b;
+  --text-dark: #ffffff; /* así cualquier h1/h3/h5/h6 dentro sale blanco (13.76:1) */
+  --body-text: rgba(255, 255, 255, 0.86);
+  --link: #ffffff;
+  --focus: #f2c014;
+}

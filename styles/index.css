@@ -1,0 +1,43 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   index.css — EL ÚNICO archivo CSS que importa app/layout.tsx.
+
+   ⚠ NO importar los archivos por separado desde layout.tsx. El orden de
+   importación de CSS global en Next NO está garantizado entre varios imports,
+   y este proyecto depende por completo del orden de la cascada (ver la
+   cabecera de 03-base.css). Una cadena de @import en un solo archivo está
+   garantizada por la propia especificación de CSS y sobrevive a cualquier
+   cambio de bundler. Lightning CSS los inlinea en build, así que no hay
+   waterfall de peticiones en runtime.
+
+   Tampoco se usa @layer: permitiría que una declaración descuidada reordenara
+   todo. Ni CSS nesting: invita a escribir @media junto a la propiedad, lo que
+   reordena las max-width solapadas.
+
+   CSS Modules SÍ se usan, pero sólo en los tres componentes que NO están en el
+   spec (CartDrawer, Lightbox, NavScrim). El CSS del spec es global porque sus
+   nombres de clase son el contrato de la checklist de aceptación.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Fundamentos */
+@import "./01-tokens.css";
+@import "./02-reset.css";
+@import "./03-base.css";
+@import "./04-layout.css";
+@import "./05-components.css";
+
+/* Secciones, en el orden del §6 del spec (fase 1) */
+/* @import "./10-navbar.css"; */
+/* @import "./11-hero.css"; */
+/* @import "./12-statement.css"; */
+/* @import "./13-media-text.css"; */
+/* @import "./14-overlap-menu.css"; */
+/* @import "./15-service.css"; */
+/* @import "./16-gallery.css"; */
+/* @import "./17-testimonials.css"; */
+/* @import "./18-footer.css"; */
+
+/* Nuestro (fase 4) */
+/* @import "./30-cart.css"; */
+
+/* Accesibilidad: siempre el último */
+@import "./99-a11y.css";

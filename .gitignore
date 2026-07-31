@@ -1,0 +1,39 @@
+# dependencias
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# build de Next
+/.next/
+/out/
+/build
+next-env.d.ts
+
+# entorno
+.env
+.env.local
+.env*.local
+
+# originales de imagen (fuente de verdad, fuera del repo)
+/assets/
+
+# tests
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# plataforma
+.vercel
+*.tsbuildinfo
+
+# sistema operativo / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json

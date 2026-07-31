@@ -1,0 +1,93 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   04-layout.css — Contenedores, ritmo vertical y utilidades (spec §2.5).
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
+
+   Ancho de contenido real = 1200 − 30 = 1170px.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container--start {
+  flex: 1;
+  align-items: flex-start;
+} /* variante hero */
+
+.container--stretch {
+  align-items: stretch;
+} /* variante slider */
+
+.section {
+  position: relative;
+  padding-block: 80px;
+}
+
+.section--no-bottom {
+  padding-bottom: 0;
+}
+
+/* ══════════════════ min-width ascendente ══════════════════ */
+
+@media (min-width: 1280px) {
+  .section {
+    padding-block: 120px;
+  }
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+@media (max-width: 767px) {
+  .section {
+    padding-block: 60px;
+  }
+}
+
+/* ── Utilidades (spec §2.5) ────────────────────────────────────────────────
+   Ojo: .mt-40 vale 30px, no 40px. Es una rareza del original y se copia
+   literal — cambiarla desplazaría los botones del hero y el CTA del footer.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mt-40 {
+  margin-top: 30px;
+}
+
+.mb--40 {
+  margin-bottom: -40px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Anchos parciales usados en párrafos de sección */
+.w-90-desktop {
+  width: 90%;
+}
+
+@media (max-width: 991px) {
+  .w-50-tablet {
+    width: 50%;
+  }
+}
+
+@media (max-width: 767px) {
+  .w-90-desktop,
+  .w-50-tablet {
+    width: 100%;
+  }
+}

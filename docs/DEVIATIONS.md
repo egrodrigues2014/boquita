@@ -1,0 +1,49 @@
+# Desvíos respecto a `frontend_spec.md`
+
+El spec es normativo: la estructura, medidas, proporciones, breakpoints y animaciones se replican
+al milímetro. Este documento registra **todo** lo que se aparta de él, con su motivo, para que la
+revisión de aceptación pueda comprobar cada caso en vez de descubrirlo.
+
+Regla general: si un desvío no está aquí, es un bug.
+
+| #    | Desvío | Motivo | Estado |
+| ---- | ------ | ------ | ------ |
+| D-0  | Tokens de color re-tematizados a la marca. `--primary` se divide en `--gold` (relleno), `--gold-display` (texto ≥24px), `--gold-ink` (texto <24px), `--gold-line` (trazos) y `--gold-bright` (decorativo sobre oscuro). La etiqueta de `.btn` pasa de blanca a `--text-dark`. `--body-text` de `#707070` a `#6B5B4D`. Crema de `#f5f0ec` a `#FAF5EC`. | Decisión de marca + AA. Blanco sobre `#E8A81B` da **2.09:1**, así que `.btn{background:primary; color:white}` es literalmente inviable. La solución la dicta el propio logo: marrón sobre amarillo. Blindado en `tests/unit/contrast.test.ts`. | ✅ Fase 0 |
+| D-1  | No se cargan los pesos 300 y 600 de Cormorant Infant ni el 300 de Libre Franklin. Lato no se carga en la portada. | Ninguna regla del spec los referencia. Lato lo usa un único selector (`blockquote`) y no hay blockquote en la portada. Ahorra ~5 archivos woff2. | ✅ Fase 0 |
+| D-12 | Las tres `font-family` literales del spec pasan a variables CSS (`--ff-display`, `--ff-sans`, `--ff-quote`). | `next/font` no permite fijar el nombre de familia. A cambio se autohospedan las fuentes: sin petición a Google, sin render-block de terceros, sin FOUT de red. | ✅ Fase 0 |
+| D-6  | El eyebrow `h6.h6-sans` se renderiza como `<p class="h6-sans">`. | Un `h6` antes de un `h2` rompe el orden de encabezados y axe lo marca como violación. Pixel-idéntico: `.h6-sans` ya redefine fuente, tamaño, peso, letter-spacing y transform. | ✅ Fase 0 |
+| D-7  | El `h4` de la newsletter se renderiza como `<h2 class="as-h4">`. | El último encabezado del documento es un `h2`; pasar a `h4` salta un nivel. Pixel-idéntico. | ✅ Fase 0 |
+| D-8  | El input de la newsletter recibe un `<label>` visualmente oculto. | Un placeholder no es una etiqueta accesible. El markup del spec sólo tiene placeholder. | ✅ Fase 0 |
+| D-2  | Se añade un botón «Añadir +» en la fila de `.menu-item-tag`, que pasa a `justify-content:space-between`. | Requisito del carrito. Deja `.menu-item-head` (nombre + precio, `gap:10px`) **byte-idéntico** al spec, que es lo que inspecciona el punto 5 del checklist. | ⏳ Fase 4 |
+| D-3  | `will-change:transform` se mueve de `.track` a `.track.is-animating`. | El spec lo pone permanente. Con 14 imágenes serían dos capas compositadas grandes siempre activas, caro en móvil. Invisible y estrictamente mejor. | ⏳ Fase 1 |
+| D-4  | Se añade un scrim `.nav-scrim` a ≤991px. | Un panel de 320px sobre contenido vivo no tiene afordancia de cierre ni separación visual. No está en el spec. | ⏳ Fase 1 |
+| D-5  | A ≤991px, `.navbar` recibe `background:rgba(255,255,255,.92)` + `backdrop-filter:blur(6px)`. | El navbar es `position:absolute; background:transparent`, y a ≤991 `.hero-img` pasa a ser una foto estática justo debajo: el logo, la hamburguesa y el carrito quedarían sobre la fotografía con contraste desconocido. Necesario para los puntos 13 y 14 del checklist. | ⏳ Fase 1 |
+| D-9  | `<div class="hero-img">` envolviendo un `<Image fill>`. | `fill` fija `position:absolute; inset:0; width/height:100%`, que chocaría con el `inset:0 0 0 auto; width:43.5%` del spec. El wrapper conserva **todos** los valores del spec (incluido el cambio a `position:static; height:420px` en ≤991) y a cambio se obtiene AVIF/WebP, `srcset` correcto y el `preload` con `fetchpriority=high` del elemento LCP. | ⏳ Fase 1 |
+| D-10 | `.media` deja de ser `background-image` y pasa a `<Image fill>` dentro de un `.media` con `position:relative; overflow:hidden`. | Un background CSS no admite `srcset` ni lazy loading, y es una foto de 493×300 que se enviaría a tamaño completo a un móvil de 390px. Se conservan `height:300px` y el centrado flex. | ⏳ Fase 1 |
+| D-11 | `.hero{height:100vh}` → `100svh` con fallback `100vh`. | **Condicional**: sólo si el salto de la barra de direcciones de Safari en iOS se juzga inaceptable en el pase de dispositivo real. En escritorio son idénticos. | ⏳ Fase 6 |
+
+## No son desvíos
+
+Cosas que parecen apartarse del spec pero no lo hacen:
+
+- **`.mt-40` vale 30px, no 40px.** Es una rareza del original y se copia literal
+  (`styles/04-layout.css`). Cambiarla desplazaría los botones del hero y el CTA del footer.
+- **`.inline-img` sigue siendo `background-image`**, no `next/image`. Tiene que vivir dentro del
+  flujo del `h2` a `height:1em`; ningún `<img>` hace eso sin romper la caja de línea.
+- **Los `%` del transform de `.track` se resuelven contra la caja propia** (100% de `.scroller`),
+  no contra la tira de contenido que desborda a ~161%. Eso es lo que hacía el original: no se
+  «arregla» a px.
+- **El `218px` de `.slider-arrow--left` se copia, no se recalcula.** Es `160 + 34 + 24`.
+- **Los avatares de reseñas son SVG con iniciales**, no fotografías. No hay caras de clientes
+  reales disponibles e inventar personas con fotos de stock sería deshonesto para un negocio real.
+  Se respeta el `70×70` cuadrado sin redondear que pide el spec §7.
+
+## Umbral de contraste: WCAG, no el del spec
+
+El checklist §9 punto 13 dice «`#cb6037` sobre blanco sólo en textos ≥18px o bold». WCAG 2.x es más
+estricto: «large» es **≥24px, o ≥18.66px en negrita**. Se aplica el umbral real de WCAG.
+
+Consecuencia práctica: `h2` (50/42/34px), `h4` (30/26px), `.text-primary` (86…46px) y `.stat-num`
+(50/42/38/36px) sí entran en el carril de 3:1 y usan `--gold-display`. Los precios (18/20px),
+`.phone-link` (18px), `a:hover` (20px), `li` (16px), `.h6-sans.primary` (20px), los iconos sociales
+y el glifo de las flechas del slider **no**, y usan `--gold-ink` (4.5:1).

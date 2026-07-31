@@ -1,0 +1,89 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   02-reset.css — Reset mínimo.
+
+   Next no inyecta ningún reset ni estilos de framework, lo cual aquí es una
+   VENTAJA: el spec estiliza elementos desnudos (h1–h6, p, a, ul, li,
+   blockquote, label) y cualquier normalize.css pelearía con esas reglas.
+   Este archivo se limita a lo que el spec da por supuesto.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* El spec fija sus propios márgenes en h1–h6, p, ul y blockquote (§2.3),
+   así que aquí sólo se limpian los elementos que no toca. */
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none; /* el spec pinta los bullets con background-image en li */
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+  border-style: none;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Nunca outline:none. El anillo de foco real está en 99-a11y.css. */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+table {
+  border-collapse: collapse;
+}

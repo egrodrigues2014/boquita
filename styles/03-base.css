@@ -1,0 +1,271 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   03-base.css — Tipografía de elementos (spec §2.3) + escala completa.
+
+   ⚠ ORDEN DE MEDIA QUERIES — NO REORDENAR ⚠
+   El spec es desktop-first: la base vive en 992–1279px y se sobrescribe hacia
+   arriba (min-width) y hacia abajo (max-width). Todos los selectores tienen la
+   misma especificidad, así que el ORDEN DE APARICIÓN decide quién gana.
+   El orden obligatorio en TODOS los archivos de este directorio es:
+
+       reglas base  →  min-width ascendente (1280, 1440, 1920)
+                    →  max-width descendente (991, 767, 479)
+
+   max-width:991 y max-width:767 se solapan: si 991 se escribe DESPUÉS de 767,
+   gana silenciosamente a 500px de ancho y el layout se rompe sin avisar.
+   Este es el punto de mayor riesgo de todo el proyecto.
+
+   Escala del spec §2.3:
+   ┌──────────┬──────┬──────┬──────┬──────────┬──────┬──────┐
+   │          │≥1920 │≥1440 │≥1280 │base 992+ │≤991  │≤767  │
+   ├──────────┼──────┼──────┼──────┼──────────┼──────┼──────┤
+   │ h1       │  70  │  70  │  70  │    70    │  52  │  46  │
+   │ .h1-hero │  86  │  72  │  70  │    70    │  52  │  46  │
+   │ h2       │  50  │  50  │  50  │    50    │  42  │  34  │
+   │ h3       │  36  │  36  │  34  │    32    │  32  │  30  │
+   │ h4       │  30  │  30  │  30  │    30    │  30  │  26  │
+   │ h5       │  22  │  22  │  22  │    22    │  22  │  22  │
+   │ h6       │  20  │  20  │  20  │    20    │  18  │  18  │
+   │ p        │  18  (todos)                                 │
+   │ p.lead   │  20  (todos)                                 │
+   │ a        │  20  (todos)                                 │
+   └──────────┴──────┴──────┴──────┴──────────┴──────┴──────┘
+   ══════════════════════════════════════════════════════════════════════════ */
+
+body {
+  color: var(--text-dark);
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  line-height: 1em;
+}
+
+h1 {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: 70px;
+  line-height: 1em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin: 10px 0;
+}
+
+h2 {
+  font-family: var(--ff-display);
+  font-weight: 400;
+  font-size: 50px;
+  line-height: 1em;
+  text-transform: uppercase;
+  color: var(--gold-display); /* ≥24px → AA-large con #B07208 */
+  margin: 10px 0;
+}
+
+h3 {
+  font-family: var(--ff-display);
+  font-weight: 400;
+  font-size: 32px;
+  line-height: 1.2em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin-top: 10px;
+}
+
+h4 {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1em;
+  text-transform: uppercase;
+  color: var(--gold-display);
+  margin: 10px 0;
+}
+
+h5 {
+  font-family: var(--ff-display);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.1em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin: 10px 0;
+}
+
+h6 {
+  font-family: var(--ff-display);
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 1.2em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin: 10px 0;
+}
+
+/* .h1-hero: base igual que h1 (70px), crece a 72 en ≥1440 y a 86 en ≥1920. */
+.h1-hero {
+  font-size: 70px;
+}
+
+/* Segunda línea del h1 del hero, en ámbar. Siempre ≥46px → AA-large. */
+.text-primary {
+  color: var(--gold-display);
+}
+
+p {
+  font-family: var(--ff-sans);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 1.5em;
+  color: var(--body-text);
+  margin: 10px 0;
+}
+
+p.lead {
+  font-size: 20px;
+}
+
+a {
+  color: var(--link);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.5em;
+  text-decoration: none;
+  display: inline-block;
+  padding: 2px 0;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--gold-ink); /* 20px → necesita AA normal, #8A5A06 = 5.92:1 */
+}
+
+label {
+  font-family: var(--ff-sans);
+  font-weight: 400;
+  margin-bottom: 10px;
+  display: block;
+}
+
+blockquote {
+  font-family: var(--ff-quote);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  padding: 30px 20px 10px;
+  margin: 25px 0;
+  background: url(/icons/quote-icon.svg) 50% 0 no-repeat;
+}
+
+ul {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 25px 0;
+  color: var(--body-text);
+  font-weight: 600;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  padding-left: 22px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4em;
+  color: var(--gold-ink); /* 16px → AA normal */
+  background: url(/icons/list-bullet.svg) 0 7px no-repeat;
+}
+
+/* ── Eyebrow ───────────────────────────────────────────────────────────────
+   El spec (§2.3) marca el eyebrow como h6 con la clase .h6-sans, que CAMBIA
+   la fuente a Libre Franklin. Se renderiza como <p class="h6-sans"> porque un
+   h6 antes de un h2 rompe el orden de encabezados y axe lo marca como error.
+   Visualmente es idéntico. (Desvíos D-6 en docs/DEVIATIONS.md)
+   ────────────────────────────────────────────────────────────────────────── */
+.h6-sans {
+  font-family: var(--ff-sans);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+  margin: 10px 0;
+}
+
+.h6-sans.primary {
+  color: var(--gold-ink); /* 20px sin bold → AA normal, no AA-large */
+}
+
+/* Título de la newsletter: se renderiza como <h2 class="as-h4"> para no saltar
+   un nivel de encabezado. Pixel-idéntico a h4. (Desvío D-7) */
+.as-h4 {
+  font-family: var(--ff-display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 1em;
+  text-transform: uppercase;
+  color: var(--gold-display);
+  margin: 10px 0;
+}
+
+/* ══════════════════ min-width ascendente ══════════════════ */
+
+@media (min-width: 1280px) {
+  h3 {
+    font-size: 34px;
+  }
+}
+
+@media (min-width: 1440px) {
+  h3 {
+    font-size: 36px;
+  }
+  .h1-hero {
+    font-size: 72px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .h1-hero {
+    font-size: 86px;
+  }
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+@media (max-width: 991px) {
+  h1 {
+    font-size: 52px;
+  }
+  .h1-hero {
+    font-size: 52px;
+  }
+  h2 {
+    font-size: 42px;
+  }
+  h6 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 767px) {
+  h1 {
+    font-size: 46px;
+  }
+  .h1-hero {
+    font-size: 46px;
+  }
+  h2 {
+    font-size: 34px;
+  }
+  h3 {
+    font-size: 30px;
+  }
+  h4,
+  .as-h4 {
+    font-size: 26px;
+  }
+  blockquote {
+    font-size: 18px;
+  }
+}

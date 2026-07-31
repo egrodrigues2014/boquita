@@ -1,0 +1,185 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   05-components.css — Botones, inputs, play button y reveal (spec §3 y §4.1).
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── 3.1 Botón primario ───────────────────────────────────────────────────
+   DESVÍO D-0: el spec pide `background:var(--primary); color:var(--white)`.
+   Con un primario dorado eso es inviable: blanco sobre #E8A81B = 2.09:1.
+   La solución es la que dicta la propia marca — el logo ya es marrón sobre
+   amarillo — así que el botón es relleno dorado con etiqueta marrón (6.58:1).
+   El borde usa --gold-line (4.00:1) para garantizar el límite del control
+   frente al fondo blanco de la página (WCAG SC 1.4.11).
+   Altura resultante ≈ 60px.
+   ────────────────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-block;
+  padding: 14px 30px;
+  border-radius: 5px;
+  border: 1px solid var(--gold-line);
+  background: var(--gold);
+  color: var(--text-dark);
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.5em;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.btn:hover {
+  background: var(--white);
+  color: var(--gold-ink); /* 20px → AA normal */
+}
+
+.btn--ghost {
+  background: var(--white);
+  color: var(--gold-ink);
+}
+
+.btn--ghost:hover {
+  background: var(--gold);
+  color: var(--text-dark);
+}
+
+.btn.mt-40 {
+  margin-top: 30px;
+}
+
+/* ── 3.2 Grupo de botones ─────────────────────────────────────────────── */
+.btn-group {
+  display: flex;
+  gap: 30px;
+  margin-top: 40px;
+}
+
+@media (min-width: 1280px) {
+  .btn-group {
+    margin-top: 50px;
+  }
+}
+
+@media (max-width: 479px) {
+  .btn-group {
+    flex-direction: column;
+    gap: 25px;
+  }
+}
+
+/* ── 3.3 Input de texto (newsletter, sobre fondo oscuro) ──────────────────
+   Dentro de .footer-dark, --gold-ink vale #E8A81B → 6.58:1 sobre el marrón.
+   ────────────────────────────────────────────────────────────────────────── */
+.input {
+  height: 60px;
+  border: 1px solid var(--white);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--white);
+  font-size: 14px;
+  line-height: 1.5em;
+  letter-spacing: 2px;
+  margin-bottom: 0;
+  padding-inline: 20px;
+}
+
+.input::placeholder {
+  color: var(--white);
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.input:focus {
+  border-color: var(--gold);
+}
+
+/* ── 3.4 Play button (tres capas concéntricas sobre la imagen) ─────────────
+   Los anillos son blancos sobre una fotografía oscura; verificar contraste
+   con el still definitivo cuando llegue de Ale.
+   ────────────────────────────────────────────────────────────────────────── */
+.play-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin-top: 35px;
+  margin-bottom: 50px;
+}
+
+.play-ring {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  z-index: 5;
+}
+
+.play-ring--h {
+  position: absolute;
+  width: 94px;
+  height: 94px;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  z-index: 10;
+  transform: scale(0.85);
+  transition: all 0.3s;
+}
+
+.play-wrap:hover .play-ring--h {
+  transform: scale(1);
+}
+
+.play-icon {
+  position: relative;
+  z-index: 7;
+  color: #fff;
+  font-size: 20px;
+  margin-left: 4px;
+}
+
+/* ── 4.1 Reveal on scroll ─────────────────────────────────────────────────
+   Tres requisitos que tiran en direcciones opuestas, resueltos así:
+
+   1. Sin flash de contenido oculto si el JS no corre → el estado oculto vive
+      bajo `.js`, que sólo añade un script inline bloqueante del <head>.
+      Sin JS, `.reveal` es plenamente visible.
+   2. Sin mismatch de hidratación → el markup del servidor y del cliente es
+      idéntico; sólo se AÑADE la clase `.is-in` en el mount. Nada de
+      renderizado condicional ni de `useState(mounted)`.
+   3. Sin dañar el LCP → la imagen del hero usa `.reveal--transform-only`:
+      sube desde 100px con opacidad 1, porque `opacity:0` aplazaría el LCP
+      hasta la hidratación.
+
+   `.reveal-all` en <html> es el failsafe de 2.5s: si el bundle no carga o la
+   hidratación revienta, todo se revela igualmente.
+
+   reduced-motion se apaga sólo desde CSS (99-a11y.css), no desde JS: así
+   funciona antes de la hidratación y no se puede olvidar en un componente.
+   ────────────────────────────────────────────────────────────────────────── */
+.reveal {
+  /* sin JS: visible, sin transición */
+}
+
+.js .reveal {
+  opacity: 0;
+  transform: translate3d(0, 100px, 0);
+  transition:
+    opacity 0.6s ease-out,
+    transform 0.6s ease-out;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.js .reveal--transform-only {
+  opacity: 1; /* variante segura para el elemento LCP */
+}
+
+.js .reveal.is-in,
+.js.reveal-all .reveal {
+  opacity: 1;
+  transform: none;
+}
