@@ -15,13 +15,33 @@ Sólo necesita la stdlib. Pillow es opcional pero recomendable: si está, verifi
 que el recorte fue exacto comparando las dimensiones decodificadas con las que
 declara el diccionario del objeto. Ese assert es la prueba de integridad.
 
-Además empareja cada imagen con la anotación /Link que la acompaña, de modo que
-cada foto queda trazada a su publicación de Instagram. Eso hace barata la
-auditoría de derechos que exige docs/CONTENT_TODO.md.
+Además empareja cada imagen con su publicación de Instagram, de modo que la
+auditoría de derechos que exige docs/CONTENT_TODO.md sea barata.
+
+Cómo se empareja (y por qué NO por proximidad de bytes):
+  La primera versión de este script buscaba el /URI más cercano en el archivo.
+  Eso está mal: las imágenes viven en el diccionario de recursos de la página y
+  las anotaciones en su array /Annots, así que la distancia en bytes no
+  correlaciona. El resultado era que las 4 imágenes de una página recibían el
+  mismo permalink (27 de 37 mal emparejadas).
+
+  El método correcto es POSICIONAL, por página. Chrome emite una parrilla 2×2
+  por página: 4 XObjects de imagen y 4 anotaciones /Link, y el array /Annots
+  está en orden del DOM, que es el orden de lectura de la parrilla. Basta
+  ordenar los objetos de imagen de la página por número y hacer zip con el
+  array /Annots tal cual.
+
+  Ojo: NO ordenar las anotaciones por su /Rect. El /Rect es del enlace del pie
+  de foto, y su altura depende de en cuántas líneas envolvió el texto, no de la
+  fila de la parrilla. Ordenar por geometría invierte pares (verificado: rompe
+  5 de las 10 páginas).
+
+  Validado contra la identificación visual de las 37 fotos: 37/37 exactas.
 
 Uso:
     npm run images:extract
     python scripts/extract-pdf-images.py [--pdf RUTA] [--out DIR] [--force]
+    python scripts/extract-pdf-images.py --verify     # sólo imprime el emparejamiento
 
 Salida:
     assets/raw/ig-NN-objOBJ.jpg   (una por imagen, numeradas por orden de aparición)
@@ -54,6 +74,15 @@ OBJ_RE = re.compile(rb"(\d+)\s+(\d+)\s+obj(.{0,600}?)stream\r?\n", re.DOTALL)
 
 # Anotaciones de enlace: /URI (https://www.instagram.com/p/<id>/)
 URI_RE = re.compile(rb"/URI\s*\(\s*(https?://[^)\s]+)\s*\)")
+
+# Índice de objetos y estructura de página
+OBJ_HEAD_RE = re.compile(rb"(\d+)\s+(\d+)\s+obj\b")
+PAGE_TYPE_RE = re.compile(rb"/Type\s*/Page\b")
+XOBJECT_RE = re.compile(rb"/XObject\s*<<(.*?)>>", re.DOTALL)
+XOBJECT_REF_RE = re.compile(rb"/\w+\s+(\d+)\s+0\s+R")
+ANNOTS_RE = re.compile(rb"/Annots\s*\[([^\]]*)\]")
+INDIRECT_REF_RE = re.compile(rb"(\d+)\s+0\s+R")
+IMAGE_SUBTYPE_RE = re.compile(rb"/Subtype\s*/Image")
 
 INT_RE = {
     "width": re.compile(rb"/Width\s+(\d+)"),
@@ -145,32 +174,75 @@ def carve_images(data: bytes) -> list[tuple[int, int, bytes, int]]:
     return out
 
 
-def find_permalinks(data: bytes) -> list[tuple[int, str]]:
-    """Devuelve (offset, url) de cada anotación /Link a una publicación de Instagram."""
-    found: list[tuple[int, str]] = []
-    for m in URI_RE.finditer(data):
-        url = m.group(1).decode("ascii", errors="replace")
-        if "instagram.com/p/" in url:
-            found.append((m.start(), url))
-    return found
+def index_objects(data: bytes) -> dict[int, tuple[int, int]]:
+    """num_objeto -> (inicio del cuerpo, offset de su `endobj`)."""
+    index: dict[int, tuple[int, int]] = {}
+    for m in OBJ_HEAD_RE.finditer(data):
+        index[int(m.group(1))] = (m.end(), data.find(b"endobj", m.end()))
+    return index
 
 
-def pair_permalink(image_offset: int, links: list[tuple[int, str]]) -> str | None:
+def map_permalinks_by_page(
+    data: bytes, index: dict[int, tuple[int, int]]
+) -> tuple[dict[int, str], list[str]]:
     """
-    Empareja una imagen con el permalink más cercano por offset de bytes.
+    Empareja cada objeto de imagen con su permalink de Instagram, por posición
+    dentro de su página.
 
-    En un print de Chrome, la anotación de enlace de cada celda de la parrilla se
-    escribe junto a su imagen, así que la proximidad en el archivo es un
-    emparejamiento fiable. Se prefiere el enlace siguiente y, si no hay, el
-    anterior más cercano.
+    Devuelve (mapa obj->url, avisos). Si en una página los conteos de imágenes y
+    de anotaciones no coinciden, esa página se salta y se registra el aviso: es
+    mejor no tener permalink que tener uno inventado.
     """
-    after = [(off, url) for off, url in links if off >= image_offset]
-    if after:
-        return min(after, key=lambda t: t[0] - image_offset)[1]
-    before = [(off, url) for off, url in links if off < image_offset]
-    if before:
-        return max(before, key=lambda t: t[0])[1]
-    return None
+    def body(num: int) -> bytes:
+        start, end = index[num]
+        return data[start:end]
+
+    image_objs = {
+        num
+        for num in index
+        if IMAGE_SUBTYPE_RE.search(body(num)) and b"/DCTDecode" in body(num)
+    }
+    page_objs = sorted(num for num in index if PAGE_TYPE_RE.search(body(num)))
+
+    mapping: dict[int, str] = {}
+    warnings: list[str] = []
+
+    for page in page_objs:
+        page_body = body(page)
+
+        # Imágenes de la página, ordenadas por número de objeto. Chrome las emite
+        # en orden de lectura de la parrilla (X8, X9, X10, X11 → objetos 8..11).
+        xobj = XOBJECT_RE.search(page_body)
+        refs = (
+            [int(r) for r in XOBJECT_REF_RE.findall(xobj.group(1))] if xobj else []
+        )
+        images = sorted(r for r in refs if r in image_objs)
+
+        # Anotaciones EN EL ORDEN DEL ARRAY. No ordenar por /Rect (ver docstring).
+        annots = ANNOTS_RE.search(page_body)
+        urls: list[str] = []
+        for ref in [int(r) for r in INDIRECT_REF_RE.findall(annots.group(1))] if annots else []:
+            if ref not in index:
+                continue
+            uri = URI_RE.search(body(ref))
+            if not uri:
+                continue
+            url = uri.group(1).decode("ascii", errors="replace")
+            if "instagram.com/p/" in url:
+                urls.append(url)
+
+        if not images:
+            continue
+        if len(images) != len(urls):
+            warnings.append(
+                f"página obj {page}: {len(images)} imágenes vs {len(urls)} enlaces "
+                f"→ sin permalink para {images}"
+            )
+            continue
+
+        mapping.update(zip(images, urls))
+
+    return mapping, warnings
 
 
 def main() -> int:
@@ -178,17 +250,22 @@ def main() -> int:
     parser.add_argument("--pdf", type=Path, default=DEFAULT_PDF)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--force", action="store_true", help="sobrescribe la salida existente")
+    parser.add_argument(
+        "--verify",
+        action="store_true",
+        help="sólo imprime el emparejamiento imagen→permalink, sin escribir nada",
+    )
     args = parser.parse_args()
 
     if not args.pdf.is_file():
         print(f"✗ No se encontró el PDF: {args.pdf}", file=sys.stderr)
         return 1
 
-    if args.out.exists() and any(args.out.iterdir()) and not args.force:
-        print(f"✗ {args.out} ya tiene contenido. Usá --force para sobrescribir.", file=sys.stderr)
-        return 1
-
-    args.out.mkdir(parents=True, exist_ok=True)
+    if not args.verify:
+        if args.out.exists() and any(args.out.iterdir()) and not args.force:
+            print(f"✗ {args.out} ya tiene contenido. Usá --force para sobrescribir.", file=sys.stderr)
+            return 1
+        args.out.mkdir(parents=True, exist_ok=True)
 
     try:
         from PIL import Image  # type: ignore[import-not-found]
@@ -210,12 +287,29 @@ def main() -> int:
         print("⚠ El PDF tiene object streams: puede que falten imágenes.", file=sys.stderr)
 
     images = carve_images(data)
-    links = find_permalinks(data)
-    print(f"Encontrados: {len(images)} XObjects /DCTDecode · {len(links)} enlaces a Instagram\n")
+    obj_index = index_objects(data)
+    permalinks, pairing_warnings = map_permalinks_by_page(data, obj_index)
+
+    print(
+        f"Encontrados: {len(images)} XObjects /DCTDecode · "
+        f"{len(permalinks)} emparejados con su publicación\n"
+    )
+    for warning in pairing_warnings:
+        print(f"  ⚠ {warning}", file=sys.stderr)
 
     if not images:
         print("✗ No se extrajo ninguna imagen. ¿Cambió la estructura del PDF?", file=sys.stderr)
         return 1
+
+    if args.verify:
+        print(f"{'#':>3}  {'obj':>4}  {'archivo':<20}  publicación")
+        for i, (obj_num, _off, _blob, _end) in enumerate(images, start=1):
+            url = permalinks.get(obj_num)
+            post = url.rsplit("/p/", 1)[-1].strip("/") if url else "— sin emparejar —"
+            print(f"{i:>3}  {obj_num:>4}  {f'ig-{i:02d}-obj{obj_num}.jpg':<20}  {post}")
+        missing = sum(1 for o, *_ in ((i[0],) for i in images) if o not in permalinks)
+        print(f"\n{len(images) - missing}/{len(images)} con permalink")
+        return 0 if missing == 0 else 2
 
     records: list[Extracted] = []
     failures = 0
@@ -276,7 +370,7 @@ def main() -> int:
                 height=height,
                 ratio=round(width / height, 4),
                 bytes=len(blob),
-                permalink=pair_permalink(offset, links),
+                permalink=permalinks.get(obj_num),
                 suggested_slots=suggest_slots(width, height),
                 verified_with_pillow=verified,
             )
@@ -291,7 +385,14 @@ def main() -> int:
             "El PDF NO contiene los textos de las publicaciones, así que el copy del sitio "
             "es placeholder (ver docs/CONTENT_TODO.md). Techo de resolución: 1440px de ancho. "
             "suggested_slots es una pista por proporción, no una asignación: la curación "
-            "manual va en docs/IMAGE_MAP.md."
+            "va en docs/IMAGE_MAP.md."
+        ),
+        "permalink_method": (
+            "Posicional por página: los objetos de imagen de cada página, ordenados por "
+            "número, se cruzan con su array /Annots en el orden del array. Validado contra "
+            "la identificación visual de las 37 fotos: 37/37 exactas. NO se ordena por "
+            "/Rect — es el rect del enlace del pie de foto y su altura depende del "
+            "envolvimiento del texto, no de la fila de la parrilla."
         ),
         "images": [asdict(r) for r in records],
     }

@@ -30,6 +30,7 @@ npm run dev                   # http://localhost:3000
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | `eslint .` |
 | `npm run images:extract` | extrae las 37 fotos del PDF de Instagram a `assets/raw/` |
+| `npm run images:build` | genera los derivados WebP/AVIF en `public/img/` (`--check` valida los recortes sin escribir) |
 
 Página útil en desarrollo: **`/dev/tokens`** — especímenes de la escala tipográfica, los tokens con
 su ratio de contraste recalculado, y los componentes base. Es la referencia para verificar los 8

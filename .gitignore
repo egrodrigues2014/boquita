@@ -37,3 +37,6 @@ desktop.ini
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# cache de recetas de imagen (scripts/build-images.mjs)
+/.image-cache/

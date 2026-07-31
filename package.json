@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "images:extract": "python scripts/extract-pdf-images.py"
+    "images:extract": "python scripts/extract-pdf-images.py",
+    "images:build": "node scripts/build-images.mjs"
   },
   "dependencies": {
     "next": "^15.0.0",
@@ -25,6 +26,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.0.0",
+    "sharp": "^0.35.3",
     "typescript": "^5.6.0",
     "vitest": "^3.0.0"
   },
