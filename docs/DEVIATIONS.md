@@ -22,6 +22,20 @@ Regla general: si un desvío no está aquí, es un bug.
 | D-10 | `.media` deja de ser `background-image` y pasa a un `<img srcset>` dentro de un `.media` con `position:relative; overflow:hidden`. | Un background CSS no admite `srcset` ni lazy loading, y es una foto de 493×300 que se enviaría a tamaño completo a un móvil de 390px. Se conservan `height:300px` y el centrado flex. | ⏳ Fase 1 |
 | D-11 | `.hero{height:100vh}` → `100svh` con fallback `100vh`. | **Condicional**: sólo si el salto de la barra de direcciones de Safari en iOS se juzga inaceptable en el pase de dispositivo real. En escritorio son idénticos. | ⏳ Fase 6 |
 
+## Descubiertos al verificar la Fase 1
+
+Todos éstos salieron de ejecutar la verificación de geometría a los 8 anchos y de
+mirar capturas reales. Ninguno se habría visto leyendo el CSS.
+
+| #    | Desvío | Motivo | Estado |
+| ---- | ------ | ------ | ------ |
+| D-14 | `picture { display: contents }` en el reset | **Imprescindible, no cosmético.** El CSS del spec asume que `.hero-img` es hijo directo de `.hero`, y usamos `<picture>` para ofrecer AVIF. Con el `<picture>` generando caja, el `width:100%` de la imagen a ≤991px se resolvía contra ella —que se dimensiona por contenido— y la foto del hero salía a **315px en vez de 991px**. | ✅ Fase 1 |
+| D-15 | `.menu-grid` usa `minmax(0, 1.2fr) minmax(0, 1fr)` en vez de `1.2fr 1fr` | `1fr` es en realidad `minmax(auto, 1fr)`: si el min-content de una columna supera su parte, se la queda. Con los nombres en español las columnas salían **270/380px, o sea 0.71:1**, invirtiendo la jerarquía que exige el punto 5 del checklist. `minmax(0, …)` devuelve el mando a las fracciones. | ✅ Fase 1 |
+| D-16 | `.menu-item-head { flex-wrap: wrap }` y el precio con `flex:none` | El diseño de referencia usaba nombres cortos («MARGHERITA»); en español hay algunos de 30 caracteres. Sin esto, el precio se partía por dentro («₡ 14.000 / CRC»), que se lee como un error. Ahora baja entero a la línea siguiente. | ✅ Fase 1 |
+| D-17 | El precio del catálogo se muestra sin el sufijo «CRC» | El spec §8 pide **adaptar** el formato a la moneda del proyecto. Con «CRC» el precio no cabía junto al nombre en ninguna columna, y esa misma línea es la firma visual de la rejilla. En un sitio costarricense el símbolo ₡ no deja lugar a dudas. `formatCRC` (con sufijo) se conserva para contextos donde la moneda sí deba ser explícita. | ✅ Fase 1 |
+| D-18 | `.media .play-wrap { margin: 0 }` + sombra en los anillos del play | Dos problemas juntos. (1) El spec le da `height:100%` con `margin-top:35px`, lo que dentro del `.media` de 300px con el `overflow:hidden` que introduce D-10 desplazaba el botón 35px bajo el centro y lo recortaba. (2) Los anillos son blancos y el spec asume una foto oscura; la foto disponible es clara y el botón desaparecía. Una sombra los hace visibles sobre cualquier imagen sin cambiar el diseño. | ✅ Fase 1 |
+| D-19 | `.newsletter-form .input { flex: none }` a ≤479px | **Corrige un conflicto latente del propio spec.** `.input{flex:1}` está pensado para la fila; al pasar a `flex-direction:column` el eje principal es el vertical y `flex-basis:0` gana sobre `height:60px`, así que el input **colapsaba a 21px**. El punto 10 del checklist exige 60px. | ✅ Fase 1 |
+
 ## No son desvíos
 
 Cosas que parecen apartarse del spec pero no lo hacen:

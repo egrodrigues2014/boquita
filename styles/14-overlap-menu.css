@@ -1,0 +1,179 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   14-overlap-menu.css — Imagen ancha + bloque crema del catálogo (spec §6.4).
+
+   Los dos van juntos en un archivo porque COMPARTEN el solape: el bloque crema
+   sube 200px con margin-top negativo y la imagen ancha queda flotando encima.
+   Separarlos escondería la relación.
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
+
+   Puntos 4 y 5 del checklist de aceptación.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.overlap-wrapper {
+  position: relative;
+}
+
+.wide-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  position: relative;
+  /* ⚠ OBLIGATORIO: sin este z-index el fondo crema se pinta encima de la foto
+     y el solape desaparece. Es lo que verifica el punto 4 del checklist. */
+  z-index: 1;
+}
+
+.cream-block {
+  background: var(--primary-light);
+  margin-top: -200px;
+  padding-top: 250px;
+  padding-bottom: 130px;
+}
+
+.menu-layout {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+}
+
+.menu-intro {
+  width: 36%;
+}
+
+.menu-list-wrap {
+  width: 60%;
+  margin-top: 10px;
+}
+
+.menu-grid {
+  display: grid;
+  /* El spec escribe `1.2fr 1fr`, pero `1fr` es en realidad `minmax(auto, 1fr)`:
+     si el min-content de una columna supera su parte, se la queda y la
+     proporción se rompe. Con los nombres en español pasaba justo eso — las
+     columnas salían 270/380px, es decir 0.71:1 en vez de 1.2:1, invirtiendo la
+     jerarquía que pide el punto 5 del checklist.
+     `minmax(0, …)` hace que manden las fracciones. Es el mismo diseño que
+     describe el spec, expresado de forma que se cumpla con cualquier contenido. */
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  column-gap: 80px;
+  row-gap: 30px;
+  margin: 0;
+}
+
+/* Resetea los estilos globales de `li` (§2.3): bullet de fondo, padding,
+   color ámbar y tamaño de 16px. */
+.menu-item {
+  background: none;
+  padding: 0;
+  display: block;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}
+
+.menu-item-head {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+  /* Añadido: si el nombre y el precio no caben en la misma línea, el precio baja
+     ENTERO a la siguiente en vez de partirse por la mitad. El diseño de
+     referencia usaba nombres cortos («MARGHERITA»); en español hay algunos de 30
+     caracteres y en la columna estrecha no hay sitio para ambos. */
+  flex-wrap: wrap;
+}
+
+.menu-item-name {
+  font-size: 18px;
+  text-transform: uppercase;
+  color: var(--link);
+}
+
+.menu-item-name:hover {
+  color: var(--gold-ink);
+}
+
+.menu-item-price {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5em;
+  /* 18/20px sin negrita → necesita AA normal, no AA-large. 5.45:1 sobre crema. */
+  color: var(--gold-ink);
+  padding-block: 2px;
+  /* El precio nunca se parte por dentro: «₡ 14.000 / CRC» en dos líneas se lee
+     como un error. Con `flex-wrap` en el contenedor, baja entero. */
+  white-space: nowrap;
+  flex: none;
+}
+
+.menu-item-tag {
+  margin-top: 5px;
+  line-height: 1.5em;
+  color: var(--text-dark);
+}
+
+/* ══════════════════ min-width ascendente ══════════════════ */
+
+@media (min-width: 1280px) {
+  .cream-block {
+    padding-bottom: 170px;
+  }
+  .menu-layout {
+    gap: 80px;
+  }
+  .menu-intro {
+    width: 32%;
+  }
+  .menu-grid {
+    column-gap: 70px;
+  }
+  .menu-item-name,
+  .menu-item-price {
+    font-size: 20px;
+  }
+  .menu-item-tag {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .menu-grid {
+    column-gap: 60px;
+  }
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+@media (max-width: 991px) {
+  .cream-block {
+    margin-top: -150px;
+    padding-top: 190px;
+  }
+  .menu-layout {
+    flex-direction: column;
+  }
+  .menu-intro {
+    width: 80%;
+  }
+  .menu-list-wrap {
+    width: 100%;
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 767px) {
+  .cream-block {
+    margin-top: -100px;
+    padding-top: 140px;
+  }
+  .menu-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  /* En lista vertical, nombre y precio se van a los extremos. */
+  .menu-item-head {
+    justify-content: space-between;
+  }
+}

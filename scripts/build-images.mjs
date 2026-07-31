@@ -46,6 +46,23 @@ const AVIF = { quality: 55, effort: 5 };
  */
 const SLOTS = [
   {
+    slot: "brand",
+    name: "logo",
+    // El único original que no viene del PDF.
+    dir: path.join(ROOT, "assets"),
+    src: "logo-boquita.jpg",
+    // El logo es un badge circular cuadrado (816×816), no un wordmark
+    // horizontal. A los 43px de alto que pide el spec queda como insignia.
+    // ⚠ TODO: hace falta un SVG/PNG transparente y una variante clara para el
+    // pie marrón — el JPG lleva el fondo blanco horneado. Ver CONTENT_TODO §1.
+    ratio: 1,
+    sizes: [
+      [43, 43],
+      [86, 86],
+    ],
+    quality: 88,
+  },
+  {
     slot: "hero",
     src: "ig-27-obj70.jpg",
     // Bundt con azúcar glas. Sólo se recortan laterales: la composición
@@ -203,7 +220,7 @@ let skipped = 0;
 let problems = 0;
 
 async function processJob(job) {
-  const srcPath = path.join(RAW, job.src);
+  const srcPath = path.join(job.dir ?? RAW, job.src);
   const image = sharp(srcPath, { failOn: "error" });
   const meta = await image.metadata();
 

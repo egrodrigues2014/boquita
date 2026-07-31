@@ -1,0 +1,197 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   17-testimonials.css — Slider de tarjetas con flechas circulares (spec §6.7).
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
+
+   Punto 8 del checklist: 3 tarjetas crema de min-height 398px, flechas
+   circulares y línea a la derecha, alineadas con el titular.
+
+   La alineación de las flechas con el h2 sale de dos números que trabajan
+   juntos: `h2.mb--40` (margin-bottom:-40px) y `.slider{padding-top:95px}`.
+   No tocar uno sin el otro.
+
+   El `right:218px` de la flecha izquierda es 160 (línea) + 34 (círculo) + 24.
+   Se copia, no se recalcula.
+
+   TODOS los números por breakpoint viven aquí. El componente cliente inyecta un
+   único entero (`--i`), y `perView` se LEE de `--per-view`: así no hay una tabla
+   de breakpoints duplicada en JavaScript.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.slider {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding-top: 95px;
+  background: transparent;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.slider-mask {
+  --slide-w: 32%;
+  --slide-gap: 20px;
+  --per-view: 3;
+
+  display: flex;
+  width: 100%;
+  height: 100%;
+  /* El ancho del slide y el porcentaje de traslación se resuelven contra la
+     misma caja, así que calc() los puede mezclar sin peligro. */
+  transform: translate3d(calc(-1 * var(--i, 0) * (var(--slide-w) + var(--slide-gap))), 0, 0);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  touch-action: pan-y;
+}
+
+.slide {
+  flex: none;
+  width: var(--slide-w);
+  margin-right: var(--slide-gap);
+}
+
+.review-card {
+  width: 100%;
+  min-height: 420px;
+  padding: 25px 22px;
+  background: var(--primary-light);
+  /* Sin border-radius y sin sombra: sólo fondo crema. */
+}
+
+.review-head {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.review-avatar {
+  width: 70px;
+  height: 70px;
+  margin-right: 20px;
+  border-radius: 0; /* cuadrado, sin redondear */
+  object-fit: cover;
+  flex: none;
+}
+
+.review-name {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.5em;
+}
+
+.review-role {
+  margin-top: 5px;
+  font-size: 18px;
+  line-height: 1.5em;
+  color: var(--body-text);
+}
+
+/* Flechas: círculos outline en la esquina superior derecha, dentro del
+   padding-top de 95px del slider. */
+.slider-arrow {
+  position: absolute;
+  top: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50px;
+  border: 1px solid var(--gold-ink);
+  /* El glifo ‹ › es texto de 20px → necesita AA normal. */
+  color: var(--gold-ink);
+  font-size: 20px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.slider-arrow--left {
+  right: 218px;
+}
+
+.slider-arrow--right {
+  right: 0;
+}
+
+/* El spec no define el estado deshabilitado. Es un carrusel acotado, sin loop,
+   así que las flechas se apagan en los extremos. Un <button disabled> ya ignora
+   clics y sale del orden de tabulación, que es el comportamiento correcto. */
+.slider-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* Línea fina que conecta las dos flechas. */
+.slider-line {
+  position: absolute;
+  top: 17px;
+  right: 48px;
+  width: 160px;
+  height: 1px;
+  background: var(--gold-line);
+}
+
+/* ══════════════════ min-width ascendente ══════════════════ */
+
+@media (min-width: 1280px) {
+  .slider-mask {
+    --slide-gap: 30px;
+  }
+  .review-card {
+    min-height: 398px;
+    padding: 30px 30px 25px;
+  }
+  .review-name {
+    font-size: 22px;
+    font-weight: 500;
+  }
+  .slider-arrow:hover:not(:disabled) {
+    border-color: var(--text-dark);
+    color: var(--text-dark);
+  }
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+@media (max-width: 991px) {
+  .slider-mask {
+    --slide-w: 49%;
+    --per-view: 2;
+  }
+  .review-card {
+    min-height: 393px;
+    padding-inline: 25px;
+  }
+  .slider-line {
+    top: 57px;
+  }
+}
+
+@media (max-width: 767px) {
+  .slider-mask {
+    --slide-w: 100%;
+    --per-view: 1;
+  }
+  .review-card {
+    min-height: 312px;
+  }
+}
+
+@media (max-width: 479px) {
+  .slider {
+    margin-top: 30px;
+    padding-top: 75px;
+  }
+  .review-card {
+    min-height: 420px;
+  }
+  /* A ≤479 las flechas ya no están conectadas por la línea: es así en el spec. */
+  .slider-arrow--left {
+    right: auto;
+    left: 0;
+  }
+  .slider-line {
+    width: 260px;
+    right: 51px;
+    margin-inline: auto;
+  }
+}

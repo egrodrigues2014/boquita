@@ -48,12 +48,22 @@ ol {
 }
 
 img,
-picture,
 video,
 canvas,
 svg {
   display: block;
   max-width: 100%;
+}
+
+/* `display:contents` hace que <picture> no genere caja: el <img> participa
+   directamente en el layout de su abuelo.
+   Es imprescindible, no cosmético. El CSS del spec asume que `.hero-img` es hijo
+   directo de `.hero`, y usamos <picture> para ofrecer AVIF. Con el <picture>
+   generando caja, el `width:100%` de la imagen a ≤991px se resolvía contra ella
+   —que a su vez se dimensiona por contenido— y la foto del hero salía a 315px en
+   vez de a todo el ancho. */
+picture {
+  display: contents;
 }
 
 img {

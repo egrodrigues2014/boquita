@@ -1,0 +1,328 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   10-navbar.css — Header / Navbar (spec §5).
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc (1280, 1440, 1920)
+                                  → max-width desc (991, 767, 479).
+   No reordenar: max-width:991 y max-width:767 se solapan y el orden decide.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.navbar {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding-block: 20px;
+  background: transparent;
+  z-index: 100;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 100%;
+  padding-inline: 15px;
+}
+
+.logo {
+  height: 43px;
+  width: auto;
+}
+
+.nav-menu-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-menu {
+  display: flex;
+  align-items: center;
+}
+
+.nav-overlay-mobile {
+  display: flex;
+  align-items: center;
+}
+
+.nav-link,
+.nav-dropdown-toggle {
+  font-family: var(--ff-sans);
+  font-size: 20px;
+  font-weight: 500;
+  padding-inline: 13px;
+  color: var(--link);
+  line-height: 1.5em;
+  transition: color 0.3s;
+}
+
+.nav-link:hover,
+.nav-dropdown-toggle:hover {
+  color: var(--gold-ink);
+}
+
+/* El toggle es un <button> (patrón disclosure), no un <a>: hay que neutralizar
+   los estilos de botón y heredar la tipografía del nav. */
+.nav-dropdown-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-list {
+  width: 200px;
+  padding: 15px 20px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+}
+
+/* En escritorio el panel flota bajo su toggle. La apertura/cierre la controla
+   el componente cliente en la fase de interacciones. */
+@media (min-width: 992px) {
+  .nav-dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 110;
+  }
+}
+
+.nav-dropdown-link {
+  display: flex;
+  width: 100%;
+  padding: 8px 8px 8px 0;
+  margin-left: -20px;
+  font-size: 18px;
+  font-weight: 500;
+  text-transform: capitalize;
+  transition: all 0.3s;
+}
+
+.nav-dropdown-link:hover {
+  margin-left: 0;
+  color: var(--gold-ink);
+}
+
+/* Guion decorativo de 16×2. Oculto a ≤991. */
+.nav-dropdown-link-line {
+  display: inline-block;
+  flex: none;
+  width: 16px;
+  height: 2px;
+  margin-right: 15px;
+  background: var(--gold-line);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.cart-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-icon {
+  width: 34px;
+  height: 34px;
+  transition: filter 0.3s;
+}
+
+.cart-button:hover .cart-icon {
+  opacity: 0.5;
+}
+
+.phone-link {
+  display: none;
+  color: var(--gold-ink);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* El botón de la hamburguesa sólo existe a ≤991. */
+.menu-button {
+  display: none;
+}
+
+.close-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ══════════════════ min-width ascendente ══════════════════ */
+
+@media (min-width: 1280px) {
+  .nav-container {
+    padding-inline: 50px;
+  }
+  .nav-menu-wrapper {
+    justify-content: space-around;
+  }
+  .nav-link,
+  .nav-dropdown-toggle {
+    padding-inline: 12px;
+  }
+  .navbar-actions {
+    gap: 20px;
+  }
+  .phone-link {
+    display: block;
+  }
+}
+
+@media (min-width: 1440px) {
+  .nav-link,
+  .nav-dropdown-toggle {
+    padding-inline: 20px;
+  }
+  .navbar-actions {
+    gap: 40px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .nav-container {
+    padding-inline: 80px;
+  }
+  .nav-menu-wrapper {
+    justify-content: flex-start;
+    padding-left: 170px;
+  }
+  .navbar-actions {
+    gap: 50px;
+  }
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+/* ≤991: el MISMO .nav-menu se convierte en un panel fijo de 320px a la
+   izquierda. No hay componente drawer aparte, sólo una clase de estado. */
+@media (max-width: 991px) {
+  .nav-menu {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 320px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    /* Añadido nuestro: sin esto el panel es visible en reposo. La apertura la
+       gobierna .nav-menu--open desde el componente cliente. */
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform 0.3s ease,
+      visibility 0.3s;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 110;
+  }
+
+  .nav-menu--open {
+    transform: none;
+    visibility: visible;
+  }
+
+  .nav-overlay-mobile {
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 13px 15px 0;
+  }
+
+  .nav-link {
+    display: flex;
+    width: 100%;
+    padding: 10px 0;
+  }
+
+  .nav-dropdown-toggle {
+    display: flex;
+    width: 100%;
+    padding: 10px 0;
+    padding-inline: 0;
+    justify-content: space-between;
+  }
+
+  .nav-dropdown-list {
+    position: static;
+    width: 320px;
+    border: 0;
+    padding: 0 40px 0 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Los 14 productos del catálogo son los que justifican esta medida. */
+  .nav-dropdown-list--mega {
+    width: 100%;
+    height: 270px;
+    overflow: scroll;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-dropdown-link-line {
+    display: none;
+  }
+
+  .close-button-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    margin-bottom: 10px;
+  }
+
+  .btn--nav {
+    display: none;
+  }
+
+  .navbar-actions {
+    justify-content: flex-end;
+    margin-right: 20px;
+  }
+
+  .cart-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .menu-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* DESVÍO D-5: el navbar es transparente y a ≤991 la foto del hero pasa a
+     estar justo debajo, así que el logo, la hamburguesa y el carrito quedarían
+     sobre la fotografía con contraste desconocido. */
+  .navbar {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: saturate(1.2) blur(6px);
+  }
+}
+
+@media (max-width: 767px) {
+  .cart-icon {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 479px) {
+  .navbar-actions {
+    margin-right: 15px;
+  }
+}

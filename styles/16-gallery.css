@@ -1,0 +1,145 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   16-gallery.css — Dos filas desbordadas con parallax horizontal (spec §6.6).
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
+
+   Punto 7 del checklist: las dos filas DEBEN desbordar el viewport, estar
+   recortadas y moverse en direcciones opuestas al hacer scroll.
+
+   Cada item mide 23% del ancho y hay 7 por fila, así que la tira ocupa ~161% y
+   `.scroller{overflow:hidden}` la recorta: se ven ~4 fotos completas y 2
+   cortadas por los bordes. **Ese recorte es parte del diseño, no un bug.**
+
+   Se usan 4 imágenes únicas por fila, repetidas hasta 7. Como el `src` y el
+   `sizes` de las repetidas son idénticos, el navegador hace 8 peticiones, no 14.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* La galería sangra a todo el viewport, no a los 1170px del contenedor. */
+.gallery {
+  width: 100%;
+}
+
+.gallery-row--1 {
+  margin-top: 40px;
+}
+
+.gallery-row--2 {
+  margin-top: 25px;
+}
+
+.scroller {
+  position: relative;
+  overflow: hidden;
+}
+
+.track {
+  display: flex;
+  gap: 25px;
+  margin-inline: 15px;
+  position: relative;
+  /* DESVÍO D-3: el spec pone `will-change:transform` permanente. Con 14
+     imágenes serían dos capas compositadas grandes siempre activas, caro en
+     móvil. Se mueve a `.track.is-animating`, que el componente activa sólo
+     mientras la sección está en pantalla. Invisible y estrictamente mejor. */
+}
+
+.track.is-animating {
+  will-change: transform;
+}
+
+/* Offsets estáticos: se quedan en CSS para que el JS sólo escriba `transform` y
+   no pelee con el desplazamiento de layout. */
+.track--1 {
+  left: -15%;
+}
+
+.track--2 {
+  left: -30%;
+}
+
+.gallery-item {
+  flex: none;
+  max-width: 23%;
+  max-height: 200px;
+  overflow: hidden;
+  padding-block: 0;
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ══════════════════ min-width ascendente ══════════════════ */
+
+@media (min-width: 1280px) {
+  .gallery-row--2 {
+    margin-top: 33px;
+  }
+  .track {
+    gap: 33px;
+  }
+  .gallery-item {
+    max-height: 240px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .gallery-row--2 {
+    margin-top: 38px;
+  }
+  .track {
+    gap: 38px;
+  }
+  .gallery-item {
+    max-height: 260px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .gallery-row--2 {
+    margin-top: 56px;
+  }
+  .track {
+    gap: 56px;
+    margin-inline: 50px;
+  }
+  .gallery-item {
+    max-width: 25%;
+    max-height: 290px;
+  }
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+@media (max-width: 991px) {
+  .gallery-row--2 {
+    margin-top: 20px;
+    margin-left: 0;
+  }
+  .track {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .gallery-row--2 {
+    margin-top: 30px;
+  }
+  .track {
+    gap: 30px;
+  }
+  .gallery-item {
+    max-width: 47%;
+  }
+}
+
+@media (max-width: 479px) {
+  .gallery-row--2 {
+    margin-top: 23px;
+  }
+  .track {
+    gap: 23px;
+  }
+}

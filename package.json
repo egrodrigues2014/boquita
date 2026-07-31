@@ -2,15 +2,18 @@
   "name": "boquita",
   "version": "0.1.0",
   "private": true,
-  "description": "Boquita — Sweet & Salty · repostería artesanal en Río Oro de Santa Ana, Costa Rica",
+  "description": "Boquita â€” Sweet & Salty Â· reposterÃ­a artesanal en RÃ­o Oro de Santa Ana, Costa Rica",
   "scripts": {
     "dev": "next dev",
+    "clean": "node -e \"require('node:fs').rmSync('.next',{recursive:true,force:true})\"",
+    "prebuild": "npm run clean",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "e2e": "playwright test",
     "images:extract": "python scripts/extract-pdf-images.py",
     "images:build": "node scripts/build-images.mjs"
   },
@@ -21,6 +24,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

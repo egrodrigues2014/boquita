@@ -40,3 +40,6 @@ desktop.ini
 
 # cache de recetas de imagen (scripts/build-images.mjs)
 /.image-cache/
+
+# capturas de revision visual
+tests/e2e/__screenshots__/

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { ImagePreload } from "@/components/ui/Picture";
 import { SkipLink } from "@/components/ui/SkipLink";
+import { home } from "@/content/home";
 import { display, sans } from "./fonts";
 
 // ⚠ EL ÚNICO import de CSS del proyecto. Ver la cabecera de styles/index.css:
@@ -62,6 +64,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es-CR" className={`${display.variable} ${sans.variable}`}>
       <head>
         <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOTSTRAP }} />
+        {/* La foto del hero es el elemento LCP: se empieza a descargar antes de
+            que el parser encuentre su <img>. El srcset y el sizes son idénticos
+            a los del <img>, o el navegador bajaría dos archivos distintos. */}
+        <ImagePreload image={home.hero.image} />
       </head>
       <body>
         <SkipLink />

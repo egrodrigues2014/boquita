@@ -1,0 +1,101 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   11-hero.css — Hero: 100vh con imagen a sangre en el borde derecho (spec §6.1).
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
+
+   El navbar flota transparente sobre la mitad izquierda, que es de fondo claro:
+   por eso los enlaces del nav son oscuros.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100vh;
+}
+
+.hero-img {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 43.5%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-content {
+  width: 53%;
+  display: block;
+}
+
+/* ══════════════════ min-width ascendente ══════════════════ */
+
+@media (min-width: 1280px) {
+  .hero-img {
+    width: 46%;
+  }
+  .hero-content {
+    width: 50%;
+  }
+}
+
+@media (min-width: 1440px) {
+  .hero-img {
+    width: 38%;
+  }
+  .hero-content {
+    width: 57%;
+  }
+}
+
+@media (min-width: 1920px) {
+  .hero-img {
+    width: 39%;
+  }
+  .hero-content {
+    width: 64%;
+  }
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+@media (max-width: 991px) {
+  .hero {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    height: auto;
+  }
+  .hero-img {
+    position: static;
+    width: 100%;
+    height: 420px;
+    margin-bottom: 60px;
+  }
+  .hero-content {
+    width: 90%;
+    margin-inline: auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-img {
+    height: 360px;
+    margin-bottom: 40px;
+  }
+  .hero-content {
+    width: 100%;
+  }
+}
+
+@media (max-width: 479px) {
+  .hero-img {
+    height: 320px;
+  }
+}

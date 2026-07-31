@@ -1,0 +1,29 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   12-statement.css — Frase grande con dos imágenes DENTRO del flujo del texto
+   (spec §6.2).
+
+   Es el punto 3 del checklist de aceptación: los dos recortes tienen que
+   aparecer dentro del flujo del `h2`, no al lado.
+
+   Por eso siguen siendo `background-image` y no `<img>`: un `<img>` a
+   `height:1em` dentro de un `h2` rompe la caja de línea. Ver docs/DEVIATIONS.md,
+   sección "No son desvíos".
+
+   Las URL de las imágenes NO se declaran aquí: las inyecta el componente con
+   `image-set()` en un `style` inline, desde content/home.ts. Así el contenido
+   sigue en un solo sitio y se sirve el 2× en pantallas densas.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.inline-img {
+  display: inline-block;
+  width: 100px;
+  height: 1em; /* ocupa el espacio de una "palabra" */
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  -webkit-text-fill-color: inherit;
+  /* El h2 va en mayúsculas por CSS; sin esto el span heredaría el
+     text-transform y podría afectar al cálculo de la línea en algún motor. */
+  text-transform: none;
+  vertical-align: baseline;
+}

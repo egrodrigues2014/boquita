@@ -25,16 +25,16 @@
 @import "./04-layout.css";
 @import "./05-components.css";
 
-/* Secciones, en el orden del §6 del spec (fase 1) */
-/* @import "./10-navbar.css"; */
-/* @import "./11-hero.css"; */
-/* @import "./12-statement.css"; */
-/* @import "./13-media-text.css"; */
-/* @import "./14-overlap-menu.css"; */
-/* @import "./15-service.css"; */
-/* @import "./16-gallery.css"; */
-/* @import "./17-testimonials.css"; */
-/* @import "./18-footer.css"; */
+/* Secciones, en el orden del §6 del spec */
+@import "./10-navbar.css";
+@import "./11-hero.css";
+@import "./12-statement.css";
+@import "./13-media-text.css";
+@import "./14-overlap-menu.css";
+@import "./15-service.css";
+@import "./16-gallery.css";
+@import "./17-testimonials.css";
+@import "./18-footer.css";
 
 /* Nuestro (fase 4) */
 /* @import "./30-cart.css"; */
