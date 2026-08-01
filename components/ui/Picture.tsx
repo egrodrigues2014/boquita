@@ -69,16 +69,25 @@ export function Picture({
  * navegador descargará dos archivos distintos en vez de reutilizar el preload.
  */
 export function ImagePreload({ image }: { image: ImageRef }) {
-  const set = image.avif?.length ? image.avif : image.srcSet;
+  const usesAvif = Boolean(image.avif?.length);
+  const set = usesAvif ? image.avif! : image.srcSet;
   if (!set?.length) return null;
+
+  // `href` es el destino para navegadores sin soporte de `imagesrcset`, y tiene
+  // que ser COHERENTE con el `type` declarado: apuntar a un .webp mientras se
+  // anuncia `image/avif` haría que un navegador bajara un archivo que no
+  // corresponde al tipo. Se elige la entrada del mismo ancho que la base del
+  // <img>, o la mayor si no hay coincidencia exacta.
+  const fallback = set.find((entry) => entry.width === image.width) ?? set.at(-1)!;
+
   return (
     <link
       rel="preload"
       as="image"
-      href={image.src}
+      href={fallback.src}
       imageSrcSet={set.map((s) => `${s.src} ${s.width}w`).join(", ")}
       imageSizes={image.sizes}
-      type={image.avif?.length ? "image/avif" : undefined}
+      type={usesAvif ? "image/avif" : undefined}
       fetchPriority="high"
     />
   );

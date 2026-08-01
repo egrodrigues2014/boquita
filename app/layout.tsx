@@ -25,15 +25,33 @@ export const metadata: Metadata = {
     "brigadeiros y bocaditos salados. Horneamos por encargo, en tandas pequeñas.",
   applicationName: "Boquita",
   authors: [{ name: "Boquita — Sweet & Salty" }],
+  keywords: [
+    "repostería Santa Ana",
+    "queque de zanahoria Costa Rica",
+    "pastelería artesanal San José",
+    "galletas sin gluten Costa Rica",
+    "polvorones Costa Rica",
+    "brigadeiros San José",
+    "queques por encargo Escazú",
+  ],
+  alternates: { canonical: SITE_URL },
   openGraph: {
     type: "website",
     locale: "es_CR",
     siteName: "Boquita — Sweet & Salty",
     url: SITE_URL,
+    title: "Boquita — Sweet & Salty · Repostería artesanal en Río Oro, Santa Ana",
+    description:
+      "Queques, galletas y bocaditos horneados por encargo en Santa Ana. " +
+      "Pedidos por WhatsApp con 48 horas de anticipación.",
   },
+  twitter: { card: "summary_large_image" },
   robots: isProduction
     ? { index: true, follow: true }
     : { index: false, follow: false, nocache: true },
+  // El sitio es sobre comida y se pide por WhatsApp: conviene que el teléfono sea
+  // pulsable en iOS, pero no que Safari convierta cualquier número en un enlace.
+  formatDetection: { telephone: false, address: false, email: false },
 };
 
 export const viewport: Viewport = {

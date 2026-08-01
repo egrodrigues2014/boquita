@@ -20,11 +20,12 @@ export function MediaText({ mediaText }: { mediaText: HomeContent["mediaText"] }
         <div className="media-text">
           <div className="media">
             <Picture image={mediaText.poster} className="media-img" />
-            <a
+            {/* Es un <button>, no un <a>: abre un lightbox, no navega.
+                El `data-lightbox` lo recoge el listener delegado de <Lightbox>. */}
+            <button
+              type="button"
               className="play-wrap"
-              href={mediaText.videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+              data-lightbox="video"
               aria-label={mediaText.videoLabel}
             >
               <span className="play-ring" aria-hidden="true" />
@@ -32,7 +33,7 @@ export function MediaText({ mediaText }: { mediaText: HomeContent["mediaText"] }
               <span className="play-icon" aria-hidden="true">
                 ▶
               </span>
-            </a>
+            </button>
           </div>
 
           <div className="media-copy">

@@ -36,8 +36,9 @@
 @import "./17-testimonials.css";
 @import "./18-footer.css";
 
-/* Nuestro (fase 4) */
-/* @import "./30-cart.css"; */
+/* Nuestro: no está en el CSS del spec */
+@import "./22-lightbox.css";
+/* @import "./30-cart.css";  (fase 4) */
 
 /* Accesibilidad: siempre el último */
 @import "./99-a11y.css";

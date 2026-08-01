@@ -31,6 +31,7 @@ npm run dev                   # http://localhost:3000
 | `npm run lint` | `eslint .` |
 | `npm run images:extract` | extrae las 37 fotos del PDF de Instagram a `assets/raw/` |
 | `npm run images:build` | genera los derivados WebP/AVIF en `public/img/` (`--check` valida los recortes sin escribir) |
+| `npm run e2e` | Playwright: geometría, interacciones, lightbox, SEO y presupuestos, a 8 anchos |
 
 Página útil en desarrollo: **`/dev/tokens`** — especímenes de la escala tipográfica, los tokens con
 su ratio de contraste recalculado, y los componentes base. Es la referencia para verificar los 8
@@ -127,8 +128,25 @@ formatFrom(22000)     // "desde ₡ 22.000 CRC"
 
 - ✅ **Fase 0 — cimientos.** Tokens, escala tipográfica, componentes base, moneda, tests de
   contraste, extracción de imágenes.
-- ⏳ **Fase 1 — la portada completa**, sin base de datos ni carrito.
+- ✅ **Fase 1 — la portada completa**, sin base de datos ni carrito. Las 9 secciones del spec,
+  reveal, parallax de galería, slider, nav móvil, lightbox y SEO local.
 - ⏳ Fases 2–6: base de datos, panel de administración, tienda y carrito, newsletter, lanzamiento.
+
+### Medido, no estimado
+
+92 tests unitarios y 328 e2e a los 8 anchos del checklist. En el build de producción:
+
+| | 1440px | 390px |
+| --- | --- | --- |
+| LCP | 140 ms | 148 ms |
+| CLS | 0.0004 | 0.0000 |
+| Primera carga | 805 KB | 465 KB |
+
+Presupuestos: LCP < 2.5 s · CLS < 0.05 · < 1.2 MB. El CSS son 32 KB minificados; el JavaScript
+propio, ~8 KB sobre los 103 KB del framework de Next.
+
+Las 14 celdas de la galería generan **8 descargas**, no 14: las repetidas comparten `src` y `sizes`,
+así que el navegador reutiliza la misma petición. Hay un test que lo afirma.
 
 ## Dos cosas que conviene saber
 

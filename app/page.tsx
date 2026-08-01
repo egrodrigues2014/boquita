@@ -7,7 +7,10 @@ import { OverlapMenu } from "@/components/sections/OverlapMenu";
 import { Service } from "@/components/sections/Service";
 import { Statement } from "@/components/sections/Statement";
 import { Testimonials } from "@/components/sections/Testimonials";
+import { JsonLd } from "@/components/ui/JsonLd";
+import { Lightbox } from "@/components/ui/Lightbox";
 import { home } from "@/content/home";
+import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
 
 /**
  * Portada. Server Component: todo el contenido y las imágenes viajan en el
@@ -31,6 +34,12 @@ import { home } from "@/content/home";
 export default function HomePage() {
   return (
     <>
+      {/* Datos estructurados de negocio local: lo que hace que Google entienda
+          que esto es una panadería en Santa Ana con teléfono y catálogo, y no
+          una página cualquiera. Cuesta cero bytes de JavaScript. */}
+      <JsonLd data={bakeryJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
+
       <Navbar nav={home.nav} />
 
       <main id="contenido">
@@ -44,6 +53,16 @@ export default function HomePage() {
       </main>
 
       <Footer footer={home.footer} />
+
+      {/* Un único lightbox para toda la página. Escucha por delegación los
+          `data-lightbox` que renderizan las secciones en el servidor, así que no
+          hace falta un provider de contexto ni convertirlas en cliente. */}
+      <Lightbox
+        groups={{
+          gallery: home.gallery.rows.flat(),
+          video: { url: home.mediaText.videoUrl, title: home.mediaText.videoLabel },
+        }}
+      />
     </>
   );
 }

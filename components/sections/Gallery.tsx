@@ -19,21 +19,35 @@ import type { HomeContent, ImageRef } from "@/types/content";
  */
 const ITEMS_PER_ROW = 7;
 
-/** Repite las 4 únicas hasta llegar a 7, en orden cíclico. */
-function repeatToSeven(unique: ImageRef[]): ImageRef[] {
-  return Array.from({ length: ITEMS_PER_ROW }, (_, i) => unique[i % unique.length]!);
+/**
+ * Repite las 4 únicas hasta llegar a 7, en orden cíclico.
+ * Devuelve también el índice ÚNICO de cada una, que es el que necesita el
+ * lightbox: al pulsar la 6ª celda debe abrir la 2ª foto, no la sexta.
+ */
+function repeatToSeven(unique: ImageRef[], offset: number) {
+  return Array.from({ length: ITEMS_PER_ROW }, (_, i) => {
+    const uniqueIndex = i % unique.length;
+    return { image: unique[uniqueIndex]!, lightboxIndex: offset + uniqueIndex };
+  });
 }
 
-function Row({ images, row }: { images: ImageRef[]; row: 1 | 2 }) {
+function Row({ images, row, offset }: { images: ImageRef[]; row: 1 | 2; offset: number }) {
   return (
     <div className={`gallery-row gallery-row--${row}`}>
       {/* ParallaxTrack es cliente, pero los 7 <img> le llegan como children del
           servidor: no entran en el bundle de JavaScript. */}
       <ParallaxTrack row={row}>
-        {repeatToSeven(images).map((image, index) => (
-          <div className="gallery-item" key={`${row}-${index}`}>
+        {repeatToSeven(images, offset).map(({ image, lightboxIndex }, index) => (
+          <button
+            type="button"
+            className="gallery-item"
+            key={`${row}-${index}`}
+            data-lightbox="gallery"
+            data-lightbox-index={lightboxIndex}
+            aria-label={`Ampliar foto: ${image.alt}`}
+          >
             <Picture image={image} className="gallery-img" />
-          </div>
+          </button>
         ))}
       </ParallaxTrack>
     </div>
@@ -50,8 +64,10 @@ export function Gallery({ gallery }: { gallery: HomeContent["gallery"] }) {
       </div>
 
       <div className="gallery" data-parallax>
-        <Row images={row1} row={1} />
-        <Row images={row2} row={2} />
+        {/* El offset alinea los índices con la lista plana de 8 que recibe el
+            lightbox: fila 1 → 0-3, fila 2 → 4-7. */}
+        <Row images={row1} row={1} offset={0} />
+        <Row images={row2} row={2} offset={row1.length} />
       </div>
     </section>
   );
