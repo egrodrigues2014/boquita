@@ -1,4 +1,6 @@
+import { TestimonialsSlider } from "@/components/sections/TestimonialsSlider";
 import { Avatar } from "@/components/ui/Avatar";
+import { Reveal } from "@/components/ui/Reveal";
 import type { HomeContent } from "@/types/content";
 
 /**
@@ -24,44 +26,34 @@ export function Testimonials({
   return (
     <section className="section">
       <div className="container container--stretch">
-        <h2 className="mb--40 w-50-tablet">{testimonials.title}</h2>
+        <Reveal as="h2" className="mb--40 w-50-tablet">
+          {testimonials.title}
+        </Reveal>
 
-        <div className="slider">
-          <div className="slider-mask">
-            {testimonials.items.map((item) => (
-              <div className="slide" key={item.id}>
-                <article className="review-card">
-                  <div className="review-head">
-                    <Avatar name={item.name} />
-                    <div>
-                      <div className="review-name">{item.name}</div>
-                      <div className="review-role">{item.role}</div>
-                    </div>
+        {/* Las 6 tarjetas se renderizan en el servidor y le llegan al slider
+            (cliente) como children: sólo viaja la lógica de navegación. */}
+        <TestimonialsSlider count={testimonials.items.length}>
+          {testimonials.items.map((item, index) => (
+            <div
+              className="slide"
+              key={item.id}
+              role="group"
+              aria-roledescription="reseña"
+              aria-label={`${index + 1} de ${testimonials.items.length}`}
+            >
+              <article className="review-card">
+                <div className="review-head">
+                  <Avatar name={item.name} />
+                  <div>
+                    <div className="review-name">{item.name}</div>
+                    <div className="review-role">{item.role}</div>
                   </div>
-                  <p>{item.quote}</p>
-                </article>
-              </div>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            className="slider-arrow slider-arrow--left"
-            aria-label="Ver reseñas anteriores"
-            disabled
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            className="slider-arrow slider-arrow--right"
-            aria-label="Ver reseñas siguientes"
-            disabled
-          >
-            ›
-          </button>
-          <div className="slider-line" aria-hidden="true" />
-        </div>
+                </div>
+                <p>{item.quote}</p>
+              </article>
+            </div>
+          ))}
+        </TestimonialsSlider>
       </div>
     </section>
   );

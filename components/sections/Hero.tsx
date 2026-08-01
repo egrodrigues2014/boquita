@@ -1,5 +1,6 @@
 import { Btn } from "@/components/ui/Btn";
 import { Picture } from "@/components/ui/Picture";
+import { Reveal } from "@/components/ui/Reveal";
 import type { HomeContent } from "@/types/content";
 
 /**
@@ -20,22 +21,33 @@ export function Hero({ hero }: { hero: HomeContent["hero"] }) {
   return (
     <section className="hero">
       {/* La imagen es el elemento LCP: eager, fetchPriority alto y precargada
-          desde el <head>. */}
+          desde el <head>.
+          DESVÍO D-20: el spec la incluye entre los elementos con reveal, pero
+          aquí NO lo lleva, por dos razones que se refuerzan. (1) Es el LCP:
+          cualquier `opacity:0` inicial lo aplazaría hasta la hidratación.
+          (2) Envolverla en un div reintroduciría el bug de D-14 — a ≤991 la
+          imagen es `width:100%` y se resolvería contra el envoltorio en vez de
+          contra `.hero`, saliendo a 315px. Animar la portada no vale ninguna de
+          las dos cosas. */}
       <Picture image={hero.image} className="hero-img" priority />
 
       <div className="container container--start">
         <div className="hero-content">
-          <p className="h6-sans primary">{hero.eyebrow}</p>
-          <h1 className="h1-hero">
+          <Reveal as="p" className="h6-sans primary" index={0}>
+            {hero.eyebrow}
+          </Reveal>
+          <Reveal as="h1" className="h1-hero" index={1}>
             {hero.titleTop}
             <br />
             <span className="text-primary">{hero.titleBottom}</span>
-          </h1>
-          <p className="lead mt-20">{hero.lead}</p>
-          <div className="btn-group">
+          </Reveal>
+          <Reveal as="p" className="lead mt-20" index={2}>
+            {hero.lead}
+          </Reveal>
+          <Reveal className="btn-group" index={2}>
             <Btn link={hero.ctas[0]} />
             <Btn link={hero.ctas[1]} variant="ghost" />
-          </div>
+          </Reveal>
         </div>
       </div>
     </section>

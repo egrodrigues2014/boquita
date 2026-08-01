@@ -160,6 +160,30 @@
   justify-content: center;
 }
 
+/* El wrap del botón de cerrar sólo existe dentro del drawer de ≤991. */
+.close-button-wrap {
+  display: none;
+}
+
+/* DESVÍO D-4: scrim tras el drawer. No está en el spec, pero un panel de 320px
+   sobre contenido vivo no tiene afordancia de cierre ni separación visual. */
+.nav-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 105;
+  background: rgba(58, 42, 26, 0.55);
+  animation: nav-scrim-in 0.3s ease-out;
+}
+
+@keyframes nav-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* ══════════════════ min-width ascendente ══════════════════ */
 
 @media (min-width: 1280px) {
@@ -283,6 +307,7 @@
     align-items: center;
     height: 60px;
     margin-bottom: 10px;
+    flex: none;
   }
 
   .btn--nav {
@@ -307,10 +332,14 @@
 
   /* DESVÍO D-5: el navbar es transparente y a ≤991 la foto del hero pasa a
      estar justo debajo, así que el logo, la hamburguesa y el carrito quedarían
-     sobre la fotografía con contraste desconocido. */
+     sobre la fotografía con contraste desconocido.
+     ⚠ SIN `backdrop-filter`, y no es por gusto: igual que `filter`, crea un
+     bloque contenedor para los descendientes `position:fixed`. Con él, tanto el
+     drawer de 320px como el scrim quedaban confinados a la caja del navbar
+     (~83px de alto) en lugar de al viewport. Un fondo casi opaco da el mismo
+     contraste sin ese efecto colateral. */
   .navbar {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: saturate(1.2) blur(6px);
+    background: rgba(255, 255, 255, 0.96);
   }
 }
 

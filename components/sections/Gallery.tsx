@@ -1,4 +1,6 @@
+import { ParallaxTrack } from "@/components/sections/ParallaxTrack";
 import { Picture } from "@/components/ui/Picture";
+import { Reveal } from "@/components/ui/Reveal";
 import type { HomeContent, ImageRef } from "@/types/content";
 
 /**
@@ -25,15 +27,15 @@ function repeatToSeven(unique: ImageRef[]): ImageRef[] {
 function Row({ images, row }: { images: ImageRef[]; row: 1 | 2 }) {
   return (
     <div className={`gallery-row gallery-row--${row}`}>
-      <div className="scroller">
-        <div className={`track track--${row}`}>
-          {repeatToSeven(images).map((image, index) => (
-            <div className="gallery-item" key={`${row}-${index}`}>
-              <Picture image={image} className="gallery-img" />
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* ParallaxTrack es cliente, pero los 7 <img> le llegan como children del
+          servidor: no entran en el bundle de JavaScript. */}
+      <ParallaxTrack row={row}>
+        {repeatToSeven(images).map((image, index) => (
+          <div className="gallery-item" key={`${row}-${index}`}>
+            <Picture image={image} className="gallery-img" />
+          </div>
+        ))}
+      </ParallaxTrack>
     </div>
   );
 }
@@ -44,7 +46,7 @@ export function Gallery({ gallery }: { gallery: HomeContent["gallery"] }) {
   return (
     <section className="section section--no-bottom" id="galeria">
       <div className="container">
-        <h2>{gallery.title}</h2>
+        <Reveal as="h2">{gallery.title}</Reveal>
       </div>
 
       <div className="gallery" data-parallax>

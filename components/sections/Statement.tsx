@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { Reveal } from "@/components/ui/Reveal";
 import type { HomeContent, ImageRef } from "@/types/content";
 
 /**
@@ -31,7 +32,7 @@ export function Statement({ statement }: { statement: HomeContent["statement"] }
   return (
     <section className="section section--no-bottom">
       <div className="container">
-        <h2 className="text-center">
+        <Reveal as="h2" className="text-center">
           {statement.partA}{" "}
           <span
             className="inline-img inline-img--1"
@@ -45,7 +46,7 @@ export function Statement({ statement }: { statement: HomeContent["statement"] }
             role="presentation"
           />{" "}
           {statement.partC}
-        </h2>
+        </Reveal>
       </div>
     </section>
   );

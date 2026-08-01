@@ -112,10 +112,12 @@
   right: 0;
 }
 
-/* El spec no define el estado deshabilitado. Es un carrusel acotado, sin loop,
-   así que las flechas se apagan en los extremos. Un <button disabled> ya ignora
-   clics y sale del orden de tabulación, que es el comportamiento correcto. */
-.slider-arrow:disabled {
+/* El spec no define el estado deshabilitado. Es un carrusel acotado y sin loop,
+   así que las flechas se apagan en los extremos.
+   Se usa `aria-disabled` y NO `disabled`: al deshabilitar un elemento que tiene
+   el foco, el navegador lo manda al <body>, y un usuario de teclado que llegara
+   al último slide perdía el foco del carrusel. */
+.slider-arrow[aria-disabled="true"] {
   opacity: 0.35;
   cursor: default;
 }

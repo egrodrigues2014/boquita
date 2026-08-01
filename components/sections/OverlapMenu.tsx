@@ -1,4 +1,5 @@
 import { Picture } from "@/components/ui/Picture";
+import { Reveal } from "@/components/ui/Reveal";
 import { formatCRCShort } from "@/lib/format";
 import type { HomeContent } from "@/types/content";
 
@@ -35,16 +36,24 @@ export function OverlapMenu({
       <div className="cream-block">
         <div className="container">
           <div className="menu-layout">
-            <div className="menu-intro">
+            <Reveal className="menu-intro">
               <p className="h6-sans">{menu.eyebrow}</p>
               <h2>{menu.title}</h2>
               <p className="mt-20">{menu.body}</p>
-            </div>
+            </Reveal>
 
             <div className="menu-list-wrap">
               <ul className="menu-grid">
-                {menu.products.map((product) => (
-                  <li className="menu-item" key={product.slug}>
+                {menu.products.map((product, index) => (
+                  // Escalonado por FILAS, no por item: con 2 columnas, pasar
+                  // `Math.floor(index/2)` hace que la ola baje por la rejilla
+                  // (0,0,100,100,200,200,200,200) en vez de barrer en zigzag.
+                  <Reveal
+                    as="li"
+                    className="menu-item"
+                    key={product.slug}
+                    index={Math.floor(index / 2)}
+                  >
                     <div className="menu-item-head">
                       {/* En la Fase 4 esto enlaza a /tienda/[slug]. */}
                       <a className="menu-item-name" href="#catalogo">
@@ -66,7 +75,7 @@ export function OverlapMenu({
                       </div>
                     </div>
                     <div className="menu-item-tag">{product.category}</div>
-                  </li>
+                  </Reveal>
                 ))}
               </ul>
             </div>
