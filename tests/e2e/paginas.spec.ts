@@ -79,6 +79,46 @@ test.describe("aviso legal", () => {
   });
 });
 
+test.describe("404", () => {
+  test("una URL inexistente da 404 con salidas útiles", async ({ page }) => {
+    const response = await page.goto("/esta-no-existe");
+    expect(response?.status()).toBe(404);
+
+    // Los enlaces viejos de Instagram van a aterrizar aquí: tiene que haber
+    // por dónde seguir, no un callejón sin salida.
+    await expect(page.locator(".h6-sans")).toContainText("Error 404");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Ver el catálogo" })).toBeVisible();
+    await expect(page.locator(".shop-card")).toHaveCount(3);
+
+    // Y el nav y el pie siguen ahí, con la marca.
+    await expect(page.locator(".navbar")).toBeVisible();
+    await expect(page.locator(".footer-dark")).toHaveCSS("background-color", "rgb(58, 42, 26)");
+  });
+
+  test("la 404 va con noindex", async ({ page }) => {
+    await page.goto("/esta-no-existe");
+
+    // Puede haber DOS metas de robots: en local `VERCEL_ENV` no está definido, así
+    // que el layout raíz marca noindex para todo lo que no sea producción, y la
+    // propia 404 añade el suyo. Con directivas en conflicto los buscadores
+    // aplican la más restrictiva, así que basta con que ninguna permita indexar.
+    const contents = await page
+      .locator('meta[name="robots"]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute("content") ?? ""));
+
+    expect(contents.length).toBeGreaterThan(0);
+    expect(contents.some((c) => c.includes("noindex"))).toBe(true);
+    expect(contents.every((c) => !/(^|,)\s*index/.test(c))).toBe(true);
+  });
+
+  test("un slug de producto inexistente cae en la misma 404", async ({ page }) => {
+    const response = await page.goto("/tienda/inventado");
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("link", { name: "Ver el catálogo" })).toBeVisible();
+  });
+});
+
 test.describe("salud de la navegación", () => {
   test("ningún enlace del nav o del pie está muerto", async ({ page, request, viewport }) => {
     test.skip(viewport!.width <= 991, "A ≤991 el nav vive dentro del drawer");

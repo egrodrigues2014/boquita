@@ -39,7 +39,7 @@ breakpoints del checklist.
 
 ## Cómo está organizado
 
-```
+```text
 app/            rutas (App Router). layout.tsx hace el ÚNICO import de CSS
 components/     sections/ (una por sección del spec) · layout/ · ui/ · cart/
 lib/            format.ts (moneda) · color.ts (contraste) · tokens.ts (lee el CSS)
@@ -67,7 +67,7 @@ garantizado entre varios imports, y aquí toda la cascada depende de él.
 El spec es **desktop-first**: la base vive en 992–1279px y se sobrescribe hacia arriba y hacia abajo.
 En cada archivo de `styles/`, el orden obligatorio es:
 
-```
+```text
 reglas base → min-width ascendente (1280, 1440, 1920) → max-width descendente (991, 767, 479)
 ```
 
@@ -133,10 +133,18 @@ formatFrom(22000)     // "desde ₡ 22.000 CRC"
 - ✅ **Tienda y carrito.** `/tienda` con filtros combinables, las 14 fichas prerenderizadas con
   JSON-LD `Product`, carrito persistido y checkout por WhatsApp. Sin pasarela de pago y sin base
   de datos: el contenido vive en `content/`.
+- ✅ **Páginas de texto.** `/sobre-nosotros` con historia, zonas de entrega y 8 preguntas
+  frecuentes (con JSON-LD `FAQPage`), `/aviso-legal`, y una 404 propia que ofrece salidas —
+  los enlaces viejos de Instagram van a aterrizar ahí.
+- ✅ **Accesibilidad auditada.** Cero violaciones de axe en 9 estados, sobre `wcag2a`, `wcag2aa`,
+  `wcag21a`, `wcag21aa` y `wcag22aa`.
 - ⏳ **Base de datos y panel de administración.** Bloqueadas: hace falta un proyecto de
   [Neon](https://neon.tech) (región AWS `us-east-1`) y su `DATABASE_URL`. El esquema y las queries
   están diseñados; en cuanto exista la credencial, `content/` pasa a ser el fallback.
-- ⏳ Newsletter, `/sobre-nosotros`, `/blog` y lanzamiento.
+- ⏳ Newsletter funcional (el formulario está maquetado pero no envía) y despliegue.
+
+**No hay blog, y es deliberado.** Nada lo enlaza, el contenido lo escribiría quien programa y no
+Ale, y un blog con dos entradas que nunca crece señala abandono más que actividad.
 
 ### El flujo de pedido
 
