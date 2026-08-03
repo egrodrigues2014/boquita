@@ -49,7 +49,11 @@
 }
 
 .footer-dark {
-  background: var(--text-dark);
+  /* `--surface-dark` y NO `--text-dark`: este mismo elemento re-declara
+     `--text-dark: #ffffff` (ver 01-tokens.css), y una propiedad personalizada
+     declarada en un elemento aplica a las declaraciones de ese elemento. Con
+     `var(--text-dark)` aquí, el fondo resolvía a blanco. */
+  background: var(--surface-dark);
   margin-top: -198px;
   padding-top: 275px;
   padding-bottom: 60px;

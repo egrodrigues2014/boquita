@@ -287,6 +287,14 @@ test("9 · la tarjeta CTA flota a caballo entre el blanco y el bloque oscuro", a
 
   expect(await style(page, ".cta-card", "z-index")).toBe("1");
 
+  // El bloque tiene que ser OSCURO de verdad. Este test comprobaba el solape y
+  // el z-index pero no el color, y el pie estuvo BLANCO desde la Fase 1: el
+  // elemento re-declara `--text-dark: #ffffff` para invertir su tinta, y su
+  // propio `background: var(--text-dark)` resolvía a blanco. Lo encontró axe.
+  expect(await style(page, ".footer-dark", "background-color")).toBe("rgb(58, 42, 26)");
+  // Y la tarjeta crema encima debe seguir siendo crema, no heredar la inversión.
+  expect(await style(page, ".cta-card", "background-color")).toBe("rgb(250, 245, 236)");
+
   // La tarjeta NO debe estar dentro de .footer-dark: si lo estuviera heredaría
   // los tokens de tinta invertidos y perdería el contraste.
   const nested = await page
@@ -312,9 +320,14 @@ test("10 · newsletter de 560px con input transparente y botón ámbar", async (
   expect(await style(page, ".newsletter-form .input", "background-color")).toBe("rgba(0, 0, 0, 0)");
   expect(await style(page, ".newsletter-form .input", "border-top-color")).toBe("rgb(255, 255, 255)");
 
-  // El botón es relleno dorado con etiqueta marrón (desvío D-0).
+  // El botón es relleno dorado con etiqueta MARRÓN (desvío D-0).
+  //
+  // Esta aserción decía «blanca», codificando el propio bug: dentro de
+  // `.footer-dark`, `--text-dark` está invertido a blanco y `.btn` lo usaba para
+  // su etiqueta → 2.08:1 sobre el dorado. Ahora usa `--on-gold`, que no se
+  // invierte en ningún ámbito.
   expect(await style(page, ".btn--footer", "background-color")).toBe("rgb(232, 168, 27)");
-  expect(await style(page, ".btn--footer", "color")).toBe("rgb(255, 255, 255)");
+  expect(await style(page, ".btn--footer", "color")).toBe("rgb(58, 42, 26)");
 });
 
 // ── Contenedor ─────────────────────────────────────────────────────────────

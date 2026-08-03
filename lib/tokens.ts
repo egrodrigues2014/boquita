@@ -56,12 +56,15 @@ export function getTokens(): Tokens {
 }
 
 /**
- * El fondo de .footer-dark es `background: var(--text-dark)`, resuelto en el
- * ámbito claro — no el --text-dark ya invertido a blanco de dentro del bloque.
- * Esta distinción es la que hace que los ratios del footer salgan bien.
+ * El fondo de `.footer-dark` es `--surface-dark`, un token que NO se invierte.
+ *
+ * Antes se usaba `var(--text-dark)`, pero ese mismo elemento lo re-declara a
+ * blanco y una propiedad personalizada declarada en un elemento aplica a las
+ * declaraciones de ese elemento: el fondo resolvía a blanco. Lo detectó la
+ * auditoría de axe, no esta suite.
  */
 export function footerBackground(tokens: Tokens): string {
-  const brown = tokens.light["--text-dark"];
-  if (!brown) throw new Error("Falta --text-dark en :root");
+  const brown = tokens.light["--surface-dark"];
+  if (!brown) throw new Error("Falta --surface-dark en :root");
   return brown;
 }

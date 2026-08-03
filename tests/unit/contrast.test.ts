@@ -85,10 +85,27 @@ describe("contexto claro: tinta neutra", () => {
 });
 
 describe("botón: relleno dorado con etiqueta marrón (desvío D-0)", () => {
-  it("--text-dark sobre --gold ≥ 4.5:1 — la etiqueta del botón es legible", () => {
-    expect(contrastRatio(light["--text-dark"]!, light["--gold"]!)).toBeGreaterThanOrEqual(
+  it("--on-gold sobre --gold ≥ 4.5:1 — la etiqueta del botón es legible", () => {
+    expect(contrastRatio(light["--on-gold"]!, light["--gold"]!)).toBeGreaterThanOrEqual(
       AA_NORMAL,
     );
+  });
+
+  it("--on-gold NO se invierte en .footer-dark", () => {
+    // Este es el test que faltaba. `.btn` usaba `--text-dark`, que .footer-dark
+    // invierte a blanco: el botón de la newsletter quedaba a 2.08:1 sobre el
+    // dorado. Lo detectó axe, no esta suite, porque aquí se comprobaban pares de
+    // tokens y aquello era la interacción entre una inversión y un componente
+    // que usa dos tokens a la vez.
+    expect(footerOverrides["--on-gold"]).toBeUndefined();
+    expect(footer["--on-gold"]).toBe(light["--on-gold"]);
+    expect(contrastRatio(footer["--on-gold"]!, footer["--gold"]!)).toBeGreaterThanOrEqual(
+      AA_NORMAL,
+    );
+  });
+
+  it("--text-dark invertido sobre --gold FALLARÍA: por eso existe --on-gold", () => {
+    expect(contrastRatio(footer["--text-dark"]!, light["--gold"]!)).toBeLessThan(AA_NORMAL);
   });
 
   it("blanco sobre --gold FALLA — este es el motivo de existir del desvío D-0", () => {

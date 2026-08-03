@@ -22,9 +22,10 @@
   height: 18px;
   padding-inline: 4px;
   border-radius: 50px;
-  /* Relleno dorado con cifra marrón: 6.58:1. Blanco sobre dorado daría 2.09. */
+  /* Relleno dorado con cifra marrón: 6.58:1. Blanco sobre dorado daría 2.09.
+     `--on-gold` no se invierte en ningún ámbito; `--text-dark` sí. */
   background: var(--gold);
-  color: var(--text-dark);
+  color: var(--on-gold);
   font-family: var(--ff-sans);
   font-size: 12px;
   font-weight: 600;

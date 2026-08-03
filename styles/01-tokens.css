@@ -47,7 +47,25 @@
   --gold-bright: #f2c014; /* amarillo del logo. Decorativo SÓLO sobre oscuro
                               (8.08:1 sobre el marrón; 1.60:1 sobre blanco) */
 
+  /* Color de lo que va ENCIMA del relleno dorado: la etiqueta de los botones y
+     la cifra del badge del carrito. 6.58:1 sobre #E8A81B.
+     Es un token propio y NO `--text-dark` por una razón concreta: `.footer-dark`
+     invierte `--text-dark` a blanco para que los titulares de dentro salgan
+     claros, y el botón de la newsletter heredaba esa inversión — blanco sobre
+     dorado, 2.08:1. Justo el fallo que el desvío D-0 existía para evitar,
+     reintroducido por la inversión. Este token no se invierte en ningún ámbito. */
+  --on-gold: #3a2a1a;
+
   /* ── Superficies ────────────────────────────────────────────────────── */
+  /* Fondo del bloque oscuro del pie. Es el mismo marrón que `--text-dark`, pero
+     tiene que ser un token APARTE, y no es redundancia:
+     `.footer-dark` re-declara `--text-dark: #ffffff` para invertir la tinta de
+     dentro. Una propiedad personalizada declarada en un elemento aplica a las
+     declaraciones de ESE MISMO elemento, así que un `background: var(--text-dark)`
+     en esa regla resolvía a BLANCO — el pie estuvo blanco con texto blanco desde
+     la Fase 1, y sólo lo detectó la auditoría de axe.
+     Este token no se invierte en ningún ámbito. */
+  --surface-dark: #3a2a1a;
   --white: #ffffff;
   --primary-light: #faf5ec; /* crema cálida. Reemplaza el #f5f0ec del spec */
   --light-gray: #faf9f7;
@@ -68,6 +86,8 @@
    ⚠ La tarjeta CTA crema debe vivir en .cta-wrapper, HERMANO de .footer-dark,
    nunca anidada dentro — si se anida hereda estos tokens y el solape se rompe.
    ────────────────────────────────────────────────────────────────────────── */
+/* ⚠ Este bloque SÓLO redeclara tokens. El `background` lo pone 18-footer.css con
+   `--surface-dark`, precisamente porque aquí `--text-dark` ya vale blanco. */
 .footer-dark {
   --gold-ink: #e8a81b; /* 6.58:1 sobre #3A2A1A → AA a 18px ✓ */
   --gold-display: #f2c014; /* 8.08:1 → AAA ✓ */

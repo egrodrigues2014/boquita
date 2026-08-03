@@ -19,7 +19,9 @@
   border-radius: 5px;
   border: 1px solid var(--gold-line);
   background: var(--gold);
-  color: var(--text-dark);
+  /* `--on-gold` y no `--text-dark`: dentro de `.footer-dark`, `--text-dark` se
+     invierte a blanco y la etiqueta quedaría a 2.08:1 sobre el dorado. */
+  color: var(--on-gold);
   text-align: center;
   letter-spacing: 0.5px;
   text-transform: none;
@@ -43,7 +45,7 @@
 
 .btn--ghost:hover {
   background: var(--gold);
-  color: var(--text-dark);
+  color: var(--on-gold);
 }
 
 .btn.mt-40 {
