@@ -35,6 +35,22 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
 
+  /**
+   * Con los 8 proyectos de ancho son ~500 tests, y Playwright lanzaría por
+   * defecto un worker por cada dos núcleos: 7 Chromium simultáneos contra UN
+   * único proceso de `next start` sirviendo ~40 imágenes por página.
+   *
+   * A ese nivel de contención empezaron a expirar tests que aislados pasan en
+   * segundos — y dos ejecuciones seguidas fallaban en tests distintos. Una suite
+   * intermitente es peor que una lenta: entrena a reintentar en vez de mirar qué
+   * pasa. 4 workers la dejan determinista.
+   */
+  workers: process.env.CI ? 2 : 4,
+
+  /** 45s en vez de 30: margen para la carga de fuentes e imágenes, sin tapar
+   *  lentitud real — un test que tarde eso de verdad hay que arreglarlo. */
+  timeout: 45_000,
+
   use: {
     baseURL: "http://localhost:3100",
     trace: "retain-on-failure",

@@ -128,13 +128,36 @@ formatFrom(22000)     // "desde ₡ 22.000 CRC"
 
 - ✅ **Fase 0 — cimientos.** Tokens, escala tipográfica, componentes base, moneda, tests de
   contraste, extracción de imágenes.
-- ✅ **Fase 1 — la portada completa**, sin base de datos ni carrito. Las 9 secciones del spec,
-  reveal, parallax de galería, slider, nav móvil, lightbox y SEO local.
-- ⏳ Fases 2–6: base de datos, panel de administración, tienda y carrito, newsletter, lanzamiento.
+- ✅ **Fase 1 — la portada completa.** Las 9 secciones del spec, reveal, parallax de galería,
+  slider, nav móvil, lightbox y SEO local.
+- ✅ **Tienda y carrito.** `/tienda` con filtros combinables, las 14 fichas prerenderizadas con
+  JSON-LD `Product`, carrito persistido y checkout por WhatsApp. Sin pasarela de pago y sin base
+  de datos: el contenido vive en `content/`.
+- ⏳ **Base de datos y panel de administración.** Bloqueadas: hace falta un proyecto de
+  [Neon](https://neon.tech) (región AWS `us-east-1`) y su `DATABASE_URL`. El esquema y las queries
+  están diseñados; en cuanto exista la credencial, `content/` pasa a ser el fallback.
+- ⏳ Newsletter, `/sobre-nosotros`, `/blog` y lanzamiento.
+
+### El flujo de pedido
+
+No hay pago online, a propósito: se pide por WhatsApp, que es el canal que la tienda ya usa.
+
+1. El cliente añade productos en `/tienda` o desde una ficha. El carrito vive en `localStorage`
+   con clave versionada (`boquita.cart.v1`).
+2. El drawer del carrito recoge nombre, fecha, zona y notas. La fecha mínima se calcula desde el
+   **lead time más largo del carrito**: si hay un queque personalizado, no se ofrece pasado mañana.
+3. «Finalizar por WhatsApp» es un `<a href>` real a `wa.me` con el pedido ya escrito — sobrevive
+   al bloqueo de popups de iOS y funciona con WhatsApp Web.
+4. **El carrito no se vacía al pulsar.** WhatsApp puede no abrirse o el cliente puede cerrarlo sin
+   enviar; vaciarlo ahí perdería el pedido sin que nadie lo haya recibido. Se vacía con un botón
+   explícito de «ya hice mi pedido».
+
+Los productos con precio a convenir (el queque personalizado) **no entran al carrito**: su CTA va
+directo a WhatsApp. Sumar un «desde» daría un total que no es el que se va a pagar.
 
 ### Medido, no estimado
 
-92 tests unitarios y 328 e2e a los 8 anchos del checklist. En el build de producción:
+138 tests unitarios y 495 e2e a los 8 anchos del checklist. En el build de producción:
 
 | | 1440px | 390px |
 | --- | --- | --- |

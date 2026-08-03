@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
+import { CartButton } from "@/components/cart/CartButton";
 import { Btn } from "@/components/ui/Btn";
 import type { HomeContent, NavDropdown } from "@/types/content";
 
@@ -222,21 +223,7 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
             {nav.phone.display}
           </a>
 
-          {/* El carrito llega en la Fase 4. Ocupa ya su sitio de 34×34 porque el
-              punto 1 del checklist mide esta fila de acciones. */}
-          <button type="button" className="cart-button" aria-label="Carrito, vacío" disabled>
-            <svg
-              className="cart-icon"
-              viewBox="0 0 34 34"
-              aria-hidden="true"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-            >
-              <path d="M6 10h22l-2.2 15H8.2L6 10Z" />
-              <path d="M12 10a5 5 0 0 1 10 0" />
-            </svg>
-          </button>
+          <CartButton />
 
           <Btn link={nav.cta} variant="nav" />
         </div>

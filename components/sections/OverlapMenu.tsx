@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Picture } from "@/components/ui/Picture";
 import { Reveal } from "@/components/ui/Reveal";
 import { formatCRCShort } from "@/lib/format";
@@ -55,10 +56,9 @@ export function OverlapMenu({
                     index={Math.floor(index / 2)}
                   >
                     <div className="menu-item-head">
-                      {/* En la Fase 4 esto enlaza a /tienda/[slug]. */}
-                      <a className="menu-item-name" href="#catalogo">
+                      <Link className="menu-item-name" href={`/tienda/${product.slug}`}>
                         {product.name}
-                      </a>
+                      </Link>
                       <div className="menu-item-price">
                         {/* Sin esto un lector de pantalla lee
                             "QUEQUE DE ZANAHORIA ₡ 14.000 CRC" como un bloque. */}

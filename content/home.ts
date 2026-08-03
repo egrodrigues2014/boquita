@@ -1,4 +1,6 @@
-import type { HomeContent, ImageRef } from "@/types/content";
+import { products } from "@/content/products";
+import type { HomeContent, ImageRef, Link, Product } from "@/types/content";
+import { CATEGORIAS } from "@/types/shop";
 
 /**
  * Todo el copy de la portada, en un solo sitio.
@@ -19,6 +21,55 @@ import type { HomeContent, ImageRef } from "@/types/content";
  * en vez de a enlaces muertos. El spec §8 sólo exige conservar el NÚMERO de
  * elementos (4 dropdowns + 1 enlace, 5 enlaces de pie), no las etiquetas.
  */
+
+/**
+ * Los productos de la portada se DERIVAN del catálogo, no se copian.
+ *
+ * Estaban duplicados y derivaron: al acortar «Galletas de chocolate y Nutella» a
+ * «Galletas con Nutella» quedó el slug viejo en la portada, así que ese enlace
+ * apuntaba a una ficha inexistente. Un test de coherencia lo detectó, pero la
+ * solución no es parchear el string: es que haya UNA fuente de verdad.
+ *
+ * `content/products.ts` es esa fuente. Aquí sólo se elige QUÉ 8 productos van en
+ * la rejilla del spec §6.4 y en qué orden.
+ */
+const FEATURED_SLUGS = [
+  "queque-de-zanahoria",
+  "queque-personalizado",
+  "galletas-de-granola",
+  "galletas-con-nutella",
+  "polvorones-de-almendra",
+  "brigadeiros",
+  "biscotti-de-almendra",
+  "cachitos-de-jamon",
+] as const;
+
+function featuredProducts(): Product[] {
+  return FEATURED_SLUGS.map((slug) => {
+    const product = products.find((p) => p.slug === slug);
+    if (!product) {
+      // Falla en build, no en runtime: un destacado inexistente dejaría un hueco
+      // en la rejilla de 2×4 y rompería el punto 5 del checklist.
+      throw new Error(`Destacado inexistente en el catálogo: ${slug}`);
+    }
+    return {
+      slug: product.slug,
+      name: product.name,
+      price: product.price,
+      priceFrom: product.priceFrom,
+      category: `${CATEGORIAS[product.categoria]} · ${product.unit}`,
+      priceTodo: product.priceTodo,
+    };
+  });
+}
+
+/** El megamenú lista el catálogo completo, también derivado. */
+function catalogLinks(): Link[] {
+  return products.map((product) => ({
+    label: product.name,
+    href: `/tienda/${product.slug}`,
+  }));
+}
 
 const WA = "https://wa.me/50662762196";
 const WA_CONSULTA = `${WA}?text=${encodeURIComponent("¡Hola Boquita! Quiero hacer una consulta.")}`;
@@ -142,25 +193,23 @@ export const home: HomeContent = {
     dropdowns: [
       {
         label: "Catálogo",
-        // ⚠ TODO Fase 4: recablear a /tienda?categoria=…
         items: [
-          { label: "Queques", href: "#catalogo" },
-          { label: "Galletas y biscotti", href: "#catalogo" },
-          { label: "Bocaditos dulces", href: "#catalogo" },
-          { label: "Salado", href: "#catalogo" },
-          { label: "Sin gluten y keto", href: "#catalogo" },
+          { label: "Queques", href: "/tienda?categoria=queques" },
+          { label: "Galletas y biscotti", href: "/tienda?categoria=galletas" },
+          { label: "Bocaditos dulces", href: "/tienda?categoria=bocaditos" },
+          { label: "Salado", href: "/tienda?categoria=salado" },
+          { label: "Sin gluten y keto", href: "/tienda?categoria=sin-gluten-keto" },
         ],
       },
       {
         label: "Ocasiones",
-        // ⚠ TODO Fase 4: recablear a /tienda?ocasion=…
         items: [
-          { label: "Cumpleaños", href: "#catalogo" },
-          { label: "Bodas y bautizos", href: "#catalogo" },
-          { label: "Baby shower", href: "#catalogo" },
-          { label: "Oficinas y cafeterías", href: "#catalogo" },
-          { label: "Regalos corporativos", href: "#catalogo" },
-          { label: "Navidad", href: "#catalogo" },
+          { label: "Cumpleaños", href: "/tienda?ocasion=cumpleanos" },
+          { label: "Bodas y bautizos", href: "/tienda?ocasion=bodas-bautizos" },
+          { label: "Baby shower", href: "/tienda?ocasion=baby-shower" },
+          { label: "Oficinas y cafeterías", href: "/tienda?ocasion=oficinas" },
+          { label: "Regalos corporativos", href: "/tienda?ocasion=regalos" },
+          { label: "Navidad", href: "/tienda?ocasion=navidad" },
         ],
       },
       {
@@ -175,25 +224,9 @@ export const home: HomeContent = {
       {
         label: "Todo el catálogo",
         // El megamenú: a ≤991px es un panel de 270px con scroll, y son estos 14
-        // productos los que justifican esa medida del spec.
-        // ⚠ TODO Fase 4: recablear a /tienda/[slug].
+        // productos los que justifican esa medida del spec. Derivado del catálogo.
         mega: true,
-        items: [
-          { label: "Queque de zanahoria", href: "#catalogo" },
-          { label: "Queque personalizado", href: "#catalogo" },
-          { label: "Galletas de granola", href: "#catalogo" },
-          { label: "Galletas de chocolate y Nutella", href: "#catalogo" },
-          { label: "Polvorones de almendra", href: "#catalogo" },
-          { label: "Brigadeiros", href: "#catalogo" },
-          { label: "Biscotti de almendra", href: "#catalogo" },
-          { label: "Biscotti keto", href: "#catalogo" },
-          { label: "Cachitos de jamón", href: "#catalogo" },
-          { label: "Key lime pie", href: "#catalogo" },
-          { label: "Barras de dátil", href: "#catalogo" },
-          { label: "Mini queques de manzana", href: "#catalogo" },
-          { label: "Coffee cake vegano", href: "#catalogo" },
-          { label: "Asado negro", href: "#catalogo" },
-        ],
+        items: catalogLinks(),
       },
     ],
     link: { label: "Galería", href: "#galeria" },
@@ -256,71 +289,10 @@ export const home: HomeContent = {
     body:
       "Pedidos con 48 horas de anticipación. Entregamos en Santa Ana, Escazú y " +
       "alrededores, y coordinamos todo por WhatsApp.",
-    // ⚠ TODO: los 8 precios son placeholders. El menú fijado de Instagram tiene
-    // los reales, pero es una imagen y su texto no se puede extraer.
-    // Ver docs/CONTENT_TODO.md §2.
-    products: [
-      {
-        slug: "queque-de-zanahoria",
-        name: "Queque de zanahoria",
-        price: 14000,
-        category: "Queques · molde de 8 porciones",
-        priceTodo: true,
-      },
-      {
-        slug: "queque-personalizado",
-        name: "Queque personalizado",
-        price: 22000,
-        priceFrom: true,
-        category: "Queques · por encargo",
-        priceTodo: true,
-      },
-      {
-        slug: "galletas-de-granola",
-        name: "Galletas de granola",
-        price: 5500,
-        category: "Galletas · sin gluten, bajas en azúcar · caja de 6",
-        priceTodo: true,
-      },
-      {
-        slug: "galletas-de-chocolate-y-nutella",
-        // Acortado de «Galletas de chocolate y Nutella»: a 20px en mayúsculas
-        // ocupaba 248px y dejaba la columna sin sitio para el precio.
-        name: "Galletas con Nutella",
-        price: 6000,
-        category: "Chocolate chip · caja de 6",
-        priceTodo: true,
-      },
-      {
-        slug: "polvorones-de-almendra",
-        name: "Polvorones de almendra",
-        price: 5000,
-        category: "Repostería española · caja de 8",
-        priceTodo: true,
-      },
-      {
-        slug: "brigadeiros",
-        name: "Brigadeiros",
-        price: 6500,
-        category: "Bocaditos dulces · docena",
-        priceTodo: true,
-      },
-      {
-        slug: "biscotti-de-almendra",
-        name: "Biscotti de almendra",
-        price: 5800,
-        category: "Biscotti · bolsa de 10",
-        priceTodo: true,
-      },
-      {
-        slug: "cachitos-de-jamon",
-        name: "Cachitos de jamón",
-        price: 7500,
-        category: "Salado · media docena",
-        priceTodo: true,
-      },
-    ],
-    more: { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
+    // Derivados del catálogo: los precios y nombres no pueden desincronizarse.
+    // ⚠ Los precios siguen siendo placeholders (docs/CONTENT_TODO.md §2).
+    products: featuredProducts(),
+    more: { label: "Ver los 14 productos", href: "/tienda" },
   },
 
   service: {

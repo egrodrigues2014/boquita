@@ -244,9 +244,12 @@
        gobierna .nav-menu--open desde el componente cliente. */
     transform: translateX(-100%);
     visibility: hidden;
+    /* Igual que el carrito: `visibility` conmuta de golpe, con retardo sólo al
+       cerrar. Interpolarla dejaba el panel invisible en el frame de apertura, y
+       dentro de un subárbol invisible nada es enfocable. */
     transition:
       transform 0.3s ease,
-      visibility 0.3s;
+      visibility 0s linear 0.3s;
     overflow-y: auto;
     overscroll-behavior: contain;
     z-index: 110;
@@ -255,6 +258,9 @@
   .nav-menu--open {
     transform: none;
     visibility: visible;
+    transition:
+      transform 0.3s ease,
+      visibility 0s linear 0s;
   }
 
   .nav-overlay-mobile {

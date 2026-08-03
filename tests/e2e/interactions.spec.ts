@@ -240,6 +240,12 @@ test.describe("navegación", () => {
     await expect(menu).toHaveClass(/nav-menu--open/);
     await expect(burger).toHaveAttribute("aria-expanded", "true");
 
+    // El foco tiene que entrar en el panel, no quedarse en la hamburguesa.
+    const focusInside = await page.evaluate(
+      () => document.querySelector("#nav-menu")?.contains(document.activeElement) ?? false,
+    );
+    expect(focusInside).toBe(true);
+
     // El panel debe ocupar 320px de ancho y TODO el alto del viewport.
     // Se comprueba porque es fácil romperlo sin darse cuenta: cualquier
     // `filter`, `backdrop-filter` o `transform` en un ancestro crea un bloque

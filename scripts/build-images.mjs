@@ -186,7 +186,74 @@ const GALLERY = [
   ],
 }));
 
-const ALL = [...SLOTS, ...GALLERY];
+/**
+ * Fichas de producto para `/tienda` y `/tienda/[slug]` (Fase 4).
+ *
+ * Proporción NATURAL, no recortada: varios productos son verticales y altos —el
+ * queque de dos pisos ocupa 1710 de los 1800px de su foto— y ningún recorte
+ * cuadrado los contiene sin decapitarlos. La ficha muestra la foto entera y es
+ * el CSS de la tarjeta el que recorta al cuadrado con `object-fit:cover`.
+ *
+ * Un archivo por producto aunque dos compartan la foto de origen (los mini
+ * queques de manzana usan la misma que el hero, los biscotti de almendra la
+ * misma que el CTA). Duplicar ~50 KB es barato y permite que Ale cambie la foto
+ * de un producto sin tocar la de otro ni la del layout.
+ *
+ * La asignación foto→producto está razonada en docs/IMAGE_MAP.md.
+ */
+/**
+ * Escalera ajustada a los anchos de render REALES, medidos en el navegador.
+ *
+ * Un primer intento usó [300, 600, 1200] suponiendo tarjetas de ~300px. Estaba
+ * mal: `.shop-grid` son 3 columnas en un contenedor de 1170px con huecos de 30,
+ * así que cada tarjeta mide **370px**. El escalón de 300 nunca se elegía y el
+ * navegador bajaba el de 600 en todos los casos.
+ *
+ *   400  → tarjeta en pantalla 1x (370px de render)
+ *   800  → tarjeta en 2x (740px) y ficha en 1x (~540px)
+ *   1200 → ficha en 2x (~1080px)
+ */
+const PRODUCT_WIDTHS = [400, 800, 1200];
+
+const PRODUCTS = [
+  { name: "queque-de-zanahoria", src: "ig-24-obj61.jpg" },
+  { name: "queque-personalizado", src: "ig-10-obj29.jpg" },
+  { name: "galletas-de-granola", src: "ig-34-obj89.jpg" },
+  { name: "galletas-con-nutella", src: "ig-13-obj38.jpg" },
+  { name: "polvorones-de-almendra", src: "ig-09-obj28.jpg" },
+  {
+    name: "brigadeiros",
+    src: "ig-05-obj18.jpg",
+    // Recorte obligatorio: la exportación de Canva lleva el logo incrustado
+    // arriba a la derecha (y < 140) y un texto cortado abajo.
+    crop: { left: 0, top: 180, width: 1252, height: 1120 },
+  },
+  { name: "biscotti-de-almendra", src: "ig-31-obj80.jpg" },
+  { name: "biscotti-keto", src: "ig-30-obj79.jpg" },
+  { name: "key-lime-pie", src: "ig-32-obj81.jpg" },
+  { name: "barras-de-datil", src: "ig-15-obj40.jpg" },
+  { name: "mini-queques-de-manzana", src: "ig-27-obj70.jpg" },
+  { name: "coffee-cake-vegano", src: "ig-28-obj71.jpg" },
+  {
+    name: "cachitos-de-jamon",
+    src: "ig-03-obj10.jpg",
+    // El rótulo «Cachitos de jamón» está incrustado a y≈740-830. La única zona
+    // limpia es la inferior, con el cachito del frente.
+    crop: { left: 100, top: 1150, width: 1150, height: 650 },
+  },
+  { name: "asado-negro", src: "ig-21-obj58.jpg" },
+].map((product) => ({
+  ...product,
+  slot: "producto",
+  widths: PRODUCT_WIDTHS,
+  // q75 y no el 82 general: varias fotos son verticales y a 1200×1500 pesaban
+  // más de 300 KB, demasiado para la imagen principal de una ficha. Las fuentes
+  // ya vienen recomprimidas por Instagram, así que el detalle fino que se pierde
+  // a 75 en gran medida ya no estaba.
+  quality: 75,
+}));
+
+const ALL = [...SLOTS, ...GALLERY, ...PRODUCTS];
 
 const args = new Set(process.argv.slice(2));
 const FORCE = args.has("--force");
@@ -242,6 +309,32 @@ async function processJob(job) {
   }
 
   const cropRatio = width / height;
+
+  /**
+   * Dos formas de declarar los tamaños de salida:
+   *
+   *  · `sizes: [[w, h], …]`  — recorte a una proporción FIJA. Es lo que necesitan
+   *    los slots del layout, donde el spec impone el ratio (2.9:1, 5:3, 4:3…).
+   *
+   *  · `widths: [600, 1200]` — se conserva la proporción NATURAL de la fuente y
+   *    sólo se fija el ancho. Es lo que necesitan las fichas de producto: un
+   *    queque de dos pisos no cabe en ningún recorte cuadrado sin decapitarlo,
+   *    así que la ficha muestra la foto entera y es el CSS quien la recorta para
+   *    la tarjeta del catálogo, con `aspect-ratio` y `object-fit:cover`.
+   *    Así también hay UN archivo por producto sirviendo tarjeta y detalle.
+   */
+  const sizes = job.widths
+    ? job.widths
+        .filter((w) => w <= width)
+        .map((w) => [w, Math.round(w / cropRatio)])
+    : job.sizes;
+
+  if (!sizes?.length) {
+    console.error(`  ✗ ${job.slot}/${job.name ?? job.slot}: sin tamaños que emitir`);
+    problems++;
+    return;
+  }
+
   if (job.ratio && Math.abs(cropRatio - job.ratio) / job.ratio > 0.01) {
     console.error(
       `  ✗ ${job.slot}/${job.name ?? job.slot}: el recorte da ratio ${cropRatio.toFixed(4)} ` +
@@ -251,7 +344,7 @@ async function processJob(job) {
     return;
   }
 
-  for (const [w, h] of job.sizes) {
+  for (const [w, h] of sizes) {
     if (w > width || h > height) {
       console.error(
         `  ✗ ${job.slot}/${job.name ?? job.slot}: ${w}×${h} sería UPSCALE desde ` +
@@ -277,7 +370,7 @@ async function processJob(job) {
   await mkdir(cacheDir, { recursive: true });
   const existing = new Set(await readdir(dir).catch(() => []));
 
-  for (const size of job.sizes) {
+  for (const size of sizes) {
     const [w, h] = size;
     const name = outputName(job, size);
     const target = path.join(dir, name);

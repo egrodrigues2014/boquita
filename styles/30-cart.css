@@ -1,0 +1,535 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   30-cart.css — Carrito, stepper de cantidad y tienda.
+
+   Nada de esto está en el spec: /tienda y el carrito son páginas nuestras. Se
+   construyen con los tokens y los componentes que el spec ya define (.btn,
+   .container, la escala tipográfica) para que no se noten como un añadido.
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Badge del carrito, sobre el icono del navbar ──────────────────────── */
+
+.cart-button {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 4px;
+  border-radius: 50px;
+  /* Relleno dorado con cifra marrón: 6.58:1. Blanco sobre dorado daría 2.09. */
+  background: var(--gold);
+  color: var(--text-dark);
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* ── Panel del carrito ─────────────────────────────────────────────────── */
+
+.cart-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 190;
+  background: rgba(58, 42, 26, 0.55);
+  animation: cart-scrim-in 0.3s ease-out;
+}
+
+@keyframes cart-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.cart-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  width: 420px;
+  max-width: 100vw;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+  background: var(--white);
+  box-shadow: -8px 0 32px rgba(58, 42, 26, 0.18);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(100%);
+  visibility: hidden;
+  /* `visibility` se conmuta de golpe, con RETARDO sólo al cerrar: así el panel
+     se ve deslizarse hacia fuera antes de desaparecer.
+     No se interpola progresivamente a propósito: con `visibility 0.3s`, en el
+     frame en que se añade la clase de apertura la visibilidad computada seguía
+     siendo `hidden`, y nada dentro de un subárbol invisible es enfocable — el
+     foco se quedaba en el botón del navbar y Escape no llegaba al panel. */
+  transition:
+    transform 0.3s ease,
+    visibility 0s linear 0.3s;
+}
+
+.cart-drawer--open {
+  transform: none;
+  visibility: visible;
+  /* Al abrir, visible de inmediato: enfocable en el mismo frame. */
+  transition:
+    transform 0.3s ease,
+    visibility 0s linear 0s;
+}
+
+.cart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.cart-head .as-h4 {
+  margin: 0;
+}
+
+.cart-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid var(--gold-line);
+  border-radius: 50px;
+  color: var(--gold-ink);
+}
+
+.cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+/* ── Líneas ────────────────────────────────────────────────────────────── */
+
+.cart-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0 0 20px;
+}
+
+.cart-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  /* Resetea el bullet y el color ámbar del `li` global del spec §2.3. */
+  padding: 0 0 20px;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  border-bottom: 1px solid var(--gray);
+}
+
+.cart-line-img {
+  width: 60px;
+  height: 60px;
+  flex: none;
+  object-fit: cover;
+}
+
+.cart-line-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-line-name {
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 0;
+  color: var(--link);
+}
+
+.cart-line-unit {
+  margin: 2px 0 8px;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--body-text);
+}
+
+.cart-line-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex: none;
+}
+
+.cart-line-price {
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gold-ink);
+  white-space: nowrap;
+}
+
+.cart-line-remove {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  color: var(--body-text);
+  text-decoration: underline;
+  /* WCAG 2.2 SC 2.5.8: área táctil mínima. */
+  padding: 6px 0;
+  min-height: 24px;
+}
+
+.cart-line-remove:hover {
+  color: var(--gold-ink);
+}
+
+/* ── Stepper de cantidad ───────────────────────────────────────────────── */
+
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--gray);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.qty-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-family: var(--ff-sans);
+  font-size: 18px;
+  color: var(--text-dark);
+  transition: background-color 0.2s;
+}
+
+.qty-button:hover {
+  background: var(--primary-light);
+}
+
+.qty-button[aria-disabled="true"] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.qty-value {
+  min-width: 38px;
+  text-align: center;
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.qty-stepper--sm .qty-button {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+}
+
+.qty-stepper--sm .qty-value {
+  min-width: 32px;
+  font-size: 15px;
+}
+
+/* ── Total, campos y envío ─────────────────────────────────────────────── */
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 15px;
+  padding-block: 15px;
+  border-top: 1px solid var(--gray);
+  font-family: var(--ff-sans);
+  font-size: 18px;
+}
+
+.cart-total strong {
+  font-size: 22px;
+  color: var(--gold-ink);
+}
+
+.cart-note,
+.cart-hint {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--body-text);
+}
+
+.cart-fields {
+  display: flex;
+  flex-direction: column;
+  margin-block: 10px 20px;
+}
+
+.cart-fields label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.cart-input {
+  height: 44px;
+  margin-bottom: 14px;
+  padding-inline: 12px;
+  border: 1px solid var(--gray);
+  border-radius: 5px;
+  background: var(--white);
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  color: var(--text-dark);
+}
+
+.cart-input:focus {
+  border-color: var(--gold-line);
+}
+
+.cart-hint {
+  margin-top: -8px;
+}
+
+.cart-submit {
+  width: 100%;
+  margin-top: auto;
+}
+
+.cart-sent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 15px;
+  background: var(--primary-light);
+}
+
+.cart-sent p {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* ── Añadir al carrito, en la ficha ────────────────────────────────────── */
+
+.add-to-cart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.add-to-cart-note {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--body-text);
+}
+
+/* ── Tienda ────────────────────────────────────────────────────────────── */
+
+.shop-header {
+  margin-bottom: 30px;
+}
+
+.shop-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 40px;
+}
+
+.shop-filter {
+  padding: 8px 16px;
+  border: 1px solid var(--gray);
+  border-radius: 50px;
+  font-family: var(--ff-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.shop-filter:hover {
+  border-color: var(--gold-line);
+  color: var(--gold-ink);
+}
+
+.shop-filter[aria-current="true"] {
+  background: var(--gold);
+  border-color: var(--gold-line);
+  color: var(--text-dark);
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 40px 30px;
+  width: 100%;
+  margin: 0;
+}
+
+.shop-card {
+  /* Resetea el `li` global. */
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.shop-card-link {
+  display: block;
+  padding: 0;
+}
+
+.shop-card-img {
+  width: 100%;
+  /* Cuadrado con `cover`: varias fotos son verticales y altas, y recortar en CSS
+     mantiene la rejilla alineada sin generar un derivado por proporción. */
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+
+.shop-card-name {
+  margin-top: 14px;
+  font-family: var(--ff-display);
+  font-size: 24px;
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: var(--text-dark);
+}
+
+.shop-card-link:hover .shop-card-name {
+  color: var(--gold-ink);
+}
+
+.shop-card-price {
+  margin-top: 6px;
+  font-family: var(--ff-sans);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--gold-ink);
+}
+
+.shop-card-summary {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.shop-card-tag {
+  margin-top: 10px;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--body-text);
+}
+
+.shop-empty {
+  padding-block: 40px;
+}
+
+/* ── Ficha de producto ─────────────────────────────────────────────────── */
+
+.product-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 60px;
+  width: 100%;
+  align-items: start;
+}
+
+.product-img {
+  width: 100%;
+  height: auto;
+}
+
+.product-price {
+  margin-top: 10px;
+  font-family: var(--ff-sans);
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--gold-ink);
+}
+
+.product-unit {
+  margin: 4px 0 0;
+  font-size: 16px;
+  color: var(--body-text);
+}
+
+.product-meta {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gray);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--body-text);
+}
+
+.product-meta dt {
+  font-family: var(--ff-sans);
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.product-meta dd {
+  margin: 0 0 12px;
+}
+
+.product-back {
+  display: inline-block;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+/* ══════════════════ max-width descendente ══════════════════ */
+
+@media (max-width: 991px) {
+  .shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .product-layout {
+    column-gap: 40px;
+  }
+}
+
+@media (max-width: 767px) {
+  .shop-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 35px;
+  }
+  .product-layout {
+    display: flex;
+    flex-direction: column;
+    row-gap: 30px;
+  }
+}
+
+@media (max-width: 479px) {
+  .cart-drawer {
+    width: 100vw;
+    padding: 20px 15px;
+  }
+}

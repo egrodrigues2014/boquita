@@ -12,10 +12,6 @@
    Tampoco se usa @layer: permitiría que una declaración descuidada reordenara
    todo. Ni CSS nesting: invita a escribir @media junto a la propiedad, lo que
    reordena las max-width solapadas.
-
-   CSS Modules SÍ se usan, pero sólo en los tres componentes que NO están en el
-   spec (CartDrawer, Lightbox, NavScrim). El CSS del spec es global porque sus
-   nombres de clase son el contrato de la checklist de aceptación.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* Fundamentos */
@@ -38,7 +34,7 @@
 
 /* Nuestro: no está en el CSS del spec */
 @import "./22-lightbox.css";
-/* @import "./30-cart.css";  (fase 4) */
+@import "./30-cart.css";
 
 /* Accesibilidad: siempre el último */
 @import "./99-a11y.css";

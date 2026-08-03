@@ -46,9 +46,28 @@ export function useFocusTrap(
 
     for (const element of backgrounds) element.inert = true;
 
-    // Enfoca el primer elemento útil del panel.
     const focusables = () => [...container.querySelectorAll<HTMLElement>(FOCUSABLE)];
-    focusables()[0]?.focus();
+
+    /**
+     * El foco se mueve en el siguiente frame, no de inmediato.
+     *
+     * Los paneles se ocultan con `visibility:hidden` y una transición. Un
+     * elemento dentro de un subárbol invisible NO es enfocable, y este efecto
+     * corre en el mismo frame en que se añade la clase de apertura: en ese
+     * instante la visibilidad computada sigue siendo `hidden`, así que `.focus()`
+     * falla en silencio y el foco se queda donde estaba.
+     *
+     * Detectado con el carrito: al abrirlo, el foco seguía en el botón del
+     * navbar, de modo que Tab recorría la página de detrás y Escape no llegaba
+     * al panel.
+     */
+    const raf = requestAnimationFrame(() => {
+      const first = focusables()[0];
+      if (first) first.focus();
+      // Si el panel no tuviera nada enfocable, se enfoca el contenedor para que
+      // al menos el Escape llegue. Necesita tabindex=-1 en el propio panel.
+      else if (container.tabIndex >= 0 || container.hasAttribute("tabindex")) container.focus();
+    });
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Tab") return;
@@ -70,6 +89,7 @@ export function useFocusTrap(
     container.addEventListener("keydown", onKeyDown);
 
     return () => {
+      cancelAnimationFrame(raf);
       container.removeEventListener("keydown", onKeyDown);
       for (const element of backgrounds) element.inert = false;
       previouslyFocused?.focus?.();
