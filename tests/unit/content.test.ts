@@ -156,16 +156,45 @@ describe("enlaces", () => {
     expect(new Set(waLinks)).toEqual(new Set(["wa.me/50662762196"]));
   });
 
-  it("las anclas de la portada apuntan a secciones que existirán", () => {
+  it("las anclas de la portada apuntan a secciones que existen", () => {
     const anchors = new Set(
       JSON.stringify(home)
         .match(/"#[a-z-]+"/g)
         ?.map((a) => a.replaceAll('"', "")) ?? [],
     );
-    // Las que renderiza app/page.tsx en esta fase.
-    const rendered = new Set(["#catalogo", "#galeria", "#sobre", "#video", "#contenido", "#"]);
+    // Los `id` que renderiza app/page.tsx.
+    const rendered = new Set(["#catalogo", "#galeria", "#sobre", "#video", "#contenido"]);
     for (const anchor of anchors) {
       expect(rendered.has(anchor), `ancla sin destino: ${anchor}`).toBe(true);
+    }
+  });
+
+  it("el nav y el pie no usan anclas puras: se renderizan en TODAS las páginas", () => {
+    // Un `#galeria` a secas sólo funciona en la portada; desde /tienda no hace
+    // nada. Tienen que ser rutas absolutas con ancla (`/#galeria`).
+    const shared = [
+      home.nav.link.href,
+      home.nav.cta.href,
+      ...home.nav.dropdowns.flatMap((d) => d.items.map((i) => i.href)),
+      ...home.footer.links.map((l) => l.href),
+      home.footer.legal.href,
+      home.footer.cta.button.href,
+    ];
+
+    for (const href of shared) {
+      expect(href.startsWith("#"), `ancla pura en un enlace compartido: ${href}`).toBe(false);
+    }
+  });
+
+  it("ningún enlace compartido apunta a «#»", () => {
+    // Un href="#" es un enlace muerto que además salta al principio de la página.
+    const all = [
+      home.footer.legal.href,
+      ...home.footer.links.map((l) => l.href),
+      ...home.nav.dropdowns.flatMap((d) => d.items.map((i) => i.href)),
+    ];
+    for (const href of all) {
+      expect(href).not.toBe("#");
     }
   });
 });

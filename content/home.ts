@@ -214,11 +214,17 @@ export const home: HomeContent = {
       },
       {
         label: "Sobre nosotros",
+        // Apuntaban a anclas de la portada, pero «Entregas y zonas» y
+        // «Preguntas frecuentes» no existían en ninguna sección: el nav prometía
+        // contenido que no estaba. Ahora van a la página real.
         items: [
-          { label: "La historia de Ale", href: "#sobre" },
-          { label: "Cómo horneamos", href: "#video" },
-          { label: "Entregas y zonas", href: "#sobre" },
-          { label: "Escribinos", href: WA_CONSULTA, external: true },
+          { label: "La historia de Ale", href: "/sobre-nosotros#historia" },
+          { label: "Cómo horneamos", href: "/sobre-nosotros#como-horneamos" },
+          { label: "Entregas y zonas", href: "/sobre-nosotros#entregas" },
+          {
+            label: "Preguntas frecuentes",
+            href: "/sobre-nosotros#preguntas-frecuentes",
+          },
         ],
       },
       {
@@ -229,7 +235,9 @@ export const home: HomeContent = {
         items: catalogLinks(),
       },
     ],
-    link: { label: "Galería", href: "#galeria" },
+    // `/#galeria` y no `#galeria`: el nav se renderiza en TODAS las páginas, y un
+    // ancla pura sólo funcionaría en la portada — desde /tienda no haría nada.
+    link: { label: "Galería", href: "/#galeria" },
     phone: { display: "+506 6276 2196", href: "tel:+50662762196" },
     cta: { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
   },
@@ -451,9 +459,9 @@ export const home: HomeContent = {
     ],
     links: [
       { label: "Inicio", href: "/" },
-      { label: "Catálogo", href: "#catalogo" },
-      { label: "Galería", href: "#galeria" },
-      { label: "Sobre nosotros", href: "#sobre" },
+      { label: "Catálogo", href: "/tienda" },
+      { label: "Galería", href: "/#galeria" },
+      { label: "Sobre nosotros", href: "/sobre-nosotros" },
       { label: "Escribinos", href: WA_CONSULTA, external: true },
     ],
     // ⚠ TODO: dirección exacta o punto de retiro.
@@ -466,7 +474,7 @@ export const home: HomeContent = {
       { display: "WhatsApp: +506 6276 2196", href: WA_CONSULTA, todo: true },
     ],
     copyright: "© 2026 Boquita Sweet & Salty. Todos los derechos reservados.",
-    legal: { label: "Aviso legal", href: "#" },
+    legal: { label: "Aviso legal", href: "/aviso-legal" },
   },
 };
 

@@ -35,6 +35,7 @@
 /* Nuestro: no está en el CSS del spec */
 @import "./22-lightbox.css";
 @import "./30-cart.css";
+@import "./40-prose.css";
 
 /* Accesibilidad: siempre el último */
 @import "./99-a11y.css";

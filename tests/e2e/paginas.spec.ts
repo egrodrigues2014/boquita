@@ -1,0 +1,131 @@
+import { expect, test } from "@playwright/test";
+
+/**
+ * Páginas de texto y salud de la navegación.
+ *
+ * Existen porque el nav y el pie prometían contenido que no estaba: el dropdown
+ * ofrecía «Entregas y zonas» y «Preguntas frecuentes» apuntando a la sección de
+ * servicio de la portada, y el aviso legal era un `href="#"`.
+ */
+
+test.describe("sobre nosotros", () => {
+  test("responde y tiene las cuatro secciones con su ancla", async ({ page }) => {
+    const response = await page.goto("/sobre-nosotros");
+    expect(response?.status()).toBe(200);
+
+    for (const id of ["historia", "como-horneamos", "entregas", "preguntas-frecuentes"]) {
+      await expect(page.locator(`#${id}`)).toBeVisible();
+    }
+  });
+
+  test("declara FAQPage para que Google pueda desplegar las preguntas", async ({ page }) => {
+    await page.goto("/sobre-nosotros");
+
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .evaluateAll((els) => els.map((el) => JSON.parse(el.textContent ?? "{}")));
+
+    const faq = blocks.find((b) => b["@type"] === "FAQPage");
+    expect(faq, "falta el nodo FAQPage").toBeTruthy();
+    expect(faq.mainEntity.length).toBeGreaterThanOrEqual(6);
+
+    // Cada pregunta con su respuesta, y las que la gente busca de verdad.
+    for (const item of faq.mainEntity) {
+      expect(item["@type"]).toBe("Question");
+      expect(item.acceptedAnswer.text.length).toBeGreaterThan(40);
+    }
+    const questions = faq.mainEntity.map((q: { name: string }) => q.name).join(" ");
+    expect(questions).toContain("anticipación");
+    expect(questions).toContain("entregas");
+  });
+
+  test("las preguntas usan una lista de definiciones de verdad", async ({ page }) => {
+    await page.goto("/sobre-nosotros");
+    // La relación pregunta-respuesta es lo que un lector de pantalla necesita oír.
+    const pairs = await page.locator(".faq-item").count();
+    expect(pairs).toBeGreaterThanOrEqual(6);
+    await expect(page.locator(".faq dt").first()).toBeVisible();
+    await expect(page.locator(".faq dd").first()).toBeVisible();
+  });
+
+  test("el titular no queda tapado por el navbar al llegar por un ancla", async ({ page }) => {
+    await page.goto("/sobre-nosotros#entregas");
+    const [heading, navbar] = await Promise.all([
+      page.locator("#entregas").boundingBox(),
+      page.locator(".navbar").boundingBox(),
+    ]);
+    // El navbar es `position:absolute`; sin `scroll-margin-top` lo taparía.
+    expect(heading!.y).toBeGreaterThan(navbar!.y + navbar!.height - 10);
+  });
+});
+
+test.describe("aviso legal", () => {
+  test("responde y dice lo que hace el sitio con los datos", async ({ page }) => {
+    const response = await page.goto("/aviso-legal");
+    expect(response?.status()).toBe(200);
+
+    const body = page.locator("main");
+    // Lo que este sitio hace de verdad: el carrito es local y no se envía a nadie.
+    await expect(body).toContainText("almacenamiento local");
+    await expect(body).toContainText("No usamos cookies");
+    // Y lo que NO es: el resumen del carrito no es una factura.
+    await expect(body).toContainText("NO es una factura ni un documento fiscal");
+    await expect(body).toContainText("trazas");
+  });
+
+  test("va con noindex: no aporta en búsqueda", async ({ page }) => {
+    await page.goto("/aviso-legal");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+  });
+});
+
+test.describe("salud de la navegación", () => {
+  test("ningún enlace del nav o del pie está muerto", async ({ page, request, viewport }) => {
+    test.skip(viewport!.width <= 991, "A ≤991 el nav vive dentro del drawer");
+    await page.goto("/");
+
+    const hrefs = await page.evaluate(() => {
+      const nodes = [
+        ...document.querySelectorAll<HTMLAnchorElement>(".navbar a[href], .footer a[href]"),
+      ];
+      return [...new Set(nodes.map((a) => a.getAttribute("href") ?? ""))];
+    });
+
+    const internos = hrefs.filter((h) => h.startsWith("/"));
+    expect(internos.length).toBeGreaterThan(4);
+
+    for (const href of internos) {
+      // Un `#` a secas o una ruta inexistente son enlaces que defraudan.
+      expect(href).not.toBe("#");
+      const response = await request.get(href.split("#")[0]! || "/");
+      expect(response.status(), `${href} devolvió ${response.status()}`).toBeLessThan(400);
+    }
+  });
+
+  test("los enlaces compartidos no usan anclas puras", async ({ page, viewport }) => {
+    test.skip(viewport!.width <= 991, "A ≤991 el nav vive dentro del drawer");
+    // Desde /tienda, un `#galeria` a secas no llevaría a ninguna parte.
+    await page.goto("/tienda");
+    const anchors = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLAnchorElement>(".navbar a[href], .footer a[href]")]
+        .map((a) => a.getAttribute("href") ?? "")
+        .filter((h) => h.startsWith("#")),
+    );
+    expect(anchors).toEqual([]);
+  });
+
+  test("el sitemap lista la portada, la tienda, las 14 fichas y sobre-nosotros", async ({
+    request,
+  }) => {
+    const xml = await (await request.get("/sitemap.xml")).text();
+    expect(xml).toContain("/tienda</loc>");
+    expect(xml).toContain("/sobre-nosotros</loc>");
+    expect(xml).toContain("/tienda/queque-de-zanahoria</loc>");
+    // El aviso legal es noindex: anunciarlo en el sitemap sería contradictorio.
+    expect(xml).not.toContain("/aviso-legal");
+
+    const urls = xml.match(/<loc>/g) ?? [];
+    // portada + tienda + sobre-nosotros + 14 fichas
+    expect(urls).toHaveLength(17);
+  });
+});

@@ -1,21 +1,47 @@
 import type { MetadataRoute } from "next";
+import { products } from "@/content/products";
 import { SITE_URL } from "@/lib/seo";
 
 /**
- * Sitemap. En la Fase 1 sólo existe la portada; `/tienda`, `/blog` y
- * `/sobre-nosotros` se añaden cuando esas rutas existan de verdad.
+ * Sitemap.
  *
- * La fecha se pasa desde la variable de build para que el sitemap sea
- * determinista: un `new Date()` haría que cambiara en cada build sin que el
- * contenido hubiera cambiado.
+ * Las 14 fichas se derivan del catálogo, no se listan a mano: añadir un producto
+ * no debe requerir acordarse de tocar este archivo.
+ *
+ * `/aviso-legal` queda fuera a propósito — es `noindex`, así que anunciarlo en el
+ * sitemap sería contradictorio.
+ *
+ * Sin `lastModified` salvo en Vercel: un `new Date()` en cada build haría que el
+ * sitemap cambiara sin que el contenido lo hubiera hecho, y eso enseña a los
+ * buscadores a desconfiar del campo.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
+  const lastModified = process.env.VERCEL_GIT_COMMIT_SHA ? new Date() : undefined;
+
   return [
     {
       url: SITE_URL,
-      lastModified: process.env.VERCEL_GIT_COMMIT_SHA ? new Date() : undefined,
+      lastModified,
       changeFrequency: "monthly",
       priority: 1,
     },
+    {
+      url: `${SITE_URL}/tienda`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${SITE_URL}/sobre-nosotros`,
+      lastModified,
+      changeFrequency: "yearly",
+      priority: 0.6,
+    },
+    ...products.map((product) => ({
+      url: `${SITE_URL}/tienda/${product.slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
   ];
 }

@@ -1,0 +1,86 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   40-prose.css — Páginas de texto: «sobre nosotros» y el aviso legal.
+
+   No están en el spec. Se construyen con su misma escala tipográfica y sus
+   tokens, pero con una medida de línea acotada: los 1170px del contenedor son
+   demasiado anchos para leer prosa seguida.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ~70 caracteres por línea, que es donde la lectura es cómoda. */
+.prose {
+  width: 100%;
+  max-width: 720px;
+}
+
+.prose-narrow {
+  max-width: 620px;
+}
+
+.prose-block {
+  margin-top: 50px;
+}
+
+.prose-block:first-child {
+  margin-top: 20px;
+}
+
+/* El navbar es `position:absolute` y taparía el titular al llegar por un enlace
+   con ancla. El margen de scroll lo compensa. */
+.prose h2,
+.faq-item dt {
+  scroll-margin-top: 110px;
+}
+
+.prose p {
+  max-width: 100%;
+}
+
+.about-hero-img {
+  width: 100%;
+  height: auto;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+/* ── Preguntas frecuentes ──────────────────────────────────────────────────
+   Es una lista de definiciones de verdad (`dl`/`dt`/`dd`): la relación
+   pregunta-respuesta es lo que un lector de pantalla necesita oír, y es lo que
+   el JSON-LD FAQPage declara en paralelo.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.faq {
+  margin: 0;
+}
+
+.faq-item {
+  padding-block: 22px;
+  border-bottom: 1px solid var(--gray);
+}
+
+.faq-item:first-child {
+  border-top: 1px solid var(--gray);
+}
+
+.faq dt {
+  font-family: var(--ff-sans);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+.faq dd {
+  margin: 8px 0 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--body-text);
+}
+
+@media (max-width: 767px) {
+  .prose-block {
+    margin-top: 40px;
+  }
+  .about-hero-img {
+    max-height: 300px;
+  }
+}
