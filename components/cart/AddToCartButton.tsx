@@ -84,6 +84,10 @@ export function AddToCartButton({ product }: { product: ShopProduct }) {
               unit: product.unit,
               price: product.price,
               image: product.image.srcSet?.[0]?.src ?? product.image.src,
+              // Se guarda junto al precio: el drawer calcula la fecha mínima con
+              // él, y desde que el catálogo vive en Postgres el cliente no puede
+              // resolverlo por su cuenta.
+              leadTimeHours: product.leadTimeHours,
             },
             qty,
           );

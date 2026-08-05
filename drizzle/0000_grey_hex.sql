@@ -1,0 +1,31 @@
+CREATE TYPE "public"."categoria" AS ENUM('queques', 'galletas', 'bocaditos', 'salado', 'sin-gluten-keto');--> statement-breakpoint
+CREATE TYPE "public"."ocasion" AS ENUM('cumpleanos', 'bodas-bautizos', 'baby-shower', 'oficinas', 'regalos', 'navidad');--> statement-breakpoint
+CREATE TABLE "products" (
+	"slug" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"price" integer NOT NULL,
+	"price_from" boolean DEFAULT false NOT NULL,
+	"price_on_request" boolean DEFAULT false NOT NULL,
+	"price_todo" boolean DEFAULT false NOT NULL,
+	"unit" text NOT NULL,
+	"summary" text NOT NULL,
+	"description" text[] NOT NULL,
+	"categoria" "categoria" NOT NULL,
+	"ocasiones" "ocasion"[] NOT NULL,
+	"allergens" text[] DEFAULT '{}' NOT NULL,
+	"lead_time_hours" integer NOT NULL,
+	"image_heights" integer[] NOT NULL,
+	"image_alt" text NOT NULL,
+	"photo_todo" boolean DEFAULT false NOT NULL,
+	"sort_order" integer NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "products_slug_kebab" CHECK ("products"."slug" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
+	CONSTRAINT "products_price_positive" CHECK ("products"."price" > 0),
+	CONSTRAINT "products_lead_time_range" CHECK ("products"."lead_time_hours" BETWEEN 24 AND 336),
+	CONSTRAINT "products_summary_length" CHECK (char_length("products"."summary") BETWEEN 20 AND 110),
+	CONSTRAINT "products_description_size" CHECK (array_length("products"."description", 1) BETWEEN 1 AND 4),
+	CONSTRAINT "products_ocasiones_not_empty" CHECK (array_length("products"."ocasiones", 1) >= 1),
+	CONSTRAINT "products_image_heights_size" CHECK (array_length("products"."image_heights", 1) BETWEEN 2 AND 3),
+	CONSTRAINT "products_on_request_is_from" CHECK (NOT ("products"."price_on_request" AND NOT "products"."price_from"))
+);

@@ -1,11 +1,13 @@
-import type { ImageRef } from "@/types/content";
+import { productImage } from "@/lib/productImage";
 import type { ShopProduct } from "@/types/shop";
 
 /**
  * El catálogo completo: 14 productos.
  *
- * En la Fase 2 esto pasa a ser el fallback de la tabla `products`, igual que
- * `content/home.ts` lo es del contenido de la portada.
+ * Este archivo es el FALLBACK de la tabla `products` (ver `lib/db/catalog.ts`):
+ * se usa tal cual cuando no hay `DATABASE_URL`, cuando la tabla está vacía o
+ * cuando una fila no pasa `shopSchema`. No es contenido muerto — es el modo en
+ * que corren CI y cualquier máquina recién clonada.
  *
  * ⚠ TODOS los precios son placeholders. El menú fijado de Instagram tiene los
  * reales, pero es una imagen y su texto no se puede extraer. Ver
@@ -15,39 +17,6 @@ import type { ShopProduct } from "@/types/shop";
  * Las fotos y su procedencia están razonadas en docs/IMAGE_MAP.md. Las marcadas
  * `photoTodo` funcionan pero convendría rehacerlas.
  */
-
-/**
- * Construye el ImageRef de un producto. Las alturas son las que generó de verdad
- * `scripts/build-images.mjs` a partir de la proporción natural de cada foto — no
- * están inventadas, y `tests/unit/shop.test.ts` comprueba que los archivos existen.
- *
- * `sizes` refleja los anchos de render medidos: la tarjeta son 370px en
- * escritorio (3 columnas de 1170px con huecos de 30), no ~300 como supuse al
- * principio; en la ficha, ~540px.
- */
-const CARD_SIZES =
-  "(min-width: 1200px) 360px, (min-width: 992px) 30vw, (min-width: 640px) 45vw, calc(100vw - 30px)";
-
-function productImage(
-  slug: string,
-  heights: [number, number, number?],
-  alt: string,
-): ImageRef {
-  const [h400, h800, h1200] = heights;
-  const srcSet = [
-    { src: `/img/producto/${slug}-400x${h400}.webp`, width: 400 },
-    { src: `/img/producto/${slug}-800x${h800}.webp`, width: 800 },
-    ...(h1200 ? [{ src: `/img/producto/${slug}-1200x${h1200}.webp`, width: 1200 }] : []),
-  ];
-  return {
-    src: `/img/producto/${slug}-800x${h800}.webp`,
-    srcSet,
-    sizes: CARD_SIZES,
-    width: 800,
-    height: h800,
-    alt,
-  };
-}
 
 export const products: ShopProduct[] = [
   {

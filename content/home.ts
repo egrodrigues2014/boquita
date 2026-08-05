@@ -1,13 +1,15 @@
 import { products } from "@/content/products";
 import type { HomeContent, ImageRef, Link, Product } from "@/types/content";
-import { CATEGORIAS } from "@/types/shop";
+import { CATEGORIAS, type ShopProduct } from "@/types/shop";
 
 /**
  * Todo el copy de la portada, en un solo sitio.
  *
- * En la Fase 2 este objeto pasa a ser el FALLBACK: cuando la base de datos
- * devuelva menos filas de las que el layout exige, se rellena desde aquí con
- * `padTo()`, para que la portada no se pueda romper por mucho que Ale borre.
+ * Este objeto es el FALLBACK de la portada. Todo su copy es estático; lo único
+ * que depende del catálogo —la rejilla de 8, el megamenú y la métrica de
+ * «recetas»— lo recalcula `lib/homeContent.ts` a partir de lo que devuelva
+ * `getCatalog()`. Sin `DATABASE_URL` ese cálculo produce exactamente lo que hay
+ * escrito aquí abajo, así que este archivo sigue siendo la verdad en local.
  *
  * Convenciones:
  *  · Los titulares van en capitalización normal — el CSS los pone en mayúsculas.
@@ -33,7 +35,12 @@ import { CATEGORIAS } from "@/types/shop";
  * `content/products.ts` es esa fuente. Aquí sólo se elige QUÉ 8 productos van en
  * la rejilla del spec §6.4 y en qué orden.
  */
-const FEATURED_SLUGS = [
+/**
+ * Qué 8 productos van en la rejilla y en qué orden. Exportado porque
+ * `lib/homeContent.ts` reconstruye la rejilla desde el catálogo de la base
+ * usando esta misma lista: la selección editorial vive aquí, los datos no.
+ */
+export const FEATURED_SLUGS = [
   "queque-de-zanahoria",
   "queque-personalizado",
   "galletas-de-granola",
@@ -44,6 +51,23 @@ const FEATURED_SLUGS = [
   "cachitos-de-jamon",
 ] as const;
 
+/** Ficha de catálogo → tarjeta de la rejilla de la portada (una forma más estrecha). */
+export function toFeatured(product: ShopProduct): Product {
+  return {
+    slug: product.slug,
+    name: product.name,
+    price: product.price,
+    priceFrom: product.priceFrom,
+    category: `${CATEGORIAS[product.categoria]} · ${product.unit}`,
+    priceTodo: product.priceTodo,
+  };
+}
+
+/** Producto del catálogo → enlace del megamenú. */
+export function toCatalogLink(product: ShopProduct): Link {
+  return { label: product.name, href: `/tienda/${product.slug}` };
+}
+
 function featuredProducts(): Product[] {
   return FEATURED_SLUGS.map((slug) => {
     const product = products.find((p) => p.slug === slug);
@@ -52,23 +76,13 @@ function featuredProducts(): Product[] {
       // en la rejilla de 2×4 y rompería el punto 5 del checklist.
       throw new Error(`Destacado inexistente en el catálogo: ${slug}`);
     }
-    return {
-      slug: product.slug,
-      name: product.name,
-      price: product.price,
-      priceFrom: product.priceFrom,
-      category: `${CATEGORIAS[product.categoria]} · ${product.unit}`,
-      priceTodo: product.priceTodo,
-    };
+    return toFeatured(product);
   });
 }
 
 /** El megamenú lista el catálogo completo, también derivado. */
 function catalogLinks(): Link[] {
-  return products.map((product) => ({
-    label: product.name,
-    href: `/tienda/${product.slug}`,
-  }));
+  return products.map(toCatalogLink);
 }
 
 const WA = "https://wa.me/50662762196";

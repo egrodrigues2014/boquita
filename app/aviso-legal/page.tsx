@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { home } from "@/content/home";
 import { legal } from "@/content/pages";
+import { getHomeContent } from "@/lib/homeContent";
 
 /**
  * Aviso legal y privacidad.
@@ -24,7 +24,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function AvisoLegalPage() {
+export default async function AvisoLegalPage() {
+  // Sólo por el nav y el pie, cuyo megamenú se deriva del catálogo.
+  const home = await getHomeContent();
+
   return (
     <>
       <Navbar nav={home.nav} />

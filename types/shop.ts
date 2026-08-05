@@ -74,6 +74,16 @@ export interface CartLine {
   /** Ruta de la miniatura, para el drawer. */
   image?: string;
   priceOnRequest?: boolean;
+  /**
+   * Anticipación del producto en el momento de añadir, por el mismo motivo que
+   * el precio: el carrito vive en el cliente y el catálogo ya no.
+   *
+   * Opcional porque un carrito guardado antes de que existiera este campo no lo
+   * trae; en ese caso el drawer lo resuelve contra `content/products.ts`. Añadir
+   * un campo opcional no obliga a subir `CART_STORAGE_KEY` — descartar el
+   * carrito de alguien para ganar un número que se sabe deducir sería peor.
+   */
+  leadTimeHours?: number;
 }
 
 /** Datos opcionales que el cliente puede rellenar antes de pedir. */

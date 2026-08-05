@@ -6,25 +6,29 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Picture } from "@/components/ui/Picture";
-import { home } from "@/content/home";
-import { findProduct, products } from "@/content/products";
+import { getCatalog, getProduct } from "@/lib/db/catalog";
 import { formatCRCShort } from "@/lib/format";
+import { getHomeContent } from "@/lib/homeContent";
 import { SITE_URL } from "@/lib/seo";
 import { CATEGORIAS, OCASIONES } from "@/types/shop";
 
 /**
  * Ficha de producto.
  *
- * Se prerenderizan las 14 con `generateStaticParams`: son fijas y así se sirven
- * desde el CDN sin tocar ninguna función.
+ * Se prerenderizan todas con `generateStaticParams`, así que se sirven desde el
+ * CDN sin tocar ninguna función. `dynamicParams` sigue en su valor por defecto
+ * (`true`) a propósito: un producto añadido a la tabla DESPUÉS del build se
+ * renderiza a demanda en su primera visita en vez de dar 404 hasta el siguiente
+ * despliegue.
  *
  * El `generateMetadata` con su Open Graph es lo que hace que pegar el enlace en
  * un chat de WhatsApp muestre la foto y el precio en vez de una tarjeta vacía.
  * Es el uso principal que va a tener esta página.
  */
 
-export function generateStaticParams() {
-  return products.map((product) => ({ slug: product.slug }));
+export async function generateStaticParams() {
+  const catalog = await getCatalog();
+  return catalog.map((product) => ({ slug: product.slug }));
 }
 
 export async function generateMetadata({
@@ -33,7 +37,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = findProduct(slug);
+  const product = await getProduct(slug);
   if (!product) return { title: "Producto no encontrado" };
 
   const price = `${product.priceFrom ? "desde " : ""}${formatCRCShort(product.price)}`;
@@ -59,7 +63,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = findProduct(slug);
+  const [product, home] = await Promise.all([getProduct(slug), getHomeContent()]);
   if (!product) notFound();
 
   const productJsonLd = {

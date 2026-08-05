@@ -61,6 +61,25 @@ export const viewport: Viewport = {
 };
 
 /**
+ * ISR para TODO el sitio, declarado una sola vez.
+ *
+ * Va en el layout y no en cada página porque el megamenú del nav se deriva del
+ * catálogo, así que cualquier página —incluidas `/aviso-legal` y la 404— depende
+ * de la tabla `products`.
+ *
+ * Con esto las páginas siguen saliendo del CDN y no de una función que espera a
+ * Postgres: se conservan los presupuestos medidos (LCP 140 ms, primera carga
+ * 805 KB). Y el cómputo de Neon se autosuspende a los 5 minutos en el plan Free,
+ * de modo que el arranque en frío lo paga una regeneración en segundo plano y
+ * nunca una visita real.
+ *
+ * Una hora es el compromiso: un precio corregido en Neon aparece solo, sin
+ * redespliegue. Cuando exista el panel de la fase 3 se añade `revalidatePath`
+ * para que sea instantáneo y este número deje de importar.
+ */
+export const revalidate = 3600;
+
+/**
  * Script inline bloqueante (~120 bytes) que hace posible el reveal sin flash ni
  * mismatch de hidratación. Corre antes del primer paint:
  *

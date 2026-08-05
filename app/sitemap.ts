@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/content/products";
+import { getCatalog } from "@/lib/db/catalog";
 import { SITE_URL } from "@/lib/seo";
 
 /**
  * Sitemap.
  *
- * Las 14 fichas se derivan del catálogo, no se listan a mano: añadir un producto
- * no debe requerir acordarse de tocar este archivo.
+ * Las fichas se derivan del catálogo servido, no se listan a mano: añadir un
+ * producto —en `content/products.ts` o en la tabla— no debe requerir acordarse de
+ * tocar este archivo.
  *
  * `/aviso-legal` queda fuera a propósito — es `noindex`, así que anunciarlo en el
  * sitemap sería contradictorio.
@@ -15,7 +16,16 @@ import { SITE_URL } from "@/lib/seo";
  * sitemap cambiara sin que el contenido lo hubiera hecho, y eso enseña a los
  * buscadores a desconfiar del campo.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+/**
+ * El `revalidate` de `app/layout.tsx` NO llega hasta aquí: las rutas de metadata
+ * se compilan como route handlers aparte y quedan horneadas en el build. Sin esta
+ * línea, un producto añadido a la tabla no aparecería en el sitemap hasta el
+ * siguiente despliegue, mientras su ficha ya se estaría sirviendo.
+ */
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const products = await getCatalog();
   const lastModified = process.env.VERCEL_GIT_COMMIT_SHA ? new Date() : undefined;
 
   return [

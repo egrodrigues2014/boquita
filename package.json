@@ -15,9 +15,15 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "images:extract": "python scripts/extract-pdf-images.py",
-    "images:build": "node scripts/build-images.mjs"
+    "images:build": "node scripts/build-images.mjs",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx scripts/seed-catalog.ts",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "^0.45.2",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -30,13 +36,15 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.0.0",
     "sharp": "^0.35.3",
+    "tsx": "^4.23.5",
     "typescript": "^5.6.0",
     "vitest": "^3.0.0"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=20.12.0"
   }
 }

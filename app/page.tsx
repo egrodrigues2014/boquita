@@ -9,7 +9,7 @@ import { Statement } from "@/components/sections/Statement";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Lightbox } from "@/components/ui/Lightbox";
-import { home } from "@/content/home";
+import { getHomeContent } from "@/lib/homeContent";
 import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
 
 /**
@@ -30,8 +30,14 @@ import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
  *   7 section.gallery      2 filas desbordadas
  *   8 section.testimonials slider de tarjetas crema
  *   9 footer               tarjeta CTA solapada + bloque oscuro
+ *
+ * `getHomeContent()` es el copy de `content/home.ts` con la rejilla del catálogo,
+ * el megamenú y la métrica de recetas recalculados desde la tabla `products`.
+ * Sin `DATABASE_URL` devuelve exactamente el contenido estático.
  */
-export default function HomePage() {
+export default async function HomePage() {
+  const home = await getHomeContent();
+
   return (
     <>
       {/* Datos estructurados de negocio local: lo que hace que Google entienda

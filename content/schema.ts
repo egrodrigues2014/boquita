@@ -46,7 +46,10 @@ const contentImage = imageRef.refine((img) => img.alt.trim().length >= 10, {
 
 const navDropdown = z.object({
   label: z.string().min(1).max(30),
-  items: z.array(link).min(3).max(14),
+  // El tope era 14 porque el catálogo son 14, y eso ya no es una constante: el
+  // megamenú se deriva de la tabla `products`. 24 es lo que aguanta el panel de
+  // 270px con scroll a ≤991px sin que la lista sea inútil de recorrer.
+  items: z.array(link).min(3).max(24),
   mega: z.boolean().optional(),
 });
 

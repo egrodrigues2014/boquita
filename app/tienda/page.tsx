@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Picture } from "@/components/ui/Picture";
-import { home } from "@/content/home";
-import { products } from "@/content/products";
+import { getCatalog } from "@/lib/db/catalog";
 import { formatCRCShort } from "@/lib/format";
+import { getHomeContent } from "@/lib/homeContent";
 import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion } from "@/types/shop";
 
 /**
@@ -14,16 +14,29 @@ import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion } from "@/types/sho
  * Los filtros son `searchParams` y no rutas: así son 1 plantilla en vez de 11, se
  * pueden combinar, y cada combinación tiene una URL que se puede compartir por
  * WhatsApp — que es exactamente lo que Ale va a hacer.
+ *
+ * El filtrado se hace en memoria sobre el catálogo entero, no con un `WHERE` por
+ * combinación: son 14 filas y una sola consulta cacheada por petición sirve las
+ * 11 vistas. Un `WHERE` por filtro serían 11 planes de consulta para ahorrar
+ * microsegundos sobre un array de 14 elementos.
  */
 
-export const metadata: Metadata = {
-  title: "Catálogo",
-  description:
-    "Los 14 productos de Boquita: queques de zanahoria, galletas de granola sin gluten, " +
-    "polvorones españoles, brigadeiros, biscotti y bocaditos salados. Horneado por encargo " +
-    "en Río Oro de Santa Ana.",
-  alternates: { canonical: "/tienda" },
-};
+/**
+ * El recuento del catálogo va en la descripción, así que la metadata no puede ser
+ * un objeto estático: «Los 14 productos» tiene que dejar de decir 14 el día que
+ * la tabla tenga 15.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const catalog = await getCatalog();
+  return {
+    title: "Catálogo",
+    description:
+      `Los ${catalog.length} productos de Boquita: queques de zanahoria, galletas de granola ` +
+      "sin gluten, polvorones españoles, brigadeiros, biscotti y bocaditos salados. " +
+      "Horneado por encargo en Río Oro de Santa Ana.",
+    alternates: { canonical: "/tienda" },
+  };
+}
 
 function isCategoria(value: string | undefined): value is Categoria {
   return value !== undefined && value in CATEGORIAS;
@@ -38,7 +51,11 @@ export default async function TiendaPage({
 }: {
   searchParams: Promise<{ categoria?: string; ocasion?: string }>;
 }) {
-  const params = await searchParams;
+  const [params, products, home] = await Promise.all([
+    searchParams,
+    getCatalog(),
+    getHomeContent(),
+  ]);
 
   // Un valor inválido en la URL se ignora en vez de dar error: alguien puede
   // haber editado el enlace a mano o el parámetro puede venir de un share viejo.
@@ -80,7 +97,7 @@ export default async function TiendaPage({
               <h1>{activeLabel ?? "Todo el catálogo"}</h1>
               <p className="lead mt-20">
                 {filtered.length === products.length
-                  ? "Los 14 productos que salen de nuestro horno. Todo se hornea por encargo, con 48 horas de anticipación."
+                  ? `Los ${products.length} productos que salen de nuestro horno. Todo se hornea por encargo, con 48 horas de anticipación.`
                   : `${filtered.length} ${filtered.length === 1 ? "producto" : "productos"} en ${activeLabel}.`}
               </p>
             </div>

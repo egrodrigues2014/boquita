@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Picture } from "@/components/ui/Picture";
-import { home } from "@/content/home";
-import { products } from "@/content/products";
+import { getCatalog } from "@/lib/db/catalog";
 import { formatCRCShort } from "@/lib/format";
+import { getHomeContent } from "@/lib/homeContent";
 
 /**
  * 404 propia.
@@ -23,7 +23,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function NotFound() {
+export default async function NotFound() {
+  const [products, home] = await Promise.all([getCatalog(), getHomeContent()]);
+
+  // Las sugerencias salen del catálogo SERVIDO, no del estático: una 404 que
+  // recomienda un producto que ya no está en la tabla lleva a otra 404.
   const sugerencias = products
     .filter((product) => !product.priceOnRequest && !product.photoTodo)
     .slice(0, 3);

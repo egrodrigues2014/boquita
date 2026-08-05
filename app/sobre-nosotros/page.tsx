@@ -6,7 +6,7 @@ import { JsonLd } from "@/components/ui/JsonLd";
 import { Picture } from "@/components/ui/Picture";
 import { Reveal } from "@/components/ui/Reveal";
 import { about } from "@/content/pages";
-import { home } from "@/content/home";
+import { getHomeContent } from "@/lib/homeContent";
 import { SITE_URL } from "@/lib/seo";
 
 /**
@@ -31,7 +31,11 @@ export const metadata: Metadata = {
   alternates: { canonical: "/sobre-nosotros" },
 };
 
-export default function SobreNosotrosPage() {
+export default async function SobreNosotrosPage() {
+  // Sólo por el nav y el pie: el megamenú lista el catálogo, así que también esta
+  // página depende de la tabla `products`.
+  const home = await getHomeContent();
+
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",

@@ -1,0 +1,212 @@
+{
+  "id": "aaddf769-7719-432d-9dd9-0a9dd66579d2",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.products": {
+      "name": "products",
+      "schema": "",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_from": {
+          "name": "price_from",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "price_on_request": {
+          "name": "price_on_request",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "price_todo": {
+          "name": "price_todo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "categoria",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ocasiones": {
+          "name": "ocasiones",
+          "type": "ocasion[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "allergens": {
+          "name": "allergens",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "lead_time_hours": {
+          "name": "lead_time_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_heights": {
+          "name": "image_heights",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_alt": {
+          "name": "image_alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "photo_todo": {
+          "name": "photo_todo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "products_slug_kebab": {
+          "name": "products_slug_kebab",
+          "value": "\"products\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "products_price_positive": {
+          "name": "products_price_positive",
+          "value": "\"products\".\"price\" > 0"
+        },
+        "products_lead_time_range": {
+          "name": "products_lead_time_range",
+          "value": "\"products\".\"lead_time_hours\" BETWEEN 24 AND 336"
+        },
+        "products_summary_length": {
+          "name": "products_summary_length",
+          "value": "char_length(\"products\".\"summary\") BETWEEN 20 AND 110"
+        },
+        "products_description_size": {
+          "name": "products_description_size",
+          "value": "array_length(\"products\".\"description\", 1) BETWEEN 1 AND 4"
+        },
+        "products_ocasiones_not_empty": {
+          "name": "products_ocasiones_not_empty",
+          "value": "array_length(\"products\".\"ocasiones\", 1) >= 1"
+        },
+        "products_image_heights_size": {
+          "name": "products_image_heights_size",
+          "value": "array_length(\"products\".\"image_heights\", 1) BETWEEN 2 AND 3"
+        },
+        "products_on_request_is_from": {
+          "name": "products_on_request_is_from",
+          "value": "NOT (\"products\".\"price_on_request\" AND NOT \"products\".\"price_from\")"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.categoria": {
+      "name": "categoria",
+      "schema": "public",
+      "values": [
+        "queques",
+        "galletas",
+        "bocaditos",
+        "salado",
+        "sin-gluten-keto"
+      ]
+    },
+    "public.ocasion": {
+      "name": "ocasion",
+      "schema": "public",
+      "values": [
+        "cumpleanos",
+        "bodas-bautizos",
+        "baby-shower",
+        "oficinas",
+        "regalos",
+        "navidad"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

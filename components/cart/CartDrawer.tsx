@@ -40,9 +40,15 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   /**
    * El lead time del carrito es el MÁS LARGO de sus productos: si hay un queque
    * personalizado (una semana), no sirve ofrecer pasado mañana.
+   *
+   * Se prefiere el valor guardado en la línea, que es el que tenía el catálogo
+   * cuando se añadió. `findProduct` queda como respaldo para las líneas de
+   * carritos anteriores a ese campo; es el catálogo estático, así que un lead
+   * time cambiado en la base no se refleja ahí — pero es mejor que suponer 48h.
    */
   const leadTime = lines.reduce(
-    (max, line) => Math.max(max, findProduct(line.slug)?.leadTimeHours ?? 48),
+    (max, line) =>
+      Math.max(max, line.leadTimeHours ?? findProduct(line.slug)?.leadTimeHours ?? 48),
     48,
   );
   const minDate = earliestDate(leadTime, new Date());
