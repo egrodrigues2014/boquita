@@ -40,6 +40,13 @@ De Instagram sí se pudieron leer estos, pero son de 2024 y hay que confirmarlos
 galletas chocolate chip y Nutella 6 u = ₡2.800 · brigadeiros 6 u = ₡3.000 / 12 u = ₡5.500 ·
 galletas de granola light = ₡3.000 · miel y limón = ₡2.500 · asado negro = ₡16.000/kg.
 
+**Cómo se aplican, ahora que el catálogo está en Postgres:** hay dos caminos y conviene el segundo.
+Un `UPDATE` en el SQL Editor de Neon corrige un precio y aparece solo en ≤1 h, pero deja el fallback
+de `content/products.ts` diciendo otra cosa. Editar `content/products.ts` y ejecutar
+`npm run db:seed` deja las dos fuentes de acuerdo — y `db:seed` **pisa** la tabla, así que si se usó
+el primer camino antes, ese cambio se revierte. Quitar los `priceTodo` sigue siendo un acto
+explícito: hay un test que falla mientras queden marcados.
+
 ### 3. Los 6 testimonios
 
 Con **nombre, rol, texto y consentimiento escrito** de cada persona. Los seis que hay en el código
