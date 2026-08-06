@@ -26,7 +26,7 @@ import { SITE_URL } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Sobre nosotros",
   description:
-    "Boquita nació en la cocina de casa de Ale Budowski, en Río Oro de Santa Ana. " +
+    "Boquita nació en la cocina de casa de Ale Budowski, en Santa Ana. " +
     "Cómo horneamos, zonas de entrega y las preguntas que más nos hacen.",
   alternates: { canonical: "/sobre-nosotros" },
 };

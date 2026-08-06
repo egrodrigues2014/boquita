@@ -12,7 +12,7 @@ import { z } from "zod";
  *   2 inline      → exactamente 2 huecos en el flujo del h2 (§6.2, checklist 3)
  *   2 botones     → `.btn-group` del hero (§8)
  *   4 dropdowns + 1 enlace → el navbar (§5, §8)
- *   4 redes · 5 enlaces · 2 teléfonos → el pie (§6.8, §8)
+ *   2-4 redes reales · 5 enlaces · 2 teléfonos → el pie (§6.8, §8)
  *
  * Los `.max()` de las cadenas son igual de intencionados: `titleTop` limitado a
  * 28 caracteres es LA RAZÓN de que el h1 del hero nunca pase de 2 líneas a 86px.
@@ -171,7 +171,8 @@ export const homeSchema = z.object({
       button: z.string().min(2).max(20),
     }),
     brandText: z.string().min(40).max(300),
-    social: z.array(social).length(4),
+    // No se rellenan huecos con Facebook/email falsos: sólo canales reales.
+    social: z.array(social).min(2).max(4),
     links: z.array(link).length(5),
     address: z.string().min(10).max(160),
     addressTodo: z.boolean().optional(),

@@ -16,11 +16,11 @@ const isProduction = process.env.VERCEL_ENV === "production";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Boquita — Sweet & Salty · Repostería artesanal en Río Oro, Santa Ana",
+    default: "Boquita — Sweet & Salty · Repostería artesanal en Santa Ana",
     template: "%s · Boquita — Sweet & Salty",
   },
   description:
-    "Repostería artesanal hecha en casa en Río Oro de Santa Ana, San José. " +
+    "Repostería artesanal hecha en casa en Santa Ana, San José. " +
     "Queques de zanahoria, galletas de granola sin gluten, polvorones españoles, " +
     "brigadeiros y bocaditos salados. Horneamos por encargo, en tandas pequeñas.",
   applicationName: "Boquita",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     locale: "es_CR",
     siteName: "Boquita — Sweet & Salty",
     url: SITE_URL,
-    title: "Boquita — Sweet & Salty · Repostería artesanal en Río Oro, Santa Ana",
+    title: "Boquita — Sweet & Salty · Repostería artesanal en Santa Ana",
     description:
       "Queques, galletas y bocaditos horneados por encargo en Santa Ana. " +
       "Pedidos por WhatsApp con 48 horas de anticipación.",

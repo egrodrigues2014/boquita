@@ -147,8 +147,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
                   <dt>Entrega</dt>
                   <dd>
-                    Retiro en Río Oro de Santa Ana, o entrega en Santa Ana, Escazú y alrededores
-                    coordinada por WhatsApp.
+                    Retiro en Condado del Río, Santa Ana, o entrega en Santa Ana, Escazú y
+                    alrededores coordinada por WhatsApp.
                   </dd>
                 </dl>
               </div>

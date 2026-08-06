@@ -20,8 +20,9 @@ test.describe("SEO local", () => {
 
     const bakery = blocks.find((b) => b["@type"] === "Bakery");
     expect(bakery, "falta el nodo Bakery").toBeTruthy();
-    expect(bakery.telephone).toBe("+50662762196");
-    expect(bakery.address.addressLocality).toContain("Río Oro");
+    expect(bakery.telephone).toBe("+50671322355");
+    expect(bakery.address.streetAddress).toContain("Calle Obelisco");
+    expect(bakery.address.addressLocality).toContain("Santa Ana");
     expect(bakery.address.addressCountry).toBe("CR");
     expect(bakery.areaServed.map((a: { name: string }) => a.name)).toContain("Santa Ana");
     expect(bakery.currenciesAccepted).toBe("CRC");

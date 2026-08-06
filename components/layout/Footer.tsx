@@ -14,10 +14,9 @@ import type { HomeContent } from "@/types/content";
  * re-declara y el contraste del solape se rompe. El solape de −198px (−258 en
  * móvil) es la firma visual de esta sección.
  *
- * El logo del pie NO usa la imagen: el JPG lleva el fondo blanco horneado y
- * sobre el marrón se vería como una caja blanca. Hasta que llegue un SVG
- * transparente (CONTENT_TODO §1), el wordmark se compone como texto en la
- * fuente display, a la misma altura de 36px que pide el spec.
+ * El logo del pie usa una variante clara generada desde `assets/logo-boquita.jpg`:
+ * el fondo blanco se elimina en el pipeline de imágenes y la tinta oscura se
+ * recolorea para sobrevivir sobre el marrón.
  *
  * El título de la newsletter se renderiza como `<h2 class="as-h4">` y no como
  * `h4`, para no saltar un nivel de encabezado (desvío D-7). Es pixel-idéntico.
@@ -77,18 +76,17 @@ export function Footer({ footer }: { footer: HomeContent["footer"] }) {
                 href="/"
                 aria-label="Boquita — Sweet & Salty, inicio"
               >
-                <span
-                  style={{
-                    fontFamily: "var(--ff-display)",
-                    fontSize: 30,
-                    fontWeight: 700,
-                    lineHeight: "36px",
-                    display: "block",
-                    color: "var(--white)",
-                  }}
-                >
-                  Boquita
-                </span>
+                <img
+                  className="footer-logo"
+                  src="/img/brand/logo-light-36x36.png"
+                  srcSet="/img/brand/logo-light-36x36.png 36w, /img/brand/logo-light-72x72.png 72w"
+                  sizes="36px"
+                  width={36}
+                  height={36}
+                  alt="Boquita — Sweet & Salty"
+                  loading="lazy"
+                  decoding="async"
+                />
               </Link>
               <p className="footer-brand-text">{footer.brandText}</p>
               <div className="footer-social">

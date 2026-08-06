@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { CONTACT } from "@/lib/contact";
 
 /**
  * Tarjeta de Open Graph — la imagen que aparece al pegar el enlace en WhatsApp,
@@ -14,7 +15,7 @@ import { ImageResponse } from "next/og";
  * perfectamente digno.
  */
 
-export const alt = "Boquita — Sweet & Salty · Repostería artesanal en Río Oro, Santa Ana";
+export const alt = "Boquita — Sweet & Salty · Repostería artesanal en Santa Ana";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -43,7 +44,7 @@ export default function OpengraphImage() {
             fontWeight: 600,
           }}
         >
-          Repostería artesanal en Río Oro
+          Repostería artesanal en Santa Ana
         </div>
 
         <div
@@ -77,7 +78,7 @@ export default function OpengraphImage() {
           }}
         >
           <span>Boquita — Sweet &amp; Salty</span>
-          <span style={{ color: "#8A5A06" }}>+506 6276 2196</span>
+          <span style={{ color: "#8A5A06" }}>{CONTACT.whatsappDisplay}</span>
         </div>
       </div>
     ),

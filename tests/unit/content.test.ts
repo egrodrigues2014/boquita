@@ -70,8 +70,9 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(home.nav.dropdowns.filter((d) => d.mega)).toHaveLength(1);
   });
 
-  it("4 redes, 5 enlaces y 2 teléfonos en el pie (§6.8)", () => {
-    expect(home.footer.social).toHaveLength(4);
+  it("redes reales, 5 enlaces y 2 teléfonos en el pie (§6.8)", () => {
+    expect(home.footer.social.length).toBeGreaterThanOrEqual(2);
+    expect(home.footer.social.length).toBeLessThanOrEqual(4);
     expect(home.footer.links).toHaveLength(5);
     expect(home.footer.phones).toHaveLength(2);
   });
@@ -121,6 +122,11 @@ describe("los TODO están marcados, no escondidos", () => {
     expect(home.testimonials.items.every((t) => t.todo)).toBe(true);
   });
 
+  it("las redes públicas no usan placeholders", () => {
+    expect(home.footer.social.every((s) => !s.todo)).toBe(true);
+    expect(JSON.stringify(home.footer.social)).not.toMatch(/ticaboquita|facebook/i);
+  });
+
   it("la métrica sin verificar está marcada y la verificable no", () => {
     const [inventada, verificable] = home.service.metrics;
     expect(inventada.todo).toBe(true);
@@ -153,7 +159,7 @@ describe("enlaces", () => {
     const json = JSON.stringify(home);
     const waLinks = json.match(/wa\.me\/\d+/g) ?? [];
     expect(waLinks.length).toBeGreaterThan(0);
-    expect(new Set(waLinks)).toEqual(new Set(["wa.me/50662762196"]));
+    expect(new Set(waLinks)).toEqual(new Set(["wa.me/50671322355"]));
   });
 
   it("las anclas de la portada apuntan a secciones que existen", () => {

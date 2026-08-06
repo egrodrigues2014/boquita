@@ -1,4 +1,5 @@
 import { home } from "@/content/home";
+import { CONTACT } from "@/lib/contact";
 
 /**
  * Datos estructurados para búsqueda local.
@@ -11,9 +12,8 @@ import { home } from "@/content/home";
  * `Bakery` es un subtipo de `LocalBusiness` y de `FoodEstablishment`, así que un
  * solo nodo cubre las tres cosas.
  *
- * ⚠ La dirección es aproximada hasta que Ale confirme el punto exacto de retiro
- * (CONTENT_TODO §6). Se declara sólo lo que se sabe: sin `streetAddress`
- * inventada, porque un dato falso en JSON-LD es peor que un dato ausente.
+ * Se declaran sólo canales confirmados: nada de Facebook o correo placeholder en
+ * datos estructurados públicos.
  */
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -28,26 +28,26 @@ export function bakeryJsonLd() {
     name: "Boquita — Sweet & Salty",
     description: footer.brandText,
     url: SITE_URL,
-    telephone: "+50662762196",
-    email: "ticaboquita@gmail.com",
+    telephone: `+${CONTACT.whatsappDigits}`,
     image: `${SITE_URL}${home.hero.image.src}`,
-    logo: `${SITE_URL}/img/brand/logo-86x86.webp`,
+    logo: `${SITE_URL}/img/brand/logo-transparent-86x86.png`,
     priceRange: "₡₡",
     currenciesAccepted: "CRC",
     // Se pide por WhatsApp y se retira o coordina la entrega: no hay pago online.
     paymentAccepted: "Efectivo, SINPE Móvil, transferencia",
     address: {
       "@type": "PostalAddress",
-      addressLocality: "Río Oro de Santa Ana",
-      addressRegion: "San José",
-      addressCountry: "CR",
+      streetAddress: "Calle Obelisco, condominio Condado del Río",
+      addressLocality: CONTACT.addressLocality,
+      addressRegion: CONTACT.addressRegion,
+      addressCountry: CONTACT.addressCountry,
     },
     areaServed: [
       { "@type": "City", name: "Santa Ana" },
       { "@type": "City", name: "Escazú" },
       { "@type": "AdministrativeArea", name: "Valle Central" },
     ],
-    sameAs: ["https://instagram.com/boquitacostarica"],
+    sameAs: [CONTACT.instagramUrl],
     // Horneado por encargo con 48 h de anticipación: no hay horario de tienda,
     // así que no se declara `openingHoursSpecification` — sería falso.
     slogan: "Dulce y salado, hecho en casa",

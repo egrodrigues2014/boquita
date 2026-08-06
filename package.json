@@ -2,7 +2,7 @@
   "name": "boquita",
   "version": "0.1.0",
   "private": true,
-  "description": "Boquita â€” Sweet & Salty Â· reposterÃ­a artesanal en RÃ­o Oro de Santa Ana, Costa Rica",
+  "description": "Boquita — Sweet & Salty · repostería artesanal en Santa Ana, Costa Rica",
   "scripts": {
     "dev": "next dev",
     "clean": "node -e \"require('node:fs').rmSync('.next',{recursive:true,force:true})\"",

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { THRESHOLD, contrastRatio, meetsAA, type TextSize } from "@/lib/color";
+import { CONTACT } from "@/lib/contact";
 import { formatCRC, formatCRCShort, formatFrom } from "@/lib/format";
 import { footerBackground, getTokens } from "@/lib/tokens";
 
@@ -387,7 +388,7 @@ export default function TokensSpecimenPage() {
       </p>
 
       <p className="h6-sans">Eyebrow neutro</p>
-      <p className="h6-sans primary">Repostería artesanal en Río Oro</p>
+      <p className="h6-sans primary">Repostería artesanal en Santa Ana</p>
       <p style={note}>
         <code>.h6-sans</code> — cambia la fuente a Libre Franklin, 20px/500, letter-spacing .1em. Se
         renderiza como <code>&lt;p&gt;</code>, no como <code>h6</code>, para no romper el orden de
@@ -397,7 +398,7 @@ export default function TokensSpecimenPage() {
       </p>
 
       <p>
-        Párrafo base a 18px. Horneamos por encargo en Río Oro de Santa Ana con ingredientes de
+        Párrafo base a 18px. Horneamos por encargo en Santa Ana con ingredientes de
         verdad: mantequilla, zanahoria fresca, chocolate y almendra.
       </p>
       <p className="lead">
@@ -541,7 +542,7 @@ export default function TokensSpecimenPage() {
         </p>
         <p style={{ textAlign: "center", margin: 0 }}>
           <a href="#contenido" style={{ color: "var(--gold-ink)", fontSize: 18 }}>
-            +506 6276 2196
+            {CONTACT.whatsappDisplay}
           </a>
         </p>
 

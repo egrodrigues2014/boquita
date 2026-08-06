@@ -1,4 +1,5 @@
 import { formatCRCShort } from "@/lib/format";
+import { CONTACT, whatsappBaseUrl, whatsappUrl } from "@/lib/contact";
 import type { CartLine, CheckoutFields } from "@/types/shop";
 
 /**
@@ -9,7 +10,7 @@ import type { CartLine, CheckoutFields } from "@/types/shop";
  * entendido, no un problema de maquetación.
  */
 
-export const WA_NUMBER = "50662762196";
+export const WA_NUMBER = CONTACT.whatsappDigits;
 
 /**
  * WhatsApp Desktop trunca y algunos manejadores de intents de Android fallan
@@ -108,7 +109,7 @@ export function buildWhatsAppUrl(
   }
 
   return {
-    url: `https://wa.me/${WA_NUMBER}?text=${encoded}`,
+    url: `${whatsappBaseUrl()}?text=${encoded}`,
     encodedLength: encoded.length,
     truncated,
   };
@@ -116,7 +117,7 @@ export function buildWhatsAppUrl(
 
 /** Enlace de consulta, sin carrito. Lo usan el navbar y el CTA del pie. */
 export function waPlainLink(message: string): string {
-  return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+  return whatsappUrl(message);
 }
 
 /**

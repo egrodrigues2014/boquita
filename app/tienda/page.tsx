@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description:
       `Los ${catalog.length} productos de Boquita: queques de zanahoria, galletas de granola ` +
       "sin gluten, polvorones españoles, brigadeiros, biscotti y bocaditos salados. " +
-      "Horneado por encargo en Río Oro de Santa Ana.",
+      "Horneado por encargo en Santa Ana.",
     alternates: { canonical: "/tienda" },
   };
 }

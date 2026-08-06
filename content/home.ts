@@ -1,4 +1,5 @@
 import { products } from "@/content/products";
+import { CONTACT, telHref, whatsappUrl } from "@/lib/contact";
 import type { HomeContent, ImageRef, Link, Product } from "@/types/content";
 import { CATEGORIAS, type ShopProduct } from "@/types/shop";
 
@@ -13,8 +14,7 @@ import { CATEGORIAS, type ShopProduct } from "@/types/shop";
  *
  * Convenciones:
  *  · Los titulares van en capitalización normal — el CSS los pone en mayúsculas.
- *  · Registro: voseo suave («escribinos», «pedí»), el de @boquitacostarica.
- *    ⚠ TODO: confirmar con Ale, o cambiar a usted.
+ *  · Registro: profesional e informal, con voseo suave («escribinos», «pedí»).
  *  · Todo lo marcado ⚠ TODO está listado en docs/CONTENT_TODO.md y BLOQUEA el
  *    lanzamiento, aunque no el desarrollo.
  *
@@ -85,9 +85,8 @@ function catalogLinks(): Link[] {
   return products.map(toCatalogLink);
 }
 
-const WA = "https://wa.me/50662762196";
-const WA_CONSULTA = `${WA}?text=${encodeURIComponent("¡Hola Boquita! Quiero hacer una consulta.")}`;
-const WA_PEDIDO = `${WA}?text=${encodeURIComponent("¡Hola Boquita! Quiero hacer un pedido.")}`;
+const WA_CONSULTA = whatsappUrl("¡Hola Boquita! Quiero hacer una consulta.");
+const WA_PEDIDO = whatsappUrl("¡Hola Boquita! Quiero hacer un pedido.");
 
 /** Escaleras de srcset. Los tamaños los genera scripts/build-images.mjs. */
 
@@ -252,12 +251,12 @@ export const home: HomeContent = {
     // `/#galeria` y no `#galeria`: el nav se renderiza en TODAS las páginas, y un
     // ancla pura sólo funcionaría en la portada — desde /tienda no haría nada.
     link: { label: "Galería", href: "/#galeria" },
-    phone: { display: "+506 6276 2196", href: "tel:+50662762196" },
+    phone: { display: CONTACT.whatsappDisplay, href: telHref() },
     cta: { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
   },
 
   hero: {
-    eyebrow: "Repostería artesanal en Río Oro",
+    eyebrow: "Repostería artesanal en Santa Ana",
     // El titular son 2 líneas cortas a propósito, no por gusto estético.
     //
     // Medido: «Dulce y salado» necesita 580px a 70px, pero `.hero-content` es el
@@ -273,7 +272,7 @@ export const home: HomeContent = {
     titleTop: "Dulce",
     titleBottom: "y salado",
     lead:
-      "Horneamos por encargo en Río Oro de Santa Ana con ingredientes de verdad: " +
+      "Horneamos por encargo en Santa Ana con ingredientes de verdad: " +
       "mantequilla, zanahoria fresca, chocolate y almendra. Cada pedido sale del " +
       "horno el día que lo recibís.",
     ctas: [
@@ -285,7 +284,7 @@ export const home: HomeContent = {
 
   statement: {
     partA: "Todo empieza con mantequilla de verdad, zanahoria rallada a mano",
-    partB: "y un horno pequeño en Río Oro",
+    partB: "y un horno pequeño en Santa Ana",
     partC: "donde cada receta se hornea de a poco, para vos.",
     inline: [inlineGalleta, inlineBrigadeiro],
   },
@@ -294,7 +293,7 @@ export const home: HomeContent = {
     titleTop: "Del horno de Ale",
     titleBottom: "a tu mesa",
     body:
-      "Ale Budowski hornea en su casa de Río Oro desde 2019. Sin conservantes y sin " +
+      "Ale Budowski hornea en su casa de Santa Ana desde 2019. Sin conservantes y sin " +
       "mezclas industriales: recetas propias, tandas pequeñas y el sabor de lo hecho a mano.",
     poster: mediaPoster,
     // El reel real de Ale decorando un queque. ⚠ TODO: sustituir por un MP4
@@ -322,7 +321,7 @@ export const home: HomeContent = {
     titleTop: "Hecho a mano,",
     titleBottom: "en tandas pequeñas",
     body:
-      "Boquita nació en la cocina de casa de Ale Budowski, en Río Oro de Santa Ana. " +
+      "Boquita nació en la cocina de casa de Ale Budowski, en Santa Ana. " +
       "Hoy horneamos por encargo para familias, oficinas y celebraciones de todo el " +
       "Valle Central.",
     image: serviceImage,
@@ -451,25 +450,15 @@ export const home: HomeContent = {
       button: "Enviar",
     },
     brandText:
-      "Boquita — Sweet & Salty. Repostería artesanal hecha en casa en Río Oro de " +
-      "Santa Ana, San José, Costa Rica. Horneamos por encargo, en tandas pequeñas.",
+      "Boquita — Sweet & Salty. Repostería artesanal hecha en casa en Santa Ana, " +
+      "Costa Rica. Horneamos por encargo, en tandas pequeñas.",
     social: [
       {
         label: "Instagram de Boquita",
-        href: "https://instagram.com/boquitacostarica",
+        href: CONTACT.instagramUrl,
         icon: "instagram",
       },
       { label: "WhatsApp de Boquita", href: WA_CONSULTA, icon: "whatsapp" },
-      // ⚠ TODO: no hay Facebook confirmado. Placeholder al Instagram para no
-      // dejar un enlace muerto; sustituir o quitar cuando Ale confirme.
-      {
-        label: "Facebook de Boquita",
-        href: "https://instagram.com/boquitacostarica",
-        icon: "facebook",
-        todo: true,
-      },
-      // ⚠ TODO: ¿se publica ticaboquita@gmail.com o se quiere un correo del dominio?
-      { label: "Escribinos un correo", href: "mailto:ticaboquita@gmail.com", icon: "mail", todo: true },
     ],
     links: [
       { label: "Inicio", href: "/" },
@@ -478,14 +467,10 @@ export const home: HomeContent = {
       { label: "Sobre nosotros", href: "/sobre-nosotros" },
       { label: "Escribinos", href: WA_CONSULTA, external: true },
     ],
-    // ⚠ TODO: dirección exacta o punto de retiro.
-    address: "Río Oro de Santa Ana, San José, Costa Rica",
-    addressTodo: true,
+    address: CONTACT.address,
     phones: [
-      { display: "+506 6276 2196", href: "tel:+50662762196" },
-      // ⚠ TODO: el spec pide 2 teléfonos y sólo hay uno. Este repite el mismo con
-      // el enlace de WhatsApp para no inventar un número.
-      { display: "WhatsApp: +506 6276 2196", href: WA_CONSULTA, todo: true },
+      { display: CONTACT.whatsappDisplay, href: telHref() },
+      { display: `WhatsApp: ${CONTACT.whatsappDisplay}`, href: WA_CONSULTA },
     ],
     copyright: "© 2026 Boquita Sweet & Salty. Todos los derechos reservados.",
     legal: { label: "Aviso legal", href: "/aviso-legal" },

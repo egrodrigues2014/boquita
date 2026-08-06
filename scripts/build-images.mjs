@@ -214,6 +214,16 @@ const GALLERY = [
  *   1200 → ficha en 2x (~1080px)
  */
 const PRODUCT_WIDTHS = [400, 800, 1200];
+const LOGO_VARIANT_SIZES = {
+  transparent: [
+    [43, 43],
+    [86, 86],
+  ],
+  light: [
+    [36, 36],
+    [72, 72],
+  ],
+};
 
 const PRODUCTS = [
   { name: "queque-de-zanahoria", src: "ig-24-obj61.jpg" },
@@ -417,6 +427,93 @@ async function processJob(job) {
   }
 }
 
+function isLogoBackground(data, offset) {
+  return data[offset] >= 248 && data[offset + 1] >= 248 && data[offset + 2] >= 248;
+}
+
+function transparentizeEdgeBackground(data, width, height, channels) {
+  const out = Buffer.from(data);
+  const seen = new Uint8Array(width * height);
+  const queue = [];
+
+  function push(x, y) {
+    if (x < 0 || y < 0 || x >= width || y >= height) return;
+    const pixel = y * width + x;
+    if (seen[pixel]) return;
+    const offset = pixel * channels;
+    if (!isLogoBackground(out, offset)) return;
+    seen[pixel] = 1;
+    out[offset + 3] = 0;
+    queue.push([x, y]);
+  }
+
+  for (let x = 0; x < width; x++) {
+    push(x, 0);
+    push(x, height - 1);
+  }
+  for (let y = 0; y < height; y++) {
+    push(0, y);
+    push(width - 1, y);
+  }
+
+  for (let i = 0; i < queue.length; i++) {
+    const [x, y] = queue[i];
+    push(x + 1, y);
+    push(x - 1, y);
+    push(x, y + 1);
+    push(x, y - 1);
+  }
+
+  return out;
+}
+
+async function writeLogoVariant(variant, [w, h]) {
+  const srcPath = path.join(ROOT, "assets", "logo-boquita.jpg");
+  const dir = path.join(OUT, "brand");
+  await mkdir(dir, { recursive: true });
+
+  const { data, info } = await sharp(srcPath, { failOn: "error" })
+    .resize(w, h, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const out = transparentizeEdgeBackground(data, info.width, info.height, info.channels);
+
+  if (variant === "light") {
+    for (let offset = 0; offset < out.length; offset += info.channels) {
+      const alpha = out[offset + 3];
+      if (alpha === 0) continue;
+      const isInk = out[offset] < 95 && out[offset + 1] < 80 && out[offset + 2] < 60;
+      if (isInk) {
+        out[offset] = 255;
+        out[offset + 1] = 248;
+        out[offset + 2] = 230;
+      }
+    }
+  }
+
+  await sharp(out, {
+    raw: { width: info.width, height: info.height, channels: info.channels },
+  })
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
+    .toFile(path.join(dir, `logo-${variant}-${w}x${h}.png`));
+  written++;
+}
+
+async function processLogoVariants() {
+  if (CHECK_ONLY) {
+    console.log("  ✓ brand/logo-variants: se generan desde logo-boquita.jpg sin upscale");
+    return;
+  }
+
+  for (const [variant, sizes] of Object.entries(LOGO_VARIANT_SIZES)) {
+    for (const size of sizes) {
+      await writeLogoVariant(variant, size);
+    }
+  }
+}
+
 async function main() {
   console.log(
     CHECK_ONLY
@@ -427,6 +524,7 @@ async function main() {
   for (const job of ALL) {
     await processJob(job);
   }
+  await processLogoVariants();
 
   if (problems > 0) {
     console.error(`\n✗ ${problems} recortes inválidos. No se generó nada de ellos.`);

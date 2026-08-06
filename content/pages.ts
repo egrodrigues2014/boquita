@@ -1,3 +1,5 @@
+import { CONTACT } from "@/lib/contact";
+
 /**
  * Contenido de las páginas de texto: «sobre nosotros» y el aviso legal.
  *
@@ -6,7 +8,7 @@
  *
  * ⚠ Lo marcado TODO son datos que hay que confirmar con Ale antes de publicar.
  * Se han redactado con lo que se sabe y NO se inventa nada verificable (formas
- * de pago, horarios, dirección exacta): en una página legal o de preguntas
+ * de pago u horarios): en una página legal o de preguntas
  * frecuentes, un dato falso es peor que un dato ausente.
  */
 
@@ -26,7 +28,7 @@ export const about = {
   eyebrow: "Sobre Boquita",
   title: "Hecho a mano, en tandas pequeñas",
   lead:
-    "Boquita nació en la cocina de casa de Ale Budowski, en Río Oro de Santa Ana. " +
+    "Boquita nació en la cocina de casa de Ale Budowski, en Santa Ana. " +
     "Lo que empezó como queques para la familia hoy son catorce recetas que salen del " +
     "horno por encargo, una tanda a la vez.",
 
@@ -60,7 +62,7 @@ export const about = {
       id: "entregas",
       title: "Entregas y zonas",
       paragraphs: [
-        "Podés retirar el pedido en Río Oro de Santa Ana, o coordinamos la entrega en " +
+        `Podés retirar el pedido en ${CONTACT.address}, o coordinamos la entrega en ` +
           "Santa Ana, Escazú y alrededores. La zona y la hora se acuerdan por WhatsApp " +
           "cuando confirmamos el pedido.",
         "Para pedidos grandes o fuera de esa zona, escribinos y vemos si se puede: depende " +
@@ -80,8 +82,8 @@ export const about = {
     {
       question: "¿Hacen entregas a domicilio?",
       answer:
-        "Coordinamos entregas en Santa Ana, Escazú y alrededores, y también podés retirar " +
-        "en Río Oro de Santa Ana. La zona y la hora se acuerdan por WhatsApp.",
+        `Coordinamos entregas en Santa Ana, Escazú y alrededores, y también podés retirar ` +
+        `en ${CONTACT.address}. La zona y la hora se acuerdan por WhatsApp.`,
     },
     {
       question: "¿Cómo se paga?",
@@ -138,9 +140,8 @@ export const legal = {
       id: "responsable",
       title: "Quién está detrás de este sitio",
       paragraphs: [
-        "Boquita — Sweet & Salty es un emprendimiento de repostería artesanal en Río Oro de " +
-          "Santa Ana, San José, Costa Rica. Contacto: ticaboquita@gmail.com y WhatsApp " +
-          "+506 6276 2196.",
+        `Boquita — Sweet & Salty es un emprendimiento de repostería artesanal en ` +
+          `${CONTACT.address}. Contacto por WhatsApp: ${CONTACT.whatsappDisplay}.`,
         // ⚠ TODO: si Boquita está inscrita, poner razón social y cédula jurídica.
         "Los datos fiscales y de inscripción se añadirán aquí cuando corresponda.",
       ],

@@ -12,9 +12,9 @@ Ordenado por urgencia real, no por sección.
 
 ### 1. Archivos del logo
 
-- **SVG o PNG con fondo transparente.** El archivo actual (`assets/logo-boquita.jpg`) es un JPEG con
-  el fondo blanco horneado en los píxeles. Sobre el footer marrón se vería como **una caja blanca**.
-- **Una variante clara o en negativo** para ese mismo footer marrón.
+- ✅ **Cerrado para v1.** `scripts/build-images.mjs` genera PNG transparente y variante clara desde
+  `assets/logo-boquita.jpg`: `public/img/brand/logo-transparent-*` y `logo-light-*`.
+- Sigue siendo mejor recibir un SVG original de marca cuando exista, pero ya no bloquea publicar.
 - Medidas de uso: 43px de alto en la cabecera (≈99px de ancho), 36px en el pie.
 
 ### 2. Los precios reales
@@ -40,6 +40,9 @@ De Instagram sí se pudieron leer estos, pero son de 2024 y hay que confirmarlos
 galletas chocolate chip y Nutella 6 u = ₡2.800 · brigadeiros 6 u = ₡3.000 / 12 u = ₡5.500 ·
 galletas de granola light = ₡3.000 · miel y limón = ₡2.500 · asado negro = ₡16.000/kg.
 
+**Estado v1:** Eduardo confirma usar estos precios de momento. Siguen marcados `priceTodo` para que
+el futuro panel de administración los trate como provisionales y fáciles de corregir.
+
 **Cómo se aplican, ahora que el catálogo está en Postgres:** hay dos caminos y conviene el segundo.
 Un `UPDATE` en el SQL Editor de Neon corrige un precio y aparece solo en ≤1 h, pero deja el fallback
 de `content/products.ts` diciendo otra cosa. Editar `content/products.ts` y ejecutar
@@ -52,6 +55,11 @@ explícito: hay un test que falla mientras queden marcados.
 Con **nombre, rol, texto y consentimiento escrito** de cada persona. Los seis que hay en el código
 son inventados y no pueden publicarse. Los avatares serán SVG con iniciales, así que no hacen falta
 fotos de clientes.
+
+El PDF de Instagram sólo trae fotos y permalinks; no trae comentarios ni captions extraíbles
+(`assets/raw/manifest.json` lo documenta). Desde este entorno tampoco se pueden leer comentarios de
+Instagram sin acceso interactivo/login. Para cerrar este bloque, dejar en `assets/testimonios/` seis
+capturas o un `.txt/.md` con comentario, nombre y permiso.
 
 ### 4. La métrica nº 1
 
@@ -88,26 +96,17 @@ donde harían falta 2×. No se va a fabricar un upscale: sería desenfoque a tri
 
 ### 6. Datos de contacto
 
-- **Dirección postal exacta o punto de retiro.** Ahora dice sólo «Río Oro de Santa Ana, San José».
-  El footer del spec pide una dirección, y el JSON-LD de negocio local la aprovecha para SEO.
-- **Segundo teléfono.** El spec pide dos; sólo hay uno (+506 6276 2196).
-- **URL de Facebook.** El spec pide 4 iconos sociales; hay dos reales (Instagram y WhatsApp).
-- **Correo de contacto público.** ¿Se usa `ticaboquita@gmail.com` o se quiere uno del dominio?
-
-### 7. Aclarar el handle de Instagram
-
-La cuenta es **@boquitacostarica**, pero el PDF lista **@boquita_cr** como Instagram de contacto.
-¿Cuál va en el sitio?
-
-### 8. Registro de la voz
-
-El copy está escrito con **voseo suave** («escribinos», «pedí», «enterate»), que es el registro de
-@boquitacostarica. Confirmar, o cambiar a usted.
+- ✅ Dirección pública: Calle Obelisco, condominio Condado del Río, Santa Ana.
+- ✅ WhatsApp/pedidos: +506 7132 2355.
+- ✅ Instagram publicado: @boquita_cr.
+- ✅ Voz: profesional e informal, con voseo suave.
+- Pendiente: URL real de Facebook y correo público. Mientras no existan, no se muestran enlaces
+  falsos.
 
 ### 9. Política de entrega
 
-Ahora mismo asumido: **retiro en Río Oro, y la entrega se coordina por WhatsApp**, sin costo
-modelado. Definir:
+Ahora mismo asumido: **retiro en Condado del Río, Santa Ana, y entrega coordinada por WhatsApp**, sin
+costo modelado. Definir:
 
 - ¿Hay entrega a domicilio? ¿Con costo fijo o por zona?
 - ¿Qué zonas se cubren? (asumido: Santa Ana, Escazú y alrededores)

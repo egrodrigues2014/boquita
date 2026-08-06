@@ -15,14 +15,29 @@ test("captura de la portada", async ({ page }, testInfo) => {
 
   // Forzar la carga de las imágenes lazy antes de capturar.
   await page.evaluate(async () => {
+    for (const img of document.images) {
+      img.loading = "eager";
+    }
     window.scrollTo(0, document.body.scrollHeight);
     await new Promise((r) => setTimeout(r, 400));
     window.scrollTo(0, 0);
     await new Promise((r) => setTimeout(r, 200));
   });
-  await page.waitForFunction(() =>
-    [...document.images].every((img) => img.complete && img.naturalWidth > 0),
-  );
+  await page.evaluate(async () => {
+    await Promise.all(
+      [...document.images].map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete) {
+              resolve();
+              return;
+            }
+            img.addEventListener("load", () => resolve(), { once: true });
+            img.addEventListener("error", () => resolve(), { once: true });
+          }),
+      ),
+    );
+  });
 
   const width = testInfo.project.use.viewport?.width ?? 0;
   await page.screenshot({

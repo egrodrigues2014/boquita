@@ -22,18 +22,18 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 
 ## De un vistazo
 
-*Última revisión: 5 de agosto de 2026.*
+*Última revisión: 6 de agosto de 2026.*
 
 | | |
 | --- | --- |
-| Rama | `main`, **sin remoto configurado** — no hay copia fuera de este disco |
+| Rama | `main`, remoto `origin` en `https://github.com/egrodrigues2014/boquita.git` |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
 | Sin commitear | Al cerrar este bloque debe quedar **limpio**. Verificar con `git status --short` |
-| Tests unitarios | **170 en verde**, 8 ficheros (`npm test`, verificado el 5 ago tras migrar/sembrar Neon) |
-| Tests e2e | **647 en verde + 41 skipped** de 688 casos configurados (`npm run e2e -- --reporter=dot`, verificado el 5 ago tras migrar/sembrar Neon) |
+| Tests unitarios | **171 en verde**, 8 ficheros (`npm test`, verificado el 6 ago tras P2) |
+| Tests e2e | **647 en verde + 41 skipped** de 688 casos configurados (`npm run e2e -- --reporter=dot`, verificado el 6 ago tras P2) |
 | Desplegado | **no.** Nunca se ha desplegado. No hay proyecto de Vercel creado |
 | Base de datos | Neon Postgres configurada, migrada y sembrada: `npm run db:seed` dejó **14 filas** en `products` |
-| Lanzable | **no**, y no por código: faltan los precios reales y los testimonios. Ver [🔴](#-bloquea-el-lanzamiento) |
+| Lanzable | **no**: faltan testimonios reales, métrica defendible, panorámica original y dominio/hosting. Ver [🔴](#-bloquea-el-lanzamiento) |
 
 ---
 
@@ -165,18 +165,18 @@ Nada de esto es código. Detalle completo en `docs/CONTENT_TODO.md`.
 
 | | Qué falta | Dónde |
 | --- | --- | --- |
-| 1 | **Logo en SVG/PNG transparente** y variante clara. El actual es un JPEG con fondo blanco horneado: sobre el pie marrón sería una caja blanca | `CONTENT_TODO.md §1` |
-| 2 | **Los 14 precios reales.** Todos son placeholders marcados `priceTodo`; el menú de Instagram es una imagen y su texto no se puede extraer | `CONTENT_TODO.md §2` |
-| 3 | **Los 6 testimonios**, con nombre, rol, texto y consentimiento escrito. Los que hay son inventados y no pueden publicarse | `CONTENT_TODO.md §3` |
-| 4 | **La métrica nº 1** («2.400+ pedidos desde 2019») necesita un número real y defendible | `CONTENT_TODO.md §4` |
+| 1 | **Los 6 testimonios reales**, con nombre/rol/texto. El consentimiento está aprobado, pero falta el texto fuente: Instagram no es legible desde el PDF ni desde este entorno sin login | `CONTENT_TODO.md §3` |
+| 2 | **La métrica nº 1** («2.400+ pedidos desde 2019») necesita un número real y defendible | `CONTENT_TODO.md §4` |
+| 3 | **La panorámica del mostrador a resolución original** (mín. 2340px de ancho). La del PDF se usa para v1, pero no verifica 2× | `CONTENT_TODO.md §5` |
 
-Hay tests que **fallan** si se desmarcan los `priceTodo` o los testimonios sin sustituirlos de
-verdad (`tests/unit/shop.test.ts`, `tests/unit/content.test.ts`). Quitar la marca es un acto
-explícito, no un descuido posible.
+Los precios actuales quedan aceptados como provisionales para seguir, pero siguen marcados
+`priceTodo` hasta que exista el panel admin o Ale confirme la lista definitiva. Hay tests que
+fallan si se desmarcan los `priceTodo` o los testimonios sin sustituirlos de verdad
+(`tests/unit/shop.test.ts`, `tests/unit/content.test.ts`). Quitar la marca es un acto explícito, no
+un descuido posible.
 
-🟠 Aparte, la **panorámica del mostrador a resolución original** (mín. 2340px de ancho) bloquea la
-verificación del layout: las 37 fotos del PDF están capadas a 1440px y dan ~1.23× donde hacen falta
-2×. `CONTENT_TODO.md §5`.
+✅ Cerrado en P2: contacto público, WhatsApp `+506 7132 2355`, dirección de retiro, Instagram
+`@boquita_cr`, logo transparente y variante clara generados desde `assets/logo-boquita.jpg`.
 
 ### 🟠 Bloquea operar el sitio
 
@@ -196,7 +196,7 @@ no aparece en el repo) ni `/admin`, aunque `app/robots.ts` y `vercel.json` ya lo
 | --- | --- |
 | **Panel de administración** | La pieza que cierra las dos anteriores. Auth: `.env.example` reserva `AUTH_SECRET`, `ADMIN_PASSWORD_HASH`, `ADMIN_SESSION_TTL_HOURS`, `ADMIN_TOKEN_VERSION` — y **el script que genera el hash no existe todavía**. Los 8 `CHECK` de la tabla ya están puestos precisamente para proteger este borde de escritura |
 | **Newsletter** | El formulario está maquetado y **no envía** (`components/layout/Footer.tsx`). Reserva `FORM_HMAC_SECRET`, `IP_SALT`, `RATE_LIMIT_NEWSLETTER_PER_DAY`. **Ojo: `/aviso-legal` promete hoy que no se guardan datos en servidor propio. Esa página se reescribe ANTES de insertar la primera fila** |
-| **Despliegue** | Nunca se ha desplegado y no hay remoto de git. Aviso: **Vercel Hobby es de uso no comercial** y una tienda que vende es comercial; puede exigir el paso a Pro. Por eso todo el acceso a base de datos está detrás de `lib/db` y la cuenta de Neon es propia, no del marketplace: migrar a Cloudflare Pages es cuestión de días |
+| **Despliegue** | Nunca se ha desplegado. El remoto git ya existe, pero falta elegir dominio/hosting. Aviso: **Vercel Hobby es de uso no comercial** y una tienda que vende es comercial; puede exigir el paso a Pro. Por eso todo el acceso a base de datos está detrás de `lib/db` y la cuenta de Neon es propia, no del marketplace: migrar a Cloudflare Pages es cuestión de días |
 | **Fotos de producto en Blob** | `next.config.ts:13` deja pendiente `remotePatterns`. `next/image` está reservado para estas fotos (es la única excepción a D-9) y `eslint.config.mjs:46` lo documenta |
 | **D-11 · `100svh`** | Condicional: sólo si el salto de la barra de direcciones de Safari en iOS se juzga inaceptable en un pase con dispositivo real. En escritorio son idénticos |
 
@@ -227,8 +227,7 @@ Antes de seguir desarrollando, este comando debe salir vacío:
 git status --short
 ```
 
-Sigue siendo un riesgo que la rama `main` no tenga remoto configurado: aunque el trabajo quede en
-commits locales, todavía no hay copia fuera de este disco.
+El remoto ya existe. El hábito operativo ahora es simple: cerrar cada bloque con commit y push.
 
 ---
 
@@ -256,7 +255,7 @@ cuando toque:
 
 | Comando | Qué protege |
 | --- | --- |
-| `npm test` | 170 unitarios: moneda, contraste recalculado desde el CSS, catálogo y su fallback, derivación de la portada, parallax, WhatsApp |
+| `npm test` | 171 unitarios: moneda, contraste recalculado desde el CSS, catálogo y su fallback, derivación de la portada, parallax, WhatsApp |
 | `npm run typecheck` | `tsc --noEmit`, con `noUncheckedIndexedAccess` |
 | `npm run lint` | `eslint .` |
 | `npm run build && npm run e2e` | 688 e2e a 8 anchos: geometría, interacciones, lightbox, tienda, páginas, SEO, presupuestos y axe. Arranca su propio servidor en el puerto 3100 contra el **build de producción** |

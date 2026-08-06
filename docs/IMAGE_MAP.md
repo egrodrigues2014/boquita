@@ -54,6 +54,10 @@ producto (el titular es «Dulce y salado / hecho en casa»). El `alt` sí dice l
 pierde nada; sólo se descarta la franja de jardín superior. En todas las demás fotos el sujeto mide
 690–720px de alto contra los 497 que permite la banda, y queda partido por la mitad.
 
+Se mantiene para v1 porque no hay original mejor en `assets/`. El límite sigue siendo técnico: la
+fuente del PDF mide 1440px de ancho y no llega al 2× ideal del slot panorámico; cuando llegue una
+panorámica original de 2340px+ se cambia esta receta sin tocar el resto del pipeline.
+
 **`service` — ig-09, bandeja de polvorones.** Sensación de obrador real, luz de ventana cálida, sin
 caras y sin texto: no necesita consentimiento y no bloquea el despliegue. La alternativa mejor en
 contenido es `ig-18` (Ale decorando), pero sale su cara y requiere su OK.

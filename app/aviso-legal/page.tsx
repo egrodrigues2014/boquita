@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "Aviso legal y privacidad",
   description:
     "Qué datos usa este sitio (muy pocos), cómo funcionan los pedidos y qué pasa con los " +
-    "alérgenos. Boquita — Sweet & Salty, Río Oro de Santa Ana.",
+    "alérgenos. Boquita — Sweet & Salty, Santa Ana.",
   alternates: { canonical: "/aviso-legal" },
   robots: { index: false, follow: true },
 };

@@ -7,6 +7,9 @@
  * llenan las dos filas de galería. Un array corto rompe el diseño en silencio,
  * así que en `content/schema.ts` hay un Zod que lo afirma con `.length()`.
  *
+ * Excepción deliberada: las redes del footer ya no se fuerzan a 4. Es peor
+ * publicar enlaces falsos que mostrar sólo los canales reales.
+ *
  * En la Fase 2 estas mismas formas serán el contrato de la API, y
  * `content/home.ts` pasará a ser el fallback cuando la base de datos esté vacía.
  */
@@ -167,7 +170,7 @@ export interface HomeContent {
     };
     newsletter: { title: string; placeholder: string; label: string; button: string };
     brandText: string;
-    /** Exactamente 4. */
+    /** Sólo canales reales: no se rellenan huecos con placeholders. */
     social: Social[];
     /** Exactamente 5. */
     links: Link[];

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { CONTACT, whatsappBaseUrl } from "@/lib/contact";
 
 /**
  * Último recinto: sólo se usa si falla el propio `layout.tsx`.
@@ -41,10 +42,10 @@ export default function GlobalError({
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.6, margin: "0 0 28px", color: "#6b5b4d" }}>
             El sitio no pudo cargarse. Escribinos por WhatsApp al{" "}
-            <strong>+506 6276 2196</strong> y te atendemos directamente.
+            <strong>{CONTACT.whatsappDisplay}</strong> y te atendemos directamente.
           </p>
           <a
-            href="https://wa.me/50662762196"
+            href={whatsappBaseUrl()}
             style={{
               display: "inline-block",
               padding: "14px 30px",

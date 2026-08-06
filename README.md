@@ -1,10 +1,10 @@
 # Boquita — Sweet & Salty
 
-Sitio web de **Boquita**, repostería artesanal casera en Río Oro de Santa Ana, San José, Costa Rica.
+Sitio web de **Boquita**, repostería artesanal casera en Santa Ana, San José, Costa Rica.
 Queques de zanahoria, galletas de granola sin gluten, polvorones españoles, brigadeiros, biscotti y
 bocaditos salados. Horneado por encargo, en tandas pequeñas.
 
-Instagram [@boquitacostarica](https://instagram.com/boquitacostarica) · WhatsApp +506 6276 2196
+Instagram [@boquita_cr](https://instagram.com/boquita_cr) · WhatsApp +506 7132 2355
 
 ## Stack
 
@@ -236,7 +236,7 @@ carritos anteriores a ese campo se resuelven contra `content/products.ts`.
 
 ### Medido, no estimado
 
-170 tests unitarios y 688 e2e a los 8 anchos del checklist. En el build de producción:
+171 tests unitarios y 688 e2e a los 8 anchos del checklist. En el build de producción:
 
 | | 1440px | 390px |
 | --- | --- | --- |

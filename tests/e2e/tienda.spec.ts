@@ -10,8 +10,10 @@ import { expect, test, type Page } from "@playwright/test";
 
 /** El drawer se abre desde el navbar. */
 async function openCart(page: Page) {
+  const drawer = page.locator(".cart-drawer");
   await page.getByRole("button", { name: /^Carrito/ }).click();
-  await expect(page.locator(".cart-drawer")).toHaveClass(/cart-drawer--open/);
+  await expect(drawer).toHaveClass(/cart-drawer--open/);
+  await expect(drawer).toHaveCSS("transform", "none");
 }
 
 test.describe("catálogo", () => {
@@ -116,7 +118,7 @@ test.describe("ficha de producto", () => {
     // sumarlo daría un total que no es el que se va a pagar.
     await expect(page.getByRole("button", { name: "Añadir al carrito" })).toHaveCount(0);
     const link = page.getByRole("link", { name: /Pedir cotización por WhatsApp/ });
-    await expect(link).toHaveAttribute("href", /wa\.me\/50662762196/);
+    await expect(link).toHaveAttribute("href", /wa\.me\/50671322355/);
     await expect(page.locator(".product-price")).toContainText("desde");
   });
 });
@@ -199,14 +201,19 @@ test.describe("carrito", () => {
     expect(inside).toBe(true);
   });
 
-  test("cierra con Escape y con el scrim", async ({ page }) => {
+  test("cierra con Escape y con el scrim cuando queda visible", async ({ page, viewport }) => {
     await page.goto("/tienda");
     await openCart(page);
     await page.keyboard.press("Escape");
     await expect(page.locator(".cart-drawer")).not.toHaveClass(/cart-drawer--open/);
 
     await openCart(page);
-    await page.locator(".cart-scrim").click({ position: { x: 5, y: 300 } });
+    if (viewport!.width <= 479) {
+      // El carrito ocupa 100vw en móvil estrecho: no queda scrim clicable.
+      await page.getByRole("button", { name: "Cerrar el carrito" }).click();
+    } else {
+      await page.locator(".cart-scrim").click({ position: { x: 5, y: 300 } });
+    }
     await expect(page.locator(".cart-drawer")).not.toHaveClass(/cart-drawer--open/);
   });
 });
@@ -224,7 +231,7 @@ test.describe("checkout por WhatsApp", () => {
       .getByRole("link", { name: /Finalizar por WhatsApp/ })
       .getAttribute("href");
 
-    expect(href).toContain("wa.me/50662762196");
+    expect(href).toContain("wa.me/50671322355");
     const message = decodeURIComponent(href!.split("?text=")[1]!);
     expect(message).toContain("Polvorones de almendra");
     expect(message).toContain("₡ 5.000");

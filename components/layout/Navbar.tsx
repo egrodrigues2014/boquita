@@ -170,8 +170,8 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
         <Link className="brand" href="/" aria-label="Boquita — Sweet & Salty, inicio">
           <img
             className="logo"
-            src="/img/brand/logo-43x43.webp"
-            srcSet="/img/brand/logo-43x43.webp 43w, /img/brand/logo-86x86.webp 86w"
+            src="/img/brand/logo-transparent-43x43.png"
+            srcSet="/img/brand/logo-transparent-43x43.png 43w, /img/brand/logo-transparent-86x86.png 86w"
             sizes="43px"
             width={43}
             height={43}

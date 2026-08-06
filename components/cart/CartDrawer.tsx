@@ -92,162 +92,166 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
           </div>
         ) : (
           <>
-            <ul className="cart-lines">
-              {lines.map((line) => (
-                <li className="cart-line" key={line.slug}>
-                  {line.image && (
-                    <img
-                      className="cart-line-img"
-                      src={line.image}
-                      alt=""
-                      width={60}
-                      height={60}
-                      loading="lazy"
-                    />
-                  )}
-                  <div className="cart-line-body">
-                    <Link
-                      className="cart-line-name"
-                      href={`/tienda/${line.slug}`}
-                      onClick={onClose}
-                    >
-                      {line.name}
-                    </Link>
-                    <p className="cart-line-unit">{line.unit}</p>
+            <div className="cart-scroll">
+              <ul className="cart-lines">
+                {lines.map((line) => (
+                  <li className="cart-line" key={line.slug}>
+                    {line.image && (
+                      <img
+                        className="cart-line-img"
+                        src={line.image}
+                        alt=""
+                        width={60}
+                        height={60}
+                        loading="lazy"
+                      />
+                    )}
+                    <div className="cart-line-body">
+                      <Link
+                        className="cart-line-name"
+                        href={`/tienda/${line.slug}`}
+                        onClick={onClose}
+                      >
+                        {line.name}
+                      </Link>
+                      <p className="cart-line-unit">{line.unit}</p>
 
-                    <div className="qty-stepper qty-stepper--sm">
+                      <div className="qty-stepper qty-stepper--sm">
+                        <button
+                          type="button"
+                          className="qty-button"
+                          aria-label={`Quitar una unidad de ${line.name}`}
+                          onClick={() => setQty(line.slug, line.qty - 1)}
+                        >
+                          −
+                        </button>
+                        <output className="qty-value" aria-live="polite">
+                          {line.qty}
+                        </output>
+                        <button
+                          type="button"
+                          className="qty-button"
+                          aria-label={`Añadir una unidad de ${line.name}`}
+                          aria-disabled={line.qty >= MAX_QTY}
+                          onClick={() => setQty(line.slug, line.qty + 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="cart-line-end">
+                      <span className="cart-line-price">
+                        {line.priceOnRequest ? "a convenir" : formatCRCShort(line.price * line.qty)}
+                      </span>
                       <button
                         type="button"
-                        className="qty-button"
-                        aria-label={`Quitar una unidad de ${line.name}`}
-                        onClick={() => setQty(line.slug, line.qty - 1)}
+                        className="cart-line-remove"
+                        aria-label={`Quitar ${line.name} del pedido`}
+                        onClick={() => remove(line.slug)}
                       >
-                        −
-                      </button>
-                      <output className="qty-value" aria-live="polite">
-                        {line.qty}
-                      </output>
-                      <button
-                        type="button"
-                        className="qty-button"
-                        aria-label={`Añadir una unidad de ${line.name}`}
-                        aria-disabled={line.qty >= MAX_QTY}
-                        onClick={() => setQty(line.slug, line.qty + 1)}
-                      >
-                        +
+                        Quitar
                       </button>
                     </div>
-                  </div>
+                  </li>
+                ))}
+              </ul>
 
-                  <div className="cart-line-end">
-                    <span className="cart-line-price">
-                      {line.priceOnRequest ? "a convenir" : formatCRCShort(line.price * line.qty)}
-                    </span>
-                    <button
-                      type="button"
-                      className="cart-line-remove"
-                      aria-label={`Quitar ${line.name} del pedido`}
-                      onClick={() => remove(line.slug)}
-                    >
-                      Quitar
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="cart-total">
-              <span>{hasQuoted ? "Subtotal con precio fijo" : "Total"}</span>
-              <strong>{formatCRCShort(subtotal)}</strong>
-            </div>
-            {hasQuoted && (
-              <p className="cart-note">
-                Hay productos que se cotizan aparte: el total es aproximado y lo confirmamos por
-                WhatsApp.
-              </p>
-            )}
-
-            <div className="cart-fields">
-              <label htmlFor="cart-name">Tu nombre</label>
-              <input
-                id="cart-name"
-                className="cart-input"
-                type="text"
-                autoComplete="name"
-                value={fields.name ?? ""}
-                onChange={(event) => setFields((f) => ({ ...f, name: event.target.value }))}
-              />
-
-              <label htmlFor="cart-date">Fecha en que lo querés</label>
-              <input
-                id="cart-date"
-                className="cart-input"
-                type="date"
-                min={minDate}
-                value={fields.date ?? ""}
-                onChange={(event) => setFields((f) => ({ ...f, date: event.target.value }))}
-                aria-describedby="cart-date-hint"
-              />
-              <p className="cart-hint" id="cart-date-hint">
-                Se hornea por encargo: lo antes posible para este pedido es el {minDate}.
-              </p>
-
-              <label htmlFor="cart-zone">Zona de entrega o retiro</label>
-              <input
-                id="cart-zone"
-                className="cart-input"
-                type="text"
-                placeholder="Santa Ana, Escazú, retiro en Río Oro…"
-                value={fields.zone ?? ""}
-                onChange={(event) => setFields((f) => ({ ...f, zone: event.target.value }))}
-              />
-
-              <label htmlFor="cart-notes">Algo que debamos saber</label>
-              <input
-                id="cart-notes"
-                className="cart-input"
-                type="text"
-                placeholder="Alergias, mensaje en el queque…"
-                value={fields.notes ?? ""}
-                onChange={(event) => setFields((f) => ({ ...f, notes: event.target.value }))}
-              />
-            </div>
-
-            {truncated && (
-              <p className="cart-note">
-                El pedido es largo, así que el mensaje irá resumido y te pediremos el detalle en el
-                chat.
-              </p>
-            )}
-
-            {/* <a> real y no window.open: sobrevive al bloqueo de popups de iOS. */}
-            <a
-              className="btn cart-submit"
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setSent(true)}
-            >
-              Finalizar por WhatsApp
-              <span className="sr-only"> (abre una pestaña nueva)</span>
-            </a>
-
-            {sent && (
-              <div className="cart-sent" role="status">
-                <p>¿Ya enviaste el mensaje?</p>
-                <button
-                  type="button"
-                  className="btn btn--ghost"
-                  onClick={() => {
-                    clear();
-                    setSent(false);
-                    onClose();
-                  }}
-                >
-                  Sí, vaciar el carrito
-                </button>
+              <div className="cart-total">
+                <span>{hasQuoted ? "Subtotal con precio fijo" : "Total"}</span>
+                <strong>{formatCRCShort(subtotal)}</strong>
               </div>
-            )}
+              {hasQuoted && (
+                <p className="cart-note">
+                  Hay productos que se cotizan aparte: el total es aproximado y lo confirmamos por
+                  WhatsApp.
+                </p>
+              )}
+
+              <div className="cart-fields">
+                <label htmlFor="cart-name">Tu nombre</label>
+                <input
+                  id="cart-name"
+                  className="cart-input"
+                  type="text"
+                  autoComplete="name"
+                  value={fields.name ?? ""}
+                  onChange={(event) => setFields((f) => ({ ...f, name: event.target.value }))}
+                />
+
+                <label htmlFor="cart-date">Fecha en que lo querés</label>
+                <input
+                  id="cart-date"
+                  className="cart-input"
+                  type="date"
+                  min={minDate}
+                  value={fields.date ?? ""}
+                  onChange={(event) => setFields((f) => ({ ...f, date: event.target.value }))}
+                  aria-describedby="cart-date-hint"
+                />
+                <p className="cart-hint" id="cart-date-hint">
+                  Se hornea por encargo: lo antes posible para este pedido es el {minDate}.
+                </p>
+
+                <label htmlFor="cart-zone">Zona de entrega o retiro</label>
+                <input
+                  id="cart-zone"
+                  className="cart-input"
+                  type="text"
+                  placeholder="Santa Ana, Escazú, retiro en Condado del Río…"
+                  value={fields.zone ?? ""}
+                  onChange={(event) => setFields((f) => ({ ...f, zone: event.target.value }))}
+                />
+
+                <label htmlFor="cart-notes">Algo que debamos saber</label>
+                <input
+                  id="cart-notes"
+                  className="cart-input"
+                  type="text"
+                  placeholder="Alergias, mensaje en el queque…"
+                  value={fields.notes ?? ""}
+                  onChange={(event) => setFields((f) => ({ ...f, notes: event.target.value }))}
+                />
+              </div>
+
+              {truncated && (
+                <p className="cart-note">
+                  El pedido es largo, así que el mensaje irá resumido y te pediremos el detalle en el
+                  chat.
+                </p>
+              )}
+            </div>
+
+            <div className="cart-actions">
+              {/* <a> real y no window.open: sobrevive al bloqueo de popups de iOS. */}
+              <a
+                className="btn cart-submit"
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setSent(true)}
+              >
+                Finalizar por WhatsApp
+                <span className="sr-only"> (abre una pestaña nueva)</span>
+              </a>
+
+              {sent && (
+                <div className="cart-sent" role="status">
+                  <p>¿Ya enviaste el mensaje?</p>
+                  <button
+                    type="button"
+                    className="btn btn--ghost"
+                    onClick={() => {
+                      clear();
+                      setSent(false);
+                      onClose();
+                    }}
+                  >
+                    Sí, vaciar el carrito
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         )}
       </div>
