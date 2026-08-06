@@ -61,6 +61,9 @@ El PDF de Instagram sólo trae fotos y permalinks; no trae comentarios ni captio
 Instagram sin acceso interactivo/login. Para cerrar este bloque, dejar en `assets/testimonios/` seis
 capturas o un `.txt/.md` con comentario, nombre y permiso.
 
+**Estado v1:** la sección queda oculta en producción. No se publican reseñas inventadas ni siquiera
+marcadas como `todo`.
+
 ### 4. La métrica nº 1
 
 El bloque de servicio muestra dos métricas. La segunda («14 recetas en el catálogo») es verificable.

@@ -374,65 +374,9 @@ export const home: HomeContent = {
 
   testimonials: {
     title: "Lo que dicen nuestros clientes",
-    // ⚠ TODO: las 6 son inventadas. NO pueden publicarse. Hacen falta reseñas
-    // reales con nombre, rol y consentimiento escrito. Ver docs/CONTENT_TODO.md §3.
-    // Los avatares son SVG con iniciales: nunca fotos de stock de personas ficticias.
-    items: [
-      {
-        id: "t1",
-        name: "Mariana Solís",
-        role: "Vecina de Santa Ana",
-        quote:
-          "Pedí el queque de zanahoria para el cumpleaños de mi mamá y desapareció en " +
-          "diez minutos. Es el mejor que he probado en el Valle Central.",
-        todo: true,
-      },
-      {
-        id: "t2",
-        name: "Andrés Quirós",
-        role: "Cliente en Escazú",
-        quote:
-          "Las galletas de granola son mi desayuno de todos los días. Sin gluten y con " +
-          "poca azúcar, pero saben a galleta de verdad.",
-        todo: true,
-      },
-      {
-        id: "t3",
-        name: "Laura Vargas",
-        role: "Organizadora de eventos",
-        quote:
-          "Ale nos hizo el queque personalizado para la boda de mi hermana. Quedó igual " +
-          "a la foto que le mandamos y llegó puntual.",
-        todo: true,
-      },
-      {
-        id: "t4",
-        name: "Diego Montero",
-        role: "Oficina en Rohrmoser",
-        quote:
-          "Pedimos cachitos de jamón para las reuniones de los lunes. Llegan calientes " +
-          "y ya son parte de la rutina del equipo.",
-        todo: true,
-      },
-      {
-        id: "t5",
-        name: "Sofía Jiménez",
-        role: "Clienta desde 2020",
-        quote:
-          "Los brigadeiros y los polvorones son mi combo para regalar. Se nota que todo " +
-          "está hecho a mano, en tandas pequeñas.",
-        todo: true,
-      },
-      {
-        id: "t6",
-        name: "Carolina Rojas",
-        role: "Nutricionista",
-        quote:
-          "Recomiendo los biscotti keto a mis pacientes: pocos ingredientes, nada raro " +
-          "en la etiqueta y muy buen sabor.",
-        todo: true,
-      },
-    ],
+    // Bloqueante de lanzamiento: no hay comentarios reales extraíbles del PDF.
+    // La sección no se renderiza hasta recibir capturas/textos verificables.
+    items: [],
   },
 
   footer: {

@@ -28,7 +28,7 @@ import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
  *   5 wrapper              imagen ancha + bloque crema del catálogo
  *   6 section.service      imagen que sobresale + 2 métricas
  *   7 section.gallery      2 filas desbordadas
- *   8 section.testimonials slider de tarjetas crema
+ *   8 section.testimonials slider de tarjetas crema — oculto hasta tener reseñas reales
  *   9 footer               tarjeta CTA solapada + bloque oscuro
  *
  * `getHomeContent()` es el copy de `content/home.ts` con la rejilla del catálogo,

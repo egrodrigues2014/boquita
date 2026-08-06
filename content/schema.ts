@@ -153,7 +153,9 @@ export const homeSchema = z.object({
 
   testimonials: z.object({
     title: z.string().min(3).max(50),
-    items: z.array(testimonial).length(6),
+    items: z.array(testimonial).refine((items) => items.length === 0 || items.length === 6, {
+      message: "publicar testimonios requiere 6 reseñas reales, o ninguna mientras esté bloqueado",
+    }),
   }),
 
   footer: z.object({

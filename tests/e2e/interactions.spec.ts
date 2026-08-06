@@ -93,10 +93,10 @@ test.describe("prefers-reduced-motion", () => {
     expect(await read()).toBe(before);
   });
 
-  test("quita la transición del slider", async ({ page }) => {
+  test("no monta el slider de testimonios mientras el bloque está pendiente", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.reload();
-    await expect(page.locator(".slider-mask")).toHaveCSS("transition-duration", "0s");
+    await expect(page.locator(".slider-mask")).toHaveCount(0);
   });
 });
 
@@ -144,68 +144,20 @@ test.describe("parallax de la galería", () => {
 });
 
 // ── Punto 8 · slider ───────────────────────────────────────────────────────
-test.describe("slider de testimonios", () => {
-  test("navega con las flechas y se deshabilita en los extremos", async ({ page, viewport }) => {
-    const perView = viewport!.width <= 767 ? 1 : viewport!.width <= 991 ? 2 : 3;
-    const maxIndex = 6 - perView;
-
-    const left = page.getByRole("button", { name: "Ver reseñas anteriores" });
-    const right = page.getByRole("button", { name: "Ver reseñas siguientes" });
-    const mask = page.locator(".slider-mask");
-
-    // Arranca al principio: izquierda apagada, derecha activa.
-    // Se comprueba `aria-disabled`, no `disabled`: deshabilitar de verdad un
-    // botón enfocado manda el foco al <body> y rompe la navegación por teclado.
-    await expect(left).toHaveAttribute("aria-disabled", "true");
-    await expect(right).toHaveAttribute("aria-disabled", "false");
-    await expect(mask).toHaveAttribute("style", /--i:\s*0/);
-
-    await right.click();
-    await expect(mask).toHaveAttribute("style", /--i:\s*1/);
-    await expect(left).toHaveAttribute("aria-disabled", "false");
-
-    // Hasta el final.
-    for (let i = 1; i < maxIndex; i++) await right.click();
-    await expect(mask).toHaveAttribute("style", new RegExp(`--i:\\s*${maxIndex}`));
-    await expect(right).toHaveAttribute("aria-disabled", "true");
-
-    // Un clic extra en el extremo no debe mover nada.
-    // `force: true` es necesario porque Playwright considera `aria-disabled="true"`
-    // como no accionable y esperaría en vano — lo cual es, en sí, la prueba de que
-    // el estado se comunica correctamente a la tecnología asistiva.
-    await right.click({ force: true });
-    await expect(mask).toHaveAttribute("style", new RegExp(`--i:\\s*${maxIndex}`));
-
-    // Y de vuelta.
-    for (let i = 0; i < maxIndex; i++) await left.click();
-    await expect(mask).toHaveAttribute("style", /--i:\s*0/);
-    await expect(left).toHaveAttribute("aria-disabled", "true");
+test.describe("testimonios pendientes", () => {
+  test("no muestra flechas hasta tener reseñas reales", async ({ page }) => {
+    await expect(page.getByRole("button", { name: "Ver reseñas anteriores" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Ver reseñas siguientes" })).toHaveCount(0);
   });
 
-  test("responde al teclado con flechas, Home y End", async ({ page, viewport }) => {
-    const perView = viewport!.width <= 767 ? 1 : viewport!.width <= 991 ? 2 : 3;
-    const maxIndex = 6 - perView;
-    const mask = page.locator(".slider-mask");
-
-    await page.getByRole("button", { name: "Ver reseñas siguientes" }).focus();
-
-    await page.keyboard.press("ArrowRight");
-    await expect(mask).toHaveAttribute("style", /--i:\s*1/);
-
-    await page.keyboard.press("End");
-    await expect(mask).toHaveAttribute("style", new RegExp(`--i:\\s*${maxIndex}`));
-
-    // El foco debe seguir en la flecha tras llegar al extremo: es justo lo que
-    // se perdía cuando el botón se deshabilitaba de verdad.
-    await expect(page.getByRole("button", { name: "Ver reseñas siguientes" })).toBeFocused();
-
-    await page.keyboard.press("Home");
-    await expect(mask).toHaveAttribute("style", /--i:\s*0/);
+  test("no expone reseñas inventadas al teclado", async ({ page }) => {
+    await page.keyboard.press("Tab");
+    await expect(page.locator(".review-card")).toHaveCount(0);
   });
 
-  test("las 6 reseñas siguen en el DOM para lectores de pantalla", async ({ page }) => {
-    await expect(page.locator(".review-card")).toHaveCount(6);
-    await expect(page.locator(".slider p.sr-only")).toContainText("de 6");
+  test("no deja reseñas ocultas en el DOM para lectores de pantalla", async ({ page }) => {
+    await expect(page.locator(".review-card")).toHaveCount(0);
+    await expect(page.locator(".slider p.sr-only")).toHaveCount(0);
   });
 });
 

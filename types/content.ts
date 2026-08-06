@@ -156,7 +156,7 @@ export interface HomeContent {
 
   testimonials: {
     title: string;
-    /** Exactamente 6. */
+    /** 0 mientras esté bloqueado; exactamente 6 cuando haya reseñas reales. */
     items: Testimonial[];
   };
 

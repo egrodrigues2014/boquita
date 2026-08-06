@@ -228,43 +228,12 @@ test("7 · las dos filas de galería desbordan y están recortadas", async ({ pa
 });
 
 // ── 8 ──────────────────────────────────────────────────────────────────────
-test("8 · tarjetas crema con min-height y flechas circulares alineadas al titular", async ({
-  page,
-  viewport,
-}) => {
-  const width = viewport!.width;
-
-  expect(await page.locator(".review-card").count()).toBe(6);
-
-  expect(await style(page, ".review-card", "min-height")).toBe(
-    `${byWidth(width, { base: 420, min1280: 398, max991: 393, max767: 312, max479: 420 })}px`,
+test("8 · no se publican testimonios mientras falte fuente real", async ({ page }) => {
+  await expect(page.getByRole("heading", { name: "Lo que dicen nuestros clientes" })).toHaveCount(
+    0,
   );
-
-  // Flechas: 34×34 y redondeadas.
-  const arrow = await box(page, ".slider-arrow--right");
-  expect(arrow.width).toBeCloseTo(34, 0);
-  expect(arrow.height).toBeCloseTo(34, 0);
-  expect(await style(page, ".slider-arrow--right", "border-radius")).toBe("50px");
-
-  // La línea de 160×1. A ≥992 va a `top:17px`, o sea centrada con las flechas
-  // (34/2). A ≤991 el spec la baja a `top:57px`: ahí deja de conectarlas, y es
-  // intencionado.
-  const line = await box(page, ".slider-line");
-  expect(line.height).toBeCloseTo(1, 0);
-  if (width > 479) {
-    expect(line.width).toBeCloseTo(160, 0);
-    expect(line.y).toBeCloseTo(arrow.y + (width <= 991 ? 57 : 17), 1);
-  }
-
-  // Avatares 70×70 y SIN redondear.
-  const avatar = await box(page, ".review-avatar");
-  expect(avatar.width).toBeCloseTo(70, 0);
-  expect(avatar.height).toBeCloseTo(70, 0);
-  expect(await style(page, ".review-avatar", "border-radius")).toBe("0px");
-
-  // Las tarjetas no llevan radio ni sombra.
-  expect(await style(page, ".review-card", "border-radius")).toBe("0px");
-  expect(await style(page, ".review-card", "box-shadow")).toBe("none");
+  await expect(page.locator(".review-card")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Ver reseñas siguientes" })).toHaveCount(0);
 });
 
 // ── 9 ──────────────────────────────────────────────────────────────────────

@@ -41,8 +41,8 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(home.service.metrics).toHaveLength(2);
   });
 
-  it("6 testimonios → slider de 3/2/1 visibles (§6.7)", () => {
-    expect(home.testimonials.items).toHaveLength(6);
+  it("testimonios: 0 mientras están bloqueados, 6 cuando sean reales (§6.7)", () => {
+    expect([0, 6]).toContain(home.testimonials.items.length);
   });
 
   it("4 + 4 fotos de galería, todas únicas (§6.6)", () => {
@@ -118,8 +118,8 @@ describe("los TODO están marcados, no escondidos", () => {
     expect(home.menu.products.every((p) => p.priceTodo)).toBe(true);
   });
 
-  it("los 6 testimonios siguen marcados como inventados", () => {
-    expect(home.testimonials.items.every((t) => t.todo)).toBe(true);
+  it("no publica testimonios inventados", () => {
+    expect(home.testimonials.items).toHaveLength(0);
   });
 
   it("las redes públicas no usan placeholders", () => {

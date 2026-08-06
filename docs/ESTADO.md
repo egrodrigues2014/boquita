@@ -177,6 +177,8 @@ un descuido posible.
 
 ✅ Cerrado en P2: contacto público, WhatsApp `+506 7132 2355`, dirección de retiro, Instagram
 `@boquita_cr`, logo transparente y variante clara generados desde `assets/logo-boquita.jpg`.
+Las reseñas ficticias se retiraron del render público: la sección queda oculta hasta recibir textos
+reales.
 
 ### 🟠 Bloquea operar el sitio
 
