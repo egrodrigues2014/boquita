@@ -4,7 +4,7 @@
   "private": true,
   "description": "Boquita — Sweet & Salty · repostería artesanal en Santa Ana, Costa Rica",
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/dev-next.mjs",
     "clean": "node -e \"require('node:fs').rmSync(process.env.NEXT_DIST_DIR || '.next',{recursive:true,force:true})\"",
     "prebuild": "npm run clean",
     "build": "next build",
