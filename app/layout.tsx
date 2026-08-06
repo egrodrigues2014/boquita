@@ -80,11 +80,13 @@ export const viewport: Viewport = {
 export const revalidate = 3600;
 
 /**
- * Script inline bloqueante (~120 bytes) que hace posible el reveal sin flash ni
- * mismatch de hidratación. Corre antes del primer paint:
+ * Script inline bloqueante (~120 bytes) que hace posible el reveal sin flash.
+ * Corre antes del primer paint:
  *
  *  · añade `.js` a <html> → sólo entonces `.reveal` pasa a opacity:0.
- *    Sin JS, o si este script no corriera, todo el contenido es visible.
+ *    Ese diff del <html> es intencional y se suprime con
+ *    `suppressHydrationWarning`; sin JS, o si este script no corriera, todo el
+ *    contenido es visible.
  *  · arma un failsafe de 2.5 s: si el bundle da 404 o la hidratación revienta,
  *    `.reveal-all` revela todo igualmente. El hook lo cancela al montarse.
  *
@@ -98,7 +100,11 @@ const REVEAL_BOOTSTRAP =
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-CR" className={`${display.variable} ${sans.variable}`}>
+    <html
+      lang="es-CR"
+      className={`${display.variable} ${sans.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOTSTRAP }} />
         {/* La foto del hero es el elemento LCP: se empieza a descargar antes de
