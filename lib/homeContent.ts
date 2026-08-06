@@ -1,4 +1,4 @@
-import { FEATURED_SLUGS, home as fallbackHome, toCatalogLink, toFeatured } from "@/content/home";
+import { FEATURED_SLUGS, home as fallbackHome, toFeatured } from "@/content/home";
 import { getCatalog } from "@/lib/db/catalog";
 import type { HomeContent, Product } from "@/types/content";
 import type { ShopProduct } from "@/types/shop";
@@ -14,7 +14,7 @@ import type { ShopProduct } from "@/types/shop";
  * string, fue que haya una sola fuente. Este archivo mantiene esa propiedad
  * cuando la fuente pasa a ser Postgres.
  *
- * Se recalculan exactamente las tres cosas de la portada que dependen del
+ * Se recalculan exactamente las dos cosas de la portada que dependen del
  * catálogo. El resto del copy no se toca.
  */
 
@@ -69,17 +69,10 @@ function featuredFrom(catalog: ShopProduct[]): Product[] {
  * `tests/unit/homeContent.test.ts`.
  */
 export function buildHomeContent(catalog: ShopProduct[]): HomeContent {
-  const [d1, d2, d3, mega] = fallbackHome.nav.dropdowns;
   const [metricTodo, metricRecetas] = fallbackHome.service.metrics;
 
   return {
     ...fallbackHome,
-
-    nav: {
-      ...fallbackHome.nav,
-      // El 4º dropdown es el megamenú: lista el catálogo entero.
-      dropdowns: [d1, d2, d3, { ...mega, items: catalog.map(toCatalogLink) }],
-    },
 
     menu: {
       ...fallbackHome.menu,

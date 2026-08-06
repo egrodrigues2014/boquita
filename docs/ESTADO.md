@@ -29,8 +29,8 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 | Rama | `main`, remoto `origin` en `https://github.com/egrodrigues2014/boquita.git` |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
 | Sin commitear | Al cerrar este bloque debe quedar **limpio**. Verificar con `git status --short` |
-| Tests unitarios | **171 en verde**, 8 ficheros (`npm test`, verificado el 6 ago tras P2) |
-| Tests e2e | **647 en verde + 41 skipped** de 688 casos configurados (`npm run e2e -- --reporter=dot`, verificado el 6 ago tras P2) |
+| Tests unitarios | **173 en verde**, 9 ficheros (`npm test`, verificado el 6 ago tras header/búsqueda) |
+| Tests e2e | **651 en verde + 45 skipped** de 696 casos configurados (`NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=dot`, verificado el 6 ago; `.next` local quedó bloqueado por Windows/OneDrive) |
 | Desplegado | **no.** Nunca se ha desplegado. No hay proyecto de Vercel creado |
 | Base de datos | Neon Postgres configurada, migrada y sembrada: `npm run db:seed` dejó **14 filas** en `products` |
 | Lanzable | **no**: faltan testimonios reales, métrica defendible, panorámica original y dominio/hosting. Ver [🔴](#-bloquea-el-lanzamiento) |
@@ -68,8 +68,9 @@ Las 9 secciones del spec §6 en orden fijo, en `app/page.tsx`.
   interpolación lineal por tramos.
 - Slider de testimonios sin librería: la aritmética de breakpoints está en CSS, el JS sólo inyecta
   `--i`.
-- Nav con patrón *disclosure* (no `role="menu"`), 4 dropdowns + 1 enlace, panel de 320px a ≤991 con
-  focus trap y scroll lock.
+- Nav con patrón *disclosure* (no `role="menu"`), 3 dropdowns + 1 enlace, `Catálogo` como enlace real
+  a `/tienda`, búsqueda GET a `/tienda?q=...`, carrito estable y CTA de WhatsApp. A ≤991 mantiene
+  drawer de 320px con focus trap y scroll lock.
 - Lightbox con `<dialog>` nativo, por **delegación** de eventos sobre los `data-lightbox` que
   renderiza el servidor.
 - SEO local: JSON-LD `Bakery` + `WebSite` (`lib/seo.ts`), `opengraph-image.tsx` generada en runtime,
@@ -80,8 +81,8 @@ y `seo-perf.spec.ts` (10), a los 8 anchos.
 
 ### Tienda, fichas y carrito
 
-- `/tienda` con filtros de categoría y ocasión **combinables** por `searchParams`, valores inválidos
-  ignorados y estado vacío propio.
+- `/tienda` con filtros de categoría, ocasión y búsqueda `q` **combinables** por `searchParams`,
+  valores inválidos ignorados y estado vacío propio.
 - `/tienda/[slug]` — las 14 fichas con `generateStaticParams`, `generateMetadata` async con OG, y
   JSON-LD `Product` con `availability: PreOrder`.
 - Carrito en `localStorage` con clave versionada `boquita.cart.v1` (`lib/cart.ts`, Zustand +
@@ -128,12 +129,12 @@ Verificado por `tests/e2e/a11y.spec.ts` (9).
 - **La tienda nunca se sirve vacía.** Sin `DATABASE_URL`, con la tabla vacía o con la consulta caída
   se sirve `content/products.ts` completo; una fila que no pasa Zod se sustituye por su versión del
   fallback; una fila mala que no está en el fallback se omite con aviso, no se inventa.
-- `lib/homeContent.ts` **deriva** de la base las 3 cosas de la portada que dependen del catálogo —la
-  rejilla de 8, el megamenú y la métrica de «recetas»— en vez de copiarlas. Si un destacado no está en
+- `lib/homeContent.ts` **deriva** de la base las 2 cosas de la portada que dependen del catálogo —la
+  rejilla de 8 y la métrica de «recetas»— en vez de copiarlas. Si un destacado no está en
   el catálogo servido, se rellena con otro producto **del propio catálogo**, nunca del fallback (daría
   404).
-- ISR de 1 h declarado en `app/layout.tsx` (el megamenú depende del catálogo, así que hasta la 404
-  depende de la tabla) y **repetido** en `app/sitemap.ts`, porque las rutas de metadata no lo heredan.
+- ISR de 1 h declarado en `app/layout.tsx` (el nav y varias páginas comparten contenido global que
+  puede depender de la tabla) y **repetido** en `app/sitemap.ts`, porque las rutas de metadata no lo heredan.
 - Migración generada y versionada: `drizzle/0000_grey_hex.sql`. Semilla idempotente
   (`ON CONFLICT (slug) DO UPDATE`) en `scripts/seed-catalog.ts`.
 - Verificación real del 5 ago: antes de migrar, la Neon configurada respondía
@@ -257,10 +258,10 @@ cuando toque:
 
 | Comando | Qué protege |
 | --- | --- |
-| `npm test` | 171 unitarios: moneda, contraste recalculado desde el CSS, catálogo y su fallback, derivación de la portada, parallax, WhatsApp |
+| `npm test` | 173 unitarios: moneda, contraste recalculado desde el CSS, catálogo y su fallback, derivación de la portada, búsqueda de tienda, parallax, WhatsApp |
 | `npm run typecheck` | `tsc --noEmit`, con `noUncheckedIndexedAccess` |
 | `npm run lint` | `eslint .` |
-| `npm run build && npm run e2e` | 688 e2e a 8 anchos: geometría, interacciones, lightbox, tienda, páginas, SEO, presupuestos y axe. Arranca su propio servidor en el puerto 3100 contra el **build de producción** |
+| `npm run build && npm run e2e` | 696 e2e a 8 anchos: geometría, interacciones, lightbox, tienda, páginas, SEO, presupuestos y axe. Arranca su propio servidor en el puerto 3100 contra el **build de producción** |
 | `npm run images:build -- --check` | valida los recortes sin escribir nada |
 
 Para desarrollar **no hace falta base de datos**: sin `DATABASE_URL` el catálogo sale de

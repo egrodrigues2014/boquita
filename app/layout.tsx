@@ -63,9 +63,9 @@ export const viewport: Viewport = {
 /**
  * ISR para TODO el sitio, declarado una sola vez.
  *
- * Va en el layout y no en cada página porque el megamenú del nav se deriva del
- * catálogo, así que cualquier página —incluidas `/aviso-legal` y la 404— depende
- * de la tabla `products`.
+ * Va en el layout y no en cada página porque el nav y varias páginas derivan
+ * datos del catálogo, así que cualquier página —incluidas `/aviso-legal` y la
+ * 404— depende de la tabla `products`.
  *
  * Con esto las páginas siguen saliendo del CDN y no de una función que espera a
  * Postgres: se conservan los presupuestos medidos (LCP 140 ms, primera carga

@@ -6,6 +6,7 @@ import { Picture } from "@/components/ui/Picture";
 import { getCatalog } from "@/lib/db/catalog";
 import { formatCRCShort } from "@/lib/format";
 import { getHomeContent } from "@/lib/homeContent";
+import { filterShopProducts } from "@/lib/shopSearch";
 import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion } from "@/types/shop";
 
 /**
@@ -49,7 +50,7 @@ function isOcasion(value: string | undefined): value is Ocasion {
 export default async function TiendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ categoria?: string; ocasion?: string }>;
+  searchParams: Promise<{ categoria?: string; ocasion?: string; q?: string }>;
 }) {
   const [params, products, home] = await Promise.all([
     searchParams,
@@ -61,12 +62,8 @@ export default async function TiendaPage({
   // haber editado el enlace a mano o el parámetro puede venir de un share viejo.
   const categoria = isCategoria(params.categoria) ? params.categoria : undefined;
   const ocasion = isOcasion(params.ocasion) ? params.ocasion : undefined;
-
-  const filtered = products.filter(
-    (product) =>
-      (!categoria || product.categoria === categoria) &&
-      (!ocasion || product.ocasiones.includes(ocasion)),
-  );
+  const query = typeof params.q === "string" ? params.q.trim() : "";
+  const filtered = filterShopProducts(products, { categoria, ocasion, q: query });
 
   const activeLabel = categoria
     ? CATEGORIAS[categoria]
@@ -75,15 +72,21 @@ export default async function TiendaPage({
       : undefined;
 
   /** Conserva el otro filtro al cambiar uno: son combinables. */
-  const hrefFor = (next: { categoria?: Categoria; ocasion?: Ocasion }) => {
+  const hrefFor = (
+    next: { categoria?: Categoria; ocasion?: Ocasion },
+    options: { q?: string } = { q: query },
+  ) => {
     const search = new URLSearchParams();
     const nextCategoria = "categoria" in next ? next.categoria : categoria;
     const nextOcasion = "ocasion" in next ? next.ocasion : ocasion;
     if (nextCategoria) search.set("categoria", nextCategoria);
     if (nextOcasion) search.set("ocasion", nextOcasion);
-    const query = search.toString();
-    return query ? `/tienda?${query}` : "/tienda";
+    if (options.q) search.set("q", options.q);
+    const queryString = search.toString();
+    return queryString ? `/tienda?${queryString}` : "/tienda";
   };
+
+  const clearSearchHref = hrefFor({}, { q: "" });
 
   return (
     <>
@@ -96,7 +99,9 @@ export default async function TiendaPage({
               <p className="h6-sans primary">Horneado por encargo</p>
               <h1>{activeLabel ?? "Todo el catálogo"}</h1>
               <p className="lead mt-20">
-                {filtered.length === products.length
+                {query
+                  ? `${filtered.length} ${filtered.length === 1 ? "producto" : "productos"} para “${query}”.`
+                  : filtered.length === products.length
                   ? `Los ${products.length} productos que salen de nuestro horno. Todo se hornea por encargo, con 48 horas de anticipación.`
                   : `${filtered.length} ${filtered.length === 1 ? "producto" : "productos"} en ${activeLabel}.`}
               </p>
@@ -130,11 +135,20 @@ export default async function TiendaPage({
               </nav>
             )}
 
+            {query && (
+              <nav className="shop-filters" aria-label="Búsqueda activa">
+                <span className="shop-filter shop-filter--static">Búsqueda: “{query}”</span>
+                <Link className="shop-filter" href={clearSearchHref}>
+                  Limpiar búsqueda ✕
+                </Link>
+              </nav>
+            )}
+
             {filtered.length === 0 ? (
               <div className="shop-empty">
                 <p>
                   No hay productos con esa combinación de filtros.{" "}
-                  <Link href="/tienda">Ver todo el catálogo</Link>.
+                  <Link href="/tienda">Ver catálogo completo</Link>.
                 </p>
               </div>
             ) : (

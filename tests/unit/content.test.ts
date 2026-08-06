@@ -15,6 +15,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { home } from "@/content/home";
+import { products } from "@/content/products";
 import { homeSchema } from "@/content/schema";
 import type { ImageRef } from "@/types/content";
 
@@ -61,13 +62,16 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(home.hero.ctas).toHaveLength(2);
   });
 
-  it("4 dropdowns + 1 enlace simple en el navbar (§5)", () => {
-    expect(home.nav.dropdowns).toHaveLength(4);
+  it("3 dropdowns + 1 enlace simple en el navbar (§5)", () => {
+    expect(home.nav.dropdowns).toHaveLength(3);
     expect(home.nav.link.href).toBeTruthy();
   });
 
-  it("exactamente uno de los dropdowns es el megamenú (§5)", () => {
-    expect(home.nav.dropdowns.filter((d) => d.mega)).toHaveLength(1);
+  it("Catálogo es enlace real a la tienda y no hay duplicado de Todo el catálogo", () => {
+    const [catalogo] = home.nav.dropdowns;
+    expect(catalogo.label).toBe("Catálogo");
+    expect(catalogo.href).toBe("/tienda");
+    expect(JSON.stringify(home.nav)).not.toContain("Todo el catálogo");
   });
 
   it("redes reales, 5 enlaces y 2 teléfonos en el pie (§6.8)", () => {
@@ -131,9 +135,8 @@ describe("los TODO están marcados, no escondidos", () => {
     const [inventada, verificable] = home.service.metrics;
     expect(inventada.todo).toBe(true);
     expect(verificable.todo).toBeUndefined();
-    // "14 recetas" es comprobable contra el megamenú del catálogo.
-    const mega = home.nav.dropdowns.find((d) => d.mega);
-    expect(mega?.items).toHaveLength(Number(verificable.value));
+    // "14 recetas" es comprobable contra el catálogo fuente.
+    expect(products).toHaveLength(Number(verificable.value));
   });
 });
 

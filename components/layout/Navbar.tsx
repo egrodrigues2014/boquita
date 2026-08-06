@@ -55,6 +55,8 @@ function Dropdown({
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
+  const hidden = !isOpen && !(dropdown.href && !hoverEnabled);
+
   return (
     <div
       className="nav-dropdown"
@@ -64,24 +66,38 @@ function Dropdown({
         if (!event.currentTarget.contains(event.relatedTarget as Node)) onRequestClose();
       }}
     >
-      <button
-        type="button"
-        className="nav-dropdown-toggle"
-        aria-expanded={isOpen}
-        aria-controls={id}
-        // Con hover activo, el clic ABRE en vez de alternar. Si alternara, el
-        // `mouseenter` que precede a todo clic de ratón abriría el panel y el
-        // clic lo cerraría acto seguido: el usuario ve el menú colapsarse justo
-        // al pulsar la etiqueta. Con hover, cerrar es tarea de mouseleave,
-        // Escape o un clic fuera. En táctil (sin hover) el clic sí alterna.
-        onClick={hoverEnabled ? onOpen : onToggle}
-      >
-        {dropdown.label}
-      </button>
+      {dropdown.href ? (
+        <a
+          className="nav-dropdown-toggle nav-dropdown-toggle--link"
+          href={dropdown.href}
+          aria-expanded={isOpen}
+          aria-controls={id}
+          onFocus={onOpen}
+        >
+          {dropdown.label}
+        </a>
+      ) : (
+        <button
+          type="button"
+          className="nav-dropdown-toggle"
+          aria-expanded={isOpen}
+          aria-controls={id}
+          onFocus={onOpen}
+          // Con hover activo, el clic ABRE en vez de alternar. Si alternara, el
+          // `mouseenter` que precede a todo clic de ratón abriría el panel y el
+          // clic lo cerraría acto seguido: el usuario ve el menú colapsarse justo
+          // al pulsar la etiqueta. Si el foco ya abrió el panel, el click no lo
+          // cierra de inmediato: eso pasaba en el drawer al pasar de Catálogo a
+          // Ocasiones. Cerrar es tarea de mouseleave, Escape o un clic fuera.
+          onClick={hoverEnabled || isOpen ? onOpen : onToggle}
+        >
+          {dropdown.label}
+        </button>
+      )}
       <div
         id={id}
-        className={`nav-dropdown-list${dropdown.mega ? " nav-dropdown-list--mega" : ""}`}
-        hidden={!isOpen}
+        className="nav-dropdown-list"
+        hidden={hidden}
       >
         {dropdown.items.map((item) => (
           <a
@@ -90,12 +106,35 @@ function Dropdown({
             href={item.href}
             {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           >
-            <span className="nav-dropdown-link-line" aria-hidden="true" />
             {item.label}
           </a>
         ))}
       </div>
     </div>
+  );
+}
+
+function ProductSearchForm() {
+  return (
+    <form className="nav-search" action="/tienda" method="get" role="search">
+      <label className="sr-only" htmlFor="nav-product-search">
+        Buscar productos
+      </label>
+      <input
+        id="nav-product-search"
+        className="nav-search-input"
+        type="search"
+        name="q"
+        placeholder="Buscar productos"
+        autoComplete="off"
+      />
+      <button className="nav-search-button" type="submit" aria-label="Buscar productos">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+          <path d="M16.5 16.5 21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </button>
+    </form>
   );
 }
 
@@ -155,7 +194,7 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
     }
   };
 
-  const [d1, d2, d3, d4] = nav.dropdowns;
+  const [d1, d2, d3] = nav.dropdowns;
   const dropdownProps = (position: number) => ({
     isOpen: openDropdown === position,
     onOpen: () => setOpenDropdown(position),
@@ -172,9 +211,9 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
             className="logo"
             src="/img/brand/logo-transparent-43x43.png"
             srcSet="/img/brand/logo-transparent-43x43.png 43w, /img/brand/logo-transparent-86x86.png 86w"
-            sizes="43px"
-            width={43}
-            height={43}
+            sizes="(min-width: 1280px) 86px, 72px"
+            width={86}
+            height={86}
             alt="Boquita — Sweet & Salty"
           />
         </Link>
@@ -213,15 +252,12 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
                 {nav.link.label}
               </a>
               <Dropdown dropdown={d3} {...dropdownProps(3)} />
-              <Dropdown dropdown={d4} {...dropdownProps(4)} />
             </div>
           </nav>
         </div>
 
         <div className="navbar-actions">
-          <a className="phone-link" href={nav.phone.href}>
-            {nav.phone.display}
-          </a>
+          <ProductSearchForm />
 
           <CartButton />
 

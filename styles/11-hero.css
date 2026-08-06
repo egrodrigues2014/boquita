@@ -3,8 +3,8 @@
 
    ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
 
-   El navbar flota transparente sobre la mitad izquierda, que es de fondo claro:
-   por eso los enlaces del nav son oscuros.
+   El header ocupa la franja superior; en desktop la foto empieza debajo para
+   no quedar tapada por carrito y WhatsApp.
    ══════════════════════════════════════════════════════════════════════════ */
 
 .hero {
@@ -18,9 +18,9 @@
 
 .hero-img {
   position: absolute;
-  inset: 0 0 0 auto;
+  inset: 104px 0 0 auto;
   width: 43.5%;
-  height: 100%;
+  height: calc(100% - 104px);
   object-fit: cover;
 }
 
@@ -33,7 +33,9 @@
 
 @media (min-width: 1280px) {
   .hero-img {
+    top: 118px;
     width: 46%;
+    height: calc(100% - 118px);
   }
   .hero-content {
     width: 50%;

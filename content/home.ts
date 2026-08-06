@@ -1,13 +1,13 @@
 import { products } from "@/content/products";
 import { CONTACT, telHref, whatsappUrl } from "@/lib/contact";
-import type { HomeContent, ImageRef, Link, Product } from "@/types/content";
+import type { HomeContent, ImageRef, Product } from "@/types/content";
 import { CATEGORIAS, type ShopProduct } from "@/types/shop";
 
 /**
  * Todo el copy de la portada, en un solo sitio.
  *
  * Este objeto es el FALLBACK de la portada. Todo su copy es estático; lo único
- * que depende del catálogo —la rejilla de 8, el megamenú y la métrica de
+ * que depende del catálogo —la rejilla de 8 y la métrica de
  * «recetas»— lo recalcula `lib/homeContent.ts` a partir de lo que devuelva
  * `getCatalog()`. Sin `DATABASE_URL` ese cálculo produce exactamente lo que hay
  * escrito aquí abajo, así que este archivo sigue siendo la verdad en local.
@@ -18,10 +18,8 @@ import { CATEGORIAS, type ShopProduct } from "@/types/shop";
  *  · Todo lo marcado ⚠ TODO está listado en docs/CONTENT_TODO.md y BLOQUEA el
  *    lanzamiento, aunque no el desarrollo.
  *
- * Las rutas /tienda, /blog y /sobre-nosotros NO existen todavía (Fases 4 y 6),
- * así que en esta fase el nav y el footer apuntan a anclas reales de la portada
- * en vez de a enlaces muertos. El spec §8 sólo exige conservar el NÚMERO de
- * elementos (4 dropdowns + 1 enlace, 5 enlaces de pie), no las etiquetas.
+ * El header publica sólo destinos reales: catálogo, ocasiones, galería y sobre
+ * nosotros. La búsqueda del header complementa el catálogo sin duplicar menús.
  */
 
 /**
@@ -63,11 +61,6 @@ export function toFeatured(product: ShopProduct): Product {
   };
 }
 
-/** Producto del catálogo → enlace del megamenú. */
-export function toCatalogLink(product: ShopProduct): Link {
-  return { label: product.name, href: `/tienda/${product.slug}` };
-}
-
 function featuredProducts(): Product[] {
   return FEATURED_SLUGS.map((slug) => {
     const product = products.find((p) => p.slug === slug);
@@ -78,11 +71,6 @@ function featuredProducts(): Product[] {
     }
     return toFeatured(product);
   });
-}
-
-/** El megamenú lista el catálogo completo, también derivado. */
-function catalogLinks(): Link[] {
-  return products.map(toCatalogLink);
 }
 
 const WA_CONSULTA = whatsappUrl("¡Hola Boquita! Quiero hacer una consulta.");
@@ -206,6 +194,7 @@ export const home: HomeContent = {
     dropdowns: [
       {
         label: "Catálogo",
+        href: "/tienda",
         items: [
           { label: "Queques", href: "/tienda?categoria=queques" },
           { label: "Galletas y biscotti", href: "/tienda?categoria=galletas" },
@@ -240,18 +229,10 @@ export const home: HomeContent = {
           },
         ],
       },
-      {
-        label: "Todo el catálogo",
-        // El megamenú: a ≤991px es un panel de 270px con scroll, y son estos 14
-        // productos los que justifican esa medida del spec. Derivado del catálogo.
-        mega: true,
-        items: catalogLinks(),
-      },
     ],
     // `/#galeria` y no `#galeria`: el nav se renderiza en TODAS las páginas, y un
     // ancla pura sólo funcionaría en la portada — desde /tienda no haría nada.
     link: { label: "Galería", href: "/#galeria" },
-    phone: { display: CONTACT.whatsappDisplay, href: telHref() },
     cta: { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
   },
 

@@ -166,9 +166,7 @@ test.describe("navegación", () => {
   test("los dropdowns de escritorio abren y cierran con teclado", async ({ page, viewport }) => {
     test.skip(viewport!.width <= 991, "A ≤991 el nav vive dentro del drawer");
 
-    // `exact: true` es imprescindible: por defecto getByRole busca por subcadena
-    // y "Catálogo" también encajaría con el megamenú "Todo el catálogo".
-    const toggle = page.getByRole("button", { name: "Catálogo", exact: true });
+    const toggle = page.getByRole("button", { name: "Ocasiones", exact: true });
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
 
     await toggle.click();
@@ -221,9 +219,7 @@ test.describe("navegación", () => {
     test.skip(viewport!.width > 991, "El drawer sólo existe a ≤991");
 
     await page.getByRole("button", { name: "Abrir menú" }).click();
-    // `exact: true` es imprescindible: por defecto getByRole busca por subcadena
-    // y "Catálogo" también encajaría con el megamenú "Todo el catálogo".
-    const toggle = page.getByRole("button", { name: "Catálogo", exact: true });
+    const toggle = page.getByRole("button", { name: "Ocasiones", exact: true });
     await toggle.click();
     await expect(toggle).toHaveAttribute("aria-expanded", "true");
 

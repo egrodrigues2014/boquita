@@ -46,9 +46,9 @@ export interface Link {
 
 export interface NavDropdown {
   label: string;
+  /** Si existe, la etiqueta también navega además de abrir el panel por hover/foco. */
+  href?: string;
   items: Link[];
-  /** El cuarto dropdown es el megamenú: a ≤991px es 270px con scroll. */
-  mega?: boolean;
 }
 
 export interface Product {
@@ -90,10 +90,9 @@ export interface Social {
 
 export interface HomeContent {
   nav: {
-    dropdowns: [NavDropdown, NavDropdown, NavDropdown, NavDropdown];
+    dropdowns: [NavDropdown, NavDropdown, NavDropdown];
     /** El enlace simple entre el 2º y el 3er dropdown */
     link: Link;
-    phone: { display: string; href: string };
     cta: Link;
   };
 

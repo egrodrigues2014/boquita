@@ -10,8 +10,9 @@
   position: absolute;
   top: 0;
   width: 100%;
-  padding-block: 20px;
-  background: transparent;
+  padding-block: 12px;
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 1px solid rgba(232, 168, 27, 0.28);
   z-index: 100;
 }
 
@@ -19,17 +20,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
   min-width: 100%;
   padding-inline: 15px;
 }
 
 .logo {
-  height: 43px;
+  height: 72px;
   width: auto;
 }
 
 .nav-menu-wrapper {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -38,6 +40,7 @@
 .nav-menu {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .nav-overlay-mobile {
@@ -48,16 +51,22 @@
 .nav-link,
 .nav-dropdown-toggle {
   font-family: var(--ff-sans);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
-  padding-inline: 13px;
+  padding: 10px 12px;
+  border-radius: 4px;
   color: var(--link);
   line-height: 1.5em;
-  transition: color 0.3s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .nav-link:hover,
-.nav-dropdown-toggle:hover {
+.nav-dropdown-toggle:hover,
+.nav-link:focus-visible,
+.nav-dropdown-toggle:focus-visible {
+  background: var(--primary-light);
   color: var(--gold-ink);
 }
 
@@ -72,15 +81,20 @@
   cursor: pointer;
 }
 
+.nav-dropdown-toggle--link {
+  text-decoration: none;
+}
+
 .nav-dropdown {
   position: relative;
 }
 
 .nav-dropdown-list {
-  width: 200px;
-  padding: 15px 20px;
+  width: 230px;
+  padding: 8px;
   background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(232, 168, 27, 0.32);
+  box-shadow: 0 12px 28px rgba(58, 42, 26, 0.12);
 }
 
 /* En escritorio el panel flota bajo su toggle. La apertura/cierre la controla
@@ -97,56 +111,111 @@
 .nav-dropdown-link {
   display: flex;
   width: 100%;
-  padding: 8px 8px 8px 0;
-  margin-left: -20px;
-  font-size: 18px;
+  padding: 9px 12px;
+  border-radius: 4px;
+  font-size: 17px;
   font-weight: 500;
-  text-transform: capitalize;
-  transition: all 0.3s;
+  text-transform: none;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
-.nav-dropdown-link:hover {
-  margin-left: 0;
+.nav-dropdown-link:hover,
+.nav-dropdown-link:focus-visible {
+  background: var(--primary-light);
   color: var(--gold-ink);
-}
-
-/* Guion decorativo de 16×2. Oculto a ≤991. */
-.nav-dropdown-link-line {
-  display: inline-block;
-  flex: none;
-  width: 16px;
-  height: 2px;
-  margin-right: 15px;
-  background: var(--gold-line);
 }
 
 .navbar-actions {
+  flex: 1 1 auto;
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: flex-end;
+  gap: 14px;
+  min-width: 0;
 }
 
-.cart-button {
+.nav-search {
+  flex: 1 1 320px;
+  max-width: 430px;
+  min-width: 220px;
+  display: flex;
+  align-items: stretch;
+  height: 46px;
+  border: 1px solid rgba(176, 114, 8, 0.36);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.nav-search:focus-within {
+  border-color: var(--gold-fill);
+  box-shadow: 0 0 0 2px rgba(232, 168, 27, 0.24);
+}
+
+.nav-search-input {
+  flex: 1;
+  min-width: 0;
+  padding-inline: 14px;
+  border: 0;
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  color: var(--text-dark);
+  background: transparent;
+}
+
+.nav-search-input:focus {
+  outline: 0;
+}
+
+.nav-search-button {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 50px;
+  flex: none;
+  color: var(--text-dark);
+  background: var(--gold-fill);
+  transition: filter 0.2s;
+}
+
+.nav-search-button:hover {
+  filter: brightness(0.96);
+}
+
+.navbar .btn--nav {
+  flex: none;
+  padding: 10px 22px;
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.cart-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border: 1px solid rgba(176, 114, 8, 0.28);
+  border-radius: 4px;
+  color: var(--text-dark);
+  background: rgba(250, 245, 236, 0.74);
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .cart-icon {
-  width: 34px;
-  height: 34px;
-  transition: filter 0.3s;
+  width: 30px;
+  height: 30px;
 }
 
-.cart-button:hover .cart-icon {
-  opacity: 0.5;
-}
-
-.phone-link {
-  display: none;
-  color: var(--gold-ink);
-  font-size: 18px;
-  font-weight: 500;
+.cart-button:hover {
+  background: var(--primary-light);
+  border-color: var(--gold-line);
 }
 
 /* El botón de la hamburguesa sólo existe a ≤991. */
@@ -190,18 +259,23 @@
   .nav-container {
     padding-inline: 50px;
   }
+  .logo {
+    height: 86px;
+  }
   .nav-menu-wrapper {
-    justify-content: space-around;
+    justify-content: flex-start;
   }
   .nav-link,
   .nav-dropdown-toggle {
-    padding-inline: 12px;
+    font-size: 19px;
+    padding-inline: 13px;
   }
   .navbar-actions {
-    gap: 20px;
+    gap: 16px;
   }
-  .phone-link {
-    display: block;
+  .navbar .btn--nav {
+    padding-inline: 26px;
+    font-size: 19px;
   }
 }
 
@@ -211,7 +285,7 @@
     padding-inline: 20px;
   }
   .navbar-actions {
-    gap: 40px;
+    gap: 18px;
   }
 }
 
@@ -221,10 +295,9 @@
   }
   .nav-menu-wrapper {
     justify-content: flex-start;
-    padding-left: 170px;
   }
   .navbar-actions {
-    gap: 50px;
+    gap: 20px;
   }
 }
 
@@ -275,6 +348,7 @@
     display: flex;
     width: 100%;
     padding: 10px 0;
+    border-radius: 0;
   }
 
   .nav-dropdown-toggle {
@@ -283,28 +357,17 @@
     padding: 10px 0;
     padding-inline: 0;
     justify-content: space-between;
+    border-radius: 0;
   }
 
   .nav-dropdown-list {
     position: static;
     width: 320px;
     border: 0;
+    box-shadow: none;
     padding: 0 40px 0 20px;
     display: flex;
     flex-direction: column;
-  }
-
-  /* Los 14 productos del catálogo son los que justifican esta medida. */
-  .nav-dropdown-list--mega {
-    width: 100%;
-    height: 270px;
-    overflow: scroll;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .nav-dropdown-link-line {
-    display: none;
   }
 
   .close-button-wrap {
@@ -321,8 +384,13 @@
   }
 
   .navbar-actions {
+    flex: 0 0 auto;
     justify-content: flex-end;
     margin-right: 20px;
+  }
+
+  .nav-search {
+    display: none;
   }
 
   .cart-icon {
@@ -336,9 +404,8 @@
     justify-content: center;
   }
 
-  /* DESVÍO D-5: el navbar es transparente y a ≤991 la foto del hero pasa a
-     estar justo debajo, así que el logo, la hamburguesa y el carrito quedarían
-     sobre la fotografía con contraste desconocido.
+  /* A ≤991 el drawer se abre sobre la página y el header conserva fondo propio:
+     logo, hamburguesa y carrito no dependen del contraste de la foto.
      ⚠ SIN `backdrop-filter`, y no es por gusto: igual que `filter`, crea un
      bloque contenedor para los descendientes `position:fixed`. Con él, tanto el
      drawer de 320px como el scrim quedaban confinados a la caja del navbar

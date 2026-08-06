@@ -6,6 +6,7 @@
 
 # build de Next
 /.next/
+/.next-*/
 /out/
 /build
 next-env.d.ts

@@ -219,12 +219,11 @@ Tres capas concéntricas centradas:
           <div class="nav-dropdown">…</div>   <!-- Dropdown 2 -->
           <a class="nav-link">Enlace simple</a>
           <div class="nav-dropdown">…</div>   <!-- Dropdown 3 -->
-          <div class="nav-dropdown">…</div>   <!-- Dropdown 4 (megamenu) -->
         </div>
       </nav>
     </div>
     <div class="navbar-actions">
-      <a class="phone-link">TELÉFONO</a>      <!-- visible solo ≥1280 -->
+      <form class="nav-search" action="/tienda" method="get">…</form>
       <button class="cart-button"><img class="cart-icon"></button>
       <a class="btn btn--nav">CTA</a>          <!-- oculto ≤991 -->
     </div>
@@ -264,8 +263,8 @@ CSS:
 @media (min-width:1920px){ .navbar-actions{ gap:50px; } }
 .cart-icon{ width:34px; height:34px; transition:filter .3s; }
 .cart-button:hover .cart-icon{ opacity:.5; }
-.phone-link{ display:none; color:var(--primary); font-size:18px; font-weight:500; }
-@media (min-width:1280px){ .phone-link{ display:block; } }
+.nav-search{ display:flex; min-width:220px; height:46px; }
+@media (max-width:991px){ .nav-search{ display:none; } }
 
 /* ≤991: menú lateral fijo desde la izquierda */
 @media (max-width:991px){
@@ -937,7 +936,7 @@ espacio tras el símbolo).
 
 ## 9. Checklist de aceptación
 
-- [ ] Hero ocupa `100vh` con imagen a sangre en el borde derecho y el navbar transparente encima.
+- [ ] Hero ocupa `100vh` con imagen a sangre en el borde derecho y la foto empieza bajo el header en desktop.
 - [ ] El `h1` del hero tiene 2 líneas con la segunda en terracota, y crece 70 → 72 → 86px.
 - [ ] Los dos recortes de imagen aparecen **dentro** del flujo del `h2` de la sección statement.
 - [ ] La imagen ancha se ve **por encima** del bloque crema (solape de 200px).

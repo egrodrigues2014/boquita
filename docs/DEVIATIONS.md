@@ -39,7 +39,7 @@ mirar capturas reales. Ninguno se habría visto leyendo el CSS.
 | D-22 | Con hover activo, el clic en un dropdown del nav **abre** en lugar de alternar | Todo clic de ratón va precedido de un `mouseenter`. Si el clic alternara, el `mouseenter` abriría el panel y el clic lo cerraría acto seguido: el usuario ve el menú colapsarse justo al pulsar la etiqueta. Con hover, cerrar es tarea de `mouseleave`, Escape o un clic fuera; en táctil (sin hover) el clic sí alterna. | ✅ Fase 1 |
 | D-19 | `.newsletter-form .input { flex: none }` a ≤479px | **Corrige un conflicto latente del propio spec.** `.input{flex:1}` está pensado para la fila; al pasar a `flex-direction:column` el eje principal es el vertical y `flex-basis:0` gana sobre `height:60px`, así que el input **colapsaba a 21px**. El punto 10 del checklist exige 60px. | ✅ Fase 1 |
 | D-23 | La rejilla del catálogo de la portada puede renderizar **menos de 8** productos, contra el punto 5 del checklist | Sólo ocurre si la tabla `products` tiene entre 1 y 7 filas: con la base ausente, vacía o caída se sirve el fallback de 14 y son 8 exactos. La alternativa era rellenar con productos del fallback que no estén en el catálogo servido, y sus tarjetas llevarían a un 404 porque `/tienda/[slug]` resuelve contra el mismo `getCatalog()`. Una rejilla de 6 celdas es un defecto de maquetación; una tarjeta que lleva a un 404 le cuesta un pedido. Se avisa por consola y hay tests que fijan las dos ramas. | ✅ Fase 2 |
-| D-24 | El megamenú del nav admite hasta **24** entradas en `content/schema.ts`, no 14 | El tope de 14 no era una medida del spec: era el tamaño del catálogo en el momento de escribirlo, y el catálogo ya no es una constante. 24 es lo que aguanta el panel de 270px con scroll a ≤991px sin que la lista sea inútil de recorrer. | ✅ Fase 2 |
+| D-24 | El nav ya no usa megamenú de productos; `Catálogo` es enlace a `/tienda` con dropdown de categorías | El flujo real de compra vive en `/tienda`, con filtros y búsqueda. Duplicar los 14 productos en el header hacía ruido y competía con el destino principal. El dropdown queda como ayuda contextual: categorías, sin guiones decorativos y con hover/focus visible. | ✅ Header v1 |
 
 ## No son desvíos
 
@@ -64,5 +64,5 @@ estricto: «large» es **≥24px, o ≥18.66px en negrita**. Se aplica el umbral
 
 Consecuencia práctica: `h2` (50/42/34px), `h4` (30/26px), `.text-primary` (86…46px) y `.stat-num`
 (50/42/38/36px) sí entran en el carril de 3:1 y usan `--gold-display`. Los precios (18/20px),
-`.phone-link` (18px), `a:hover` (20px), `li` (16px), `.h6-sans.primary` (20px), los iconos sociales
-y el glifo de las flechas del slider **no**, y usan `--gold-ink` (4.5:1).
+nav/search/cart (18px), `a:hover` (20px), `li` (16px), `.h6-sans.primary` (20px), los iconos
+sociales y el glifo de las flechas del slider **no**, y usan `--gold-ink` (4.5:1).

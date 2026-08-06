@@ -11,7 +11,7 @@ import { z } from "zod";
  *   4 + 4 galería → dos filas que el render repite hasta 7 (§6.6, checklist 7)
  *   2 inline      → exactamente 2 huecos en el flujo del h2 (§6.2, checklist 3)
  *   2 botones     → `.btn-group` del hero (§8)
- *   4 dropdowns + 1 enlace → el navbar (§5, §8)
+ *   3 dropdowns + 1 enlace → el navbar (§5, §8)
  *   2-4 redes reales · 5 enlaces · 2 teléfonos → el pie (§6.8, §8)
  *
  * Los `.max()` de las cadenas son igual de intencionados: `titleTop` limitado a
@@ -46,11 +46,8 @@ const contentImage = imageRef.refine((img) => img.alt.trim().length >= 10, {
 
 const navDropdown = z.object({
   label: z.string().min(1).max(30),
-  // El tope era 14 porque el catálogo son 14, y eso ya no es una constante: el
-  // megamenú se deriva de la tabla `products`. 24 es lo que aguanta el panel de
-  // 270px con scroll a ≤991px sin que la lista sea inútil de recorrer.
+  href: z.string().min(1).optional(),
   items: z.array(link).min(3).max(24),
-  mega: z.boolean().optional(),
 });
 
 const product = z.object({
@@ -90,9 +87,8 @@ const social = z.object({
 
 export const homeSchema = z.object({
   nav: z.object({
-    dropdowns: z.tuple([navDropdown, navDropdown, navDropdown, navDropdown]),
+    dropdowns: z.tuple([navDropdown, navDropdown, navDropdown]),
     link,
-    phone: z.object({ display: z.string().min(6), href: z.string().startsWith("tel:") }),
     cta: link,
   }),
 

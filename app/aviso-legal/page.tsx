@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AvisoLegalPage() {
-  // Sólo por el nav y el pie, cuyo megamenú se deriva del catálogo.
+  // Sólo por el nav y el pie, que comparten el contenido global de la portada.
   const home = await getHomeContent();
 
   return (

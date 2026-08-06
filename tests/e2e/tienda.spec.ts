@@ -300,12 +300,34 @@ test.describe("la portada enlaza bien con la tienda", () => {
     expect(response?.status()).toBe(200);
   });
 
-  test("el megamenú del nav lleva a las 14 fichas", async ({ page, viewport }) => {
+  test("Catálogo del nav navega a /tienda y conserva dropdown de categorías", async ({
+    page,
+    viewport,
+  }) => {
     test.skip(viewport!.width <= 991, "A ≤991 el nav vive dentro del drawer");
     await page.goto("/");
-    await page.getByRole("button", { name: "Todo el catálogo" }).click();
-    const links = page.locator(".nav-dropdown-list--mega .nav-dropdown-link");
-    await expect(links).toHaveCount(14);
-    await expect(links.first()).toHaveAttribute("href", /^\/tienda\//);
+
+    const nav = page.getByLabel("Principal");
+    const catalogo = nav.getByRole("link", { name: "Catálogo", exact: true });
+    await catalogo.hover();
+    const links = nav.locator(".nav-dropdown").first().locator(".nav-dropdown-link");
+    await expect(links).toHaveCount(5);
+    await expect(links.first()).toHaveAttribute("href", "/tienda?categoria=queques");
+    await expect(links.first()).not.toContainText("—");
+
+    await catalogo.click();
+    await expect(page).toHaveURL(/\/tienda$/);
+    await expect(page.locator("h1")).toHaveText("Todo el catálogo");
+  });
+
+  test("la búsqueda del header filtra productos en /tienda", async ({ page, viewport }) => {
+    test.skip(viewport!.width <= 991, "La búsqueda visible vive en el header desktop");
+    await page.goto("/");
+    await page.getByRole("searchbox", { name: "Buscar productos" }).fill("brigadeiros");
+    await page.getByRole("button", { name: "Buscar productos" }).click();
+
+    await expect(page).toHaveURL(/\/tienda\?q=brigadeiros/);
+    await expect(page.locator(".shop-card")).toHaveCount(1);
+    await expect(page.locator(".shop-card-name")).toHaveText("Brigadeiros");
   });
 });

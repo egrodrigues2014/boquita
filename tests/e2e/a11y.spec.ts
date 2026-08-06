@@ -80,7 +80,7 @@ test.describe("accesibilidad", () => {
   test("portada con un dropdown del nav desplegado", async ({ page, viewport }) => {
     test.skip(viewport!.width <= 991, "A ≤991 los dropdowns viven dentro del drawer");
     await page.goto("/");
-    await page.getByRole("button", { name: "Catálogo", exact: true }).click();
+    await page.getByRole("button", { name: "Ocasiones", exact: true }).click();
     await audit(page, "dropdown desplegado");
   });
 

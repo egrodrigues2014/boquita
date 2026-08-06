@@ -52,12 +52,14 @@ describe("coherencia con la portada", () => {
     }
   });
 
-  it("el megamenú del nav lista exactamente los productos del catálogo", () => {
-    const mega = home.nav.dropdowns.find((d) => d.mega)!;
-    expect(mega.items).toHaveLength(products.length);
-    const menuNames = mega.items.map((i) => i.label).sort();
-    const catalogNames = products.map((p) => p.name).sort();
-    expect(menuNames).toEqual(catalogNames);
+  it("el dropdown de catálogo lista categorías existentes", () => {
+    const [catalogo] = home.nav.dropdowns;
+    expect(catalogo.href).toBe("/tienda");
+    expect(catalogo.items.map((item) => item.href).sort()).toEqual(
+      Object.keys(CATEGORIAS)
+        .map((key) => `/tienda?categoria=${key}`)
+        .sort(),
+    );
   });
 
   it('la métrica "14 recetas" de la portada coincide con el catálogo', () => {

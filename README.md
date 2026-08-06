@@ -147,19 +147,19 @@ La validación de lectura reutiliza el MISMO Zod que valida el catálogo estáti
 proteger el borde de escritura cuando exista el panel: un `summary` de 400 caracteres desmaqueta la
 tarjeta, y un precio a convenir sin «desde» engaña con el importe.
 
-**La portada se deriva del catálogo, no lo copia.** `lib/homeContent.ts` recalcula las tres cosas
-que dependen de él —la rejilla de 8, el megamenú del nav y la métrica de «recetas»— sobre el copy de
-`content/home.ts`. Los nombres y precios estuvieron duplicados una vez y derivaron: un slug viejo
-dejó un enlace apuntando a una ficha inexistente. Si un destacado no está en el catálogo servido, se
-rellena con otro producto **del propio catálogo**, nunca con uno del fallback que daría 404.
+**La portada se deriva del catálogo, no lo copia.** `lib/homeContent.ts` recalcula las dos cosas
+que dependen de él —la rejilla de 8 y la métrica de «recetas»— sobre el copy de `content/home.ts`.
+Los nombres y precios estuvieron duplicados una vez y derivaron: un slug viejo dejó un enlace
+apuntando a una ficha inexistente. Si un destacado no está en el catálogo servido, se rellena con
+otro producto **del propio catálogo**, nunca con uno del fallback que daría 404.
 
 **Imágenes: la base guarda alturas, no rutas.** `image_heights` + `image_alt`, y el `srcSet` se
 reconstruye con `lib/productImage.ts` —el mismo código que usa el catálogo estático—. Guardar las
 rutas en Postgres sería garantizar que algún día no coincidan con lo que hay en `public/img/`.
 
 **ISR de una hora, declarado en `app/layout.tsx`.** Va en el layout y no en cada página porque el
-megamenú depende del catálogo, así que hasta `/aviso-legal` y la 404 dependen de la tabla. Las
-páginas siguen saliendo del CDN y no de una función que espera a Postgres, y el cómputo de Neon
+nav y varias páginas comparten contenido derivado del catálogo, así que hasta `/aviso-legal` y la 404
+dependen de la tabla. Las páginas siguen saliendo del CDN y no de una función que espera a Postgres, y el cómputo de Neon
 —que se autosuspende a los 5 minutos en el plan Free— tiene su arranque en frío en una regeneración
 en segundo plano, nunca en una visita real.
 

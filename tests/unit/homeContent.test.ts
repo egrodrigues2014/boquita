@@ -36,11 +36,8 @@ describe("con el catálogo completo, la portada no cambia", () => {
     expect(content.menu.products).toEqual(home.menu.products);
   });
 
-  it("produce el mismo megamenú que el objeto estático", () => {
-    expect(content.nav.dropdowns[3].items).toEqual(home.nav.dropdowns[3].items);
-  });
-
   it("no toca el copy que no depende del catálogo", () => {
+    expect(content.nav).toEqual(home.nav);
     expect(content.hero).toEqual(home.hero);
     expect(content.testimonials).toEqual(home.testimonials);
     expect(content.footer).toEqual(home.footer);
@@ -106,14 +103,6 @@ describe("ninguna tarjeta de la portada lleva a un 404", () => {
     expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("se queda en 5"));
   });
 
-  it("el megamenú lista exactamente el catálogo servido", () => {
-    const recortado = fallbackCatalog.slice(0, 6);
-    const content = buildHomeContent(recortado);
-
-    expect(content.nav.dropdowns[3].items).toEqual(
-      recortado.map((p) => ({ label: p.name, href: `/tienda/${p.slug}` })),
-    );
-  });
 });
 
 describe("coherencia de precios entre portada y catálogo", () => {

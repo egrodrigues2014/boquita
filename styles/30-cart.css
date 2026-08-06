@@ -388,6 +388,14 @@
   color: var(--gold-ink);
 }
 
+.shop-filter--static,
+.shop-filter--static:hover {
+  cursor: default;
+  border-color: var(--gray);
+  color: var(--body-text);
+  background: var(--primary-light);
+}
+
 .shop-filter[aria-current="true"] {
   background: var(--gold);
   border-color: var(--gold-line);

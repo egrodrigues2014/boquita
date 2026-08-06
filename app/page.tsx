@@ -21,8 +21,8 @@ import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
  * ancha, la imagen de servicio invade el bloque crema, el pie oscuro sube bajo
  * la tarjeta CTA), así que reordenar rompe la geometría.
  *
- *   1 header.navbar        absoluto, transparente, sobre el hero
- *   2 section.hero         100vh, imagen a sangre derecha
+ *   1 header.navbar        absoluto, sobre el hero
+ *   2 section.hero         100vh, imagen a sangre derecha bajo el header
  *   3 section.statement    frase con 2 imágenes en el flujo del texto
  *   4 section.media-text   still de vídeo + texto, grid asimétrico
  *   5 wrapper              imagen ancha + bloque crema del catálogo
@@ -31,8 +31,8 @@ import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
  *   8 section.testimonials slider de tarjetas crema — oculto hasta tener reseñas reales
  *   9 footer               tarjeta CTA solapada + bloque oscuro
  *
- * `getHomeContent()` es el copy de `content/home.ts` con la rejilla del catálogo,
- * el megamenú y la métrica de recetas recalculados desde la tabla `products`.
+ * `getHomeContent()` es el copy de `content/home.ts` con la rejilla del catálogo
+ * y la métrica de recetas recalculadas desde la tabla `products`.
  * Sin `DATABASE_URL` devuelve exactamente el contenido estático.
  */
 export default async function HomePage() {

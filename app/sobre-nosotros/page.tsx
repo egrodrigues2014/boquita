@@ -32,8 +32,8 @@ export const metadata: Metadata = {
 };
 
 export default async function SobreNosotrosPage() {
-  // Sólo por el nav y el pie: el megamenú lista el catálogo, así que también esta
-  // página depende de la tabla `products`.
+  // Sólo por el nav y el pie: ambos salen del contenido de portada, que puede
+  // depender de la tabla `products`.
   const home = await getHomeContent();
 
   const faqJsonLd = {

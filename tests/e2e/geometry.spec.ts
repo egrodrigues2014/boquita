@@ -52,23 +52,25 @@ test.beforeEach(async ({ page }) => {
 });
 
 // ── 1 ──────────────────────────────────────────────────────────────────────
-test("1 · hero 100vh, imagen a sangre derecha, navbar transparente encima", async ({
+test("1 · hero 100vh, imagen a sangre derecha bajo el navbar", async ({
   page,
   viewport,
 }) => {
   const width = viewport!.width;
   const heroBox = await box(page, ".hero");
   const imgBox = await box(page, ".hero-img");
+  const navBox = await box(page, ".navbar");
 
   expect(await style(page, ".navbar", "position")).toBe("absolute");
+  expect(await style(page, ".navbar", "background-color")).not.toBe("rgba(0, 0, 0, 0)");
 
   if (width >= 992) {
     // 100vh exacto.
     expect(heroBox.height).toBeCloseTo(viewport!.height, 0);
     // A sangre en el borde derecho.
     expect(imgBox.x + imgBox.width).toBeCloseTo(width, 0);
-    // Transparente sobre el hero.
-    expect(await style(page, ".navbar", "background-color")).toBe("rgba(0, 0, 0, 0)");
+    // La foto arranca bajo el header: no queda debajo de cesta/WhatsApp.
+    expect(imgBox.y).toBeGreaterThanOrEqual(navBox.y + navBox.height - 1);
 
     // Anchos del §6.1.
     const expected = byWidth(width, {
@@ -86,8 +88,6 @@ test("1 · hero 100vh, imagen a sangre derecha, navbar transparente encima", asy
       byWidth(width, { base: 420, max991: 420, max767: 360, max479: 320 }),
       0,
     );
-    // DESVÍO D-5: aquí el nav queda sobre la foto, así que lleva fondo.
-    expect(await style(page, ".navbar", "background-color")).not.toBe("rgba(0, 0, 0, 0)");
   }
 });
 

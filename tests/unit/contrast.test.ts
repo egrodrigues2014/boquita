@@ -61,7 +61,7 @@ describe("contexto claro: texto ámbar ≥24px usa --gold-display (AA-large)", (
 });
 
 describe("contexto claro: texto ámbar <24px usa --gold-ink (AA normal)", () => {
-  // precios (18/20px), .phone-link (18px), a:hover (20px), li (16px),
+  // precios (18/20px), nav/search/cart (18px), a:hover (20px), li (16px),
   // .h6-sans.primary (20px), flechas del slider (glifo de 20px)
   it.each([
     ["blanco", WHITE],

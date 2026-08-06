@@ -231,7 +231,7 @@ export default function TokensSpecimenPage() {
       on: WHITE,
       onLabel: "blanco",
       size: "normal",
-      usedFor: "a:hover, li, .phone-link, flechas del slider",
+      usedFor: "a:hover, li, nav/search/cart, flechas del slider",
     },
     {
       token: "--gold-ink",
