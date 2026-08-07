@@ -107,22 +107,14 @@ export interface HomeContent {
     image: ImageRef;
   };
 
-  /** Una frase con exactamente 2 huecos de imagen dentro del flujo del h2. */
-  statement: {
-    partA: string;
-    partB: string;
-    partC: string;
-    inline: [ImageRef, ImageRef];
-  };
+  /** Configuracion de la banda editorial; el copy vive en `mediaText`. */
+  statement: Record<string, never>;
 
   mediaText: {
     titleTop: string;
     titleBottom: string;
     body: string;
     poster: ImageRef;
-    /** URL del lightbox: hoy el embed del reel real. TODO: MP4 autohospedado. */
-    videoUrl: string;
-    videoLabel: string;
   };
 
   wideImage: ImageRef;
@@ -171,7 +163,7 @@ export interface HomeContent {
     brandText: string;
     /** Sólo canales reales: no se rellenan huecos con placeholders. */
     social: Social[];
-    /** Exactamente 5. */
+    /** Exactamente 4 enlaces de navegacion. */
     links: Link[];
     address: string;
     addressTodo?: boolean;

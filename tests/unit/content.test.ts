@@ -54,12 +54,18 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(new Set(srcs).size).toBe(8);
   });
 
-  it("exactamente 2 recortes inline en el flujo del h2 (§6.2)", () => {
-    expect(home.statement.inline).toHaveLength(2);
+  it("statement usa el copy de Ale sin conservar la frase editorial anterior", () => {
+    expect(home.statement).toEqual({});
+    expect(home.mediaText.titleTop).toBe("Del horno de Ale");
+    expect(home.mediaText.titleBottom).toBe("a tu mesa");
+    expect(home.mediaText.body).toContain("Ale Budowski hornea en su casa de Santa Ana desde 2019");
+    expect(JSON.stringify(home)).not.toContain("cada receta nace con ingredientes honestos");
+    expect(JSON.stringify(home.statement)).not.toContain("inline");
   });
 
   it("exactamente 2 botones en el hero (§8)", () => {
     expect(home.hero.ctas).toHaveLength(2);
+    expect(home.hero.ctas[0].href).toBe("/tienda");
   });
 
   it("3 dropdowns + 1 enlace simple en el navbar (§5)", () => {
@@ -77,7 +83,7 @@ describe("cantidades que el spec exige (§8)", () => {
   it("redes reales, 5 enlaces y 2 teléfonos en el pie (§6.8)", () => {
     expect(home.footer.social.length).toBeGreaterThanOrEqual(2);
     expect(home.footer.social.length).toBeLessThanOrEqual(4);
-    expect(home.footer.links).toHaveLength(5);
+    expect(home.footer.links).toHaveLength(4);
     expect(home.footer.phones).toHaveLength(2);
   });
 });
@@ -103,8 +109,8 @@ describe("las imágenes referenciadas existen en public/", () => {
   const images = collect(home);
 
   it("encuentra las 15 imágenes del layout", () => {
-    // hero, wide, service, media, cta, 2 inline, 8 de galería
-    expect(images).toHaveLength(15);
+    // hero, wide, service, media, cta, 8 de galería
+    expect(images).toHaveLength(13);
   });
 
   it.each(images.map((img) => [img.src, img] as const))("existe %s", (_src, img) => {

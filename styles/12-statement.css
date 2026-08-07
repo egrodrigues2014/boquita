@@ -1,29 +1,154 @@
-/* ══════════════════════════════════════════════════════════════════════════
-   12-statement.css — Frase grande con dos imágenes DENTRO del flujo del texto
-   (spec §6.2).
+/*
+   12-statement.css - Historia de Ale con reveal secuencial por segmento.
+*/
 
-   Es el punto 3 del checklist de aceptación: los dos recortes tienen que
-   aparecer dentro del flujo del `h2`, no al lado.
+.statement-section {
+  background: var(--primary-light);
+  padding-block: clamp(78px, 9vw, 122px) clamp(96px, 12vw, 168px);
+}
 
-   Por eso siguen siendo `background-image` y no `<img>`: un `<img>` a
-   `height:1em` dentro de un `h2` rompe la caja de línea. Ver docs/DEVIATIONS.md,
-   sección "No son desvíos".
+.statement-section .container {
+  align-items: stretch;
+}
 
-   Las URL de las imágenes NO se declaran aquí: las inyecta el componente con
-   `image-set()` en un `style` inline, desde content/home.ts. Así el contenido
-   sigue en un solo sitio y se sirve el 2× en pantallas densas.
-   ══════════════════════════════════════════════════════════════════════════ */
+.statement-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.98fr) minmax(360px, 0.88fr);
+  gap: clamp(44px, 7vw, 112px);
+  width: 100%;
+  align-items: start;
+}
 
-.inline-img {
-  display: inline-block;
-  width: 100px;
-  height: 1em; /* ocupa el espacio de una "palabra" */
-  background-position: 50%;
-  background-repeat: no-repeat;
-  background-size: contain;
-  -webkit-text-fill-color: inherit;
-  /* El h2 va en mayúsculas por CSS; sin esto el span heredaría el
-     text-transform y podría afectar al cálculo de la línea en algún motor. */
+.statement-copy {
+  max-width: 690px;
+}
+
+.scroll-color-text,
+.scroll-color-text__heading {
+  margin: 0;
+}
+
+.scroll-color-text__heading {
+  font-family: var(--ff-serif);
+  font-weight: 700;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.scroll-color-text__line {
+  --reveal: 100%;
+  position: relative;
+  display: block;
+}
+
+.js .scroll-color-text__line {
+  --reveal: 0%;
+}
+
+.scroll-color-text__base,
+.scroll-color-text__fill {
+  display: block;
+}
+
+.scroll-color-text__fill {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--reveal)) 0 0);
+}
+
+.scroll-color-text__line--title {
+  color: rgba(176, 114, 8, 0.24);
+  font-family: var(--ff-sans);
+  font-size: clamp(34px, 4.2vw, 58px);
+  font-weight: 800;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.scroll-color-text__line--title .scroll-color-text__fill {
+  color: var(--gold-ink);
+}
+
+.scroll-color-text__line--body {
+  color: rgba(107, 91, 77, 0.22);
+  font-family: var(--ff-sans);
+  font-size: clamp(24px, 2.35vw, 34px);
+  font-weight: 400;
+  line-height: 1.36;
   text-transform: none;
-  vertical-align: baseline;
+}
+
+.scroll-color-text__line--title + .scroll-color-text__line--body {
+  margin-top: clamp(30px, 3.8vw, 52px);
+}
+
+.scroll-color-text__line--body .scroll-color-text__fill {
+  color: var(--body-text);
+}
+
+.statement-photo {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 560px;
+  justify-self: end;
+  margin-top: clamp(108px, 12vw, 180px);
+  aspect-ratio: 493 / 300;
+  border-radius: 8px;
+  background: var(--gray);
+}
+
+.statement-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js .scroll-color-text__line,
+  .scroll-color-text__line {
+    --reveal: 100%;
+  }
+}
+
+@media (max-width: 991px) {
+  .statement-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .statement-copy {
+    max-width: none;
+    text-align: center;
+  }
+
+  .statement-photo {
+    max-width: 720px;
+    margin-inline: auto;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 767px) {
+  .statement-section {
+    padding-block: 68px 82px;
+  }
+
+  .scroll-color-text__line--title {
+    font-size: clamp(26px, 6.2vw, 34px);
+  }
+
+  .scroll-color-text__line--body {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 479px) {
+  .scroll-color-text__line--title {
+    font-size: clamp(20px, 5.3vw, 25px);
+  }
+
+  .scroll-color-text__line--body {
+    font-size: 18px;
+  }
 }

@@ -92,10 +92,8 @@ const hero: ImageRef = {
     { src: "/img/hero/1050x1400.avif", width: 1050 },
     { src: "/img/hero/1350x1800.avif", width: 1350 },
   ],
-  // Anchos de render del spec §6.1: 43.5% base · 46% ≥1280 · 38% ≥1440 · 39% ≥1920.
-  // A ≤991 la imagen pasa a estática, 100vw × 420px de alto.
-  sizes:
-    "(min-width: 1920px) 39vw, (min-width: 1440px) 38vw, (min-width: 1280px) 46vw, (min-width: 992px) 43.5vw, 100vw",
+  // El hero es full-bleed: el preload debe pedir el mismo candidato que el <img>.
+  sizes: "100vw",
   width: 1050,
   height: 1400,
   alt: "Queque de manzana recién horneado, espolvoreado con azúcar glas, sobre un plato blanco en la terraza",
@@ -148,28 +146,6 @@ const ctaImage: ImageRef = {
   width: 585,
   height: 384,
   alt: "Biscotti de almendra dispuestos alrededor de un cuenco de chocolate para mojar",
-};
-
-/**
- * Los dos recortes inline. Siguen siendo `background-image` con `image-set()`,
- * no `<img>`: tienen que vivir dentro del flujo del h2 a `height:1em`, y ningún
- * `<img>` hace eso sin romper la caja de línea.
- * `alt` vacío porque son decorativos — la frase se lee de corrido.
- */
-const inlineBrigadeiro: ImageRef = {
-  src: "/img/inline/brigadeiro-100x100.webp",
-  srcSet: [{ src: "/img/inline/brigadeiro-200x200.webp", width: 200 }],
-  width: 100,
-  height: 100,
-  alt: "",
-};
-
-const inlineGalleta: ImageRef = {
-  src: "/img/inline/galleta-corazon-100x100.webp",
-  srcSet: [{ src: "/img/inline/galleta-corazon-200x200.webp", width: 200 }],
-  width: 100,
-  height: 100,
-  alt: "",
 };
 
 /** §6.6: 4 únicas por fila, el render las repite hasta 7. */
@@ -257,18 +233,13 @@ export const home: HomeContent = {
       "mantequilla, zanahoria fresca, chocolate y almendra. Cada pedido sale del " +
       "horno el día que lo recibís.",
     ctas: [
-      { label: "Ver el catálogo", href: "#catalogo" },
+      { label: "Ver el catálogo", href: "/tienda" },
       { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
     ],
     image: hero,
   },
 
-  statement: {
-    partA: "Todo empieza con mantequilla de verdad, zanahoria rallada a mano",
-    partB: "y un horno pequeño en Santa Ana",
-    partC: "donde cada receta se hornea de a poco, para vos.",
-    inline: [inlineGalleta, inlineBrigadeiro],
-  },
+  statement: {},
 
   mediaText: {
     titleTop: "Del horno de Ale",
@@ -277,10 +248,6 @@ export const home: HomeContent = {
       "Ale Budowski hornea en su casa de Santa Ana desde 2019. Sin conservantes y sin " +
       "mezclas industriales: recetas propias, tandas pequeñas y el sabor de lo hecho a mano.",
     poster: mediaPoster,
-    // El reel real de Ale decorando un queque. ⚠ TODO: sustituir por un MP4
-    // autohospedado — más rápido y sin tracking de terceros.
-    videoUrl: "https://www.instagram.com/p/C3V_oBtOBHT/embed",
-    videoLabel: "Ver el video: cómo horneamos",
   },
 
   wideImage,
@@ -390,14 +357,13 @@ export const home: HomeContent = {
       { label: "Catálogo", href: "/tienda" },
       { label: "Galería", href: "/#galeria" },
       { label: "Sobre nosotros", href: "/sobre-nosotros" },
-      { label: "Escribinos", href: WA_CONSULTA, external: true },
     ],
     address: CONTACT.address,
     phones: [
       { display: CONTACT.whatsappDisplay, href: telHref() },
       { display: `WhatsApp: ${CONTACT.whatsappDisplay}`, href: WA_CONSULTA },
     ],
-    copyright: "© 2026 Boquita Sweet & Salty. Todos los derechos reservados.",
+    copyright: "© 2026 Boquita — Sweet & Salty.",
     legal: { label: "Aviso legal", href: "/aviso-legal" },
   },
 };

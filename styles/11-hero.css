@@ -1,103 +1,127 @@
-/* ══════════════════════════════════════════════════════════════════════════
-   11-hero.css — Hero: 100vh con imagen a sangre en el borde derecho (spec §6.1).
+/*
+   11-hero.css - Hero cinematico: foto full-bleed, overlay calido y copy centrado.
 
-   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
-
-   El header ocupa la franja superior; en desktop la foto empieza debajo para
-   no quedar tapada por carrito y WhatsApp.
-   ══════════════════════════════════════════════════════════════════════════ */
+   La imagen sigue siendo un <img> real porque es el LCP y se precarga desde el
+   head. El blur vive en la propia imagen y el contraste lo asegura el overlay.
+*/
 
 .hero {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  height: 100vh;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  padding-block: 132px 70px;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(58, 42, 26, 0.32), rgba(21, 14, 9, 0.76) 64%),
+    linear-gradient(180deg, rgba(22, 15, 10, 0.72), rgba(58, 42, 26, 0.5) 46%, rgba(22, 15, 10, 0.78));
 }
 
 .hero-img {
   position: absolute;
-  inset: 104px 0 0 auto;
-  width: 43.5%;
-  height: calc(100% - 104px);
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  filter: blur(2px) saturate(0.92) brightness(0.74);
+  transform: scale(1.03);
+  transform-origin: center;
+}
+
+.hero .container {
+  width: 100%;
+  align-items: center;
 }
 
 .hero-content {
-  width: 53%;
-  display: block;
+  width: min(780px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: var(--primary-light);
 }
 
-/* ══════════════════ min-width ascendente ══════════════════ */
+.hero .h6-sans.primary {
+  color: var(--gold-bright);
+}
+
+.hero .h1-hero {
+  color: var(--primary-light);
+  text-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+.hero .text-primary {
+  color: var(--gold-bright);
+}
+
+.hero .lead {
+  max-width: 680px;
+  color: rgba(250, 245, 236, 0.92);
+  text-shadow: 0 8px 28px rgba(0, 0, 0, 0.34);
+}
+
+.hero .btn-group {
+  justify-content: center;
+}
+
+.hero .btn--ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(250, 245, 236, 0.88);
+  color: var(--primary-light);
+}
+
+.hero .btn--ghost:hover {
+  background: var(--primary-light);
+  color: var(--gold-ink);
+}
 
 @media (min-width: 1280px) {
-  .hero-img {
-    top: 118px;
-    width: 46%;
-    height: calc(100% - 118px);
-  }
-  .hero-content {
-    width: 50%;
-  }
-}
-
-@media (min-width: 1440px) {
-  .hero-img {
-    width: 38%;
-  }
-  .hero-content {
-    width: 57%;
+  .hero {
+    padding-top: 150px;
   }
 }
 
 @media (min-width: 1920px) {
-  .hero-img {
-    width: 39%;
-  }
   .hero-content {
-    width: 64%;
+    width: min(900px, 100%);
   }
 }
 
-/* ══════════════════ max-width descendente ══════════════════ */
-
 @media (max-width: 991px) {
   .hero {
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-start;
-    height: auto;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding-block: 128px 64px;
   }
-  .hero-img {
-    position: static;
-    width: 100%;
-    height: 420px;
-    margin-bottom: 60px;
-  }
+
   .hero-content {
-    width: 90%;
-    margin-inline: auto;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    width: min(650px, 100%);
   }
 }
 
 @media (max-width: 767px) {
-  .hero-img {
-    height: 360px;
-    margin-bottom: 40px;
+  .hero {
+    padding-block: 120px 56px;
   }
+
   .hero-content {
     width: 100%;
   }
 }
 
 @media (max-width: 479px) {
-  .hero-img {
-    height: 320px;
+  .hero {
+    padding-block: 112px 42px;
   }
 }

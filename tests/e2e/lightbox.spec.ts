@@ -12,9 +12,9 @@ test("el iframe del vídeo NO existe hasta abrir el lightbox", async ({ page }) 
   // visita para un vídeo que casi nadie abre.
   await expect(page.locator("iframe")).toHaveCount(0);
 
-  await page.getByRole("button", { name: /Ver el video/i }).click();
-  await expect(page.locator(".lightbox-video iframe")).toHaveCount(1);
-  await expect(page.locator(".lightbox-video iframe")).toHaveAttribute("title", /.+/);
+  await expect(page.getByRole("button", { name: /Ver el video/i })).toHaveCount(0);
+  await expect(page.locator('[data-lightbox="video"]')).toHaveCount(0);
+  await expect(page.locator(".lightbox-video iframe")).toHaveCount(0);
 });
 
 test("una foto de galería abre, navega y cierra devolviendo el foco", async ({ page }) => {

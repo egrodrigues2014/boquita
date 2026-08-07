@@ -64,6 +64,75 @@ test.describe("reveal al entrar en pantalla", () => {
     const wrapped = await heroImg.evaluate((el) => !!el.closest(".reveal"));
     expect(wrapped).toBe(false);
   });
+
+  test("el CTA Ver el catálogo navega a la tienda", async ({ page }) => {
+    await page.getByRole("link", { name: "Ver el catálogo" }).click();
+    await expect(page).toHaveURL(/\/tienda$/);
+  });
+
+  test("la frase editorial revela color al hacer scroll", async ({ page }) => {
+    const lines = page.locator(".statement-section .scroll-color-text__line");
+    await expect(lines).toHaveCount(6);
+    await expect(lines.first()).toHaveCSS("--reveal", "0%");
+
+    await page.locator(".scroll-color-text").evaluate((text) => {
+      const top = text.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.5;
+      window.scrollTo(0, top);
+    });
+    await page.waitForFunction(() => {
+      const first = document.querySelector<HTMLElement>(
+        ".statement-section .scroll-color-text__line",
+      );
+      if (!first) return false;
+      return Number.parseFloat(getComputedStyle(first).getPropertyValue("--reveal")) > 0;
+    });
+
+    const values = await lines.evaluateAll((items) =>
+      items.map((item) => Number.parseFloat(getComputedStyle(item).getPropertyValue("--reveal"))),
+    );
+    expect(new Set(values).size).toBeGreaterThan(1);
+    expect(values[0]).toBeGreaterThan(values.at(-1) ?? 100);
+    expect(values.filter((value) => value > 0 && value < 100).length).toBeLessThanOrEqual(1);
+
+    await page.locator(".scroll-color-text").evaluate((text) => {
+      const top = text.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.1;
+      window.scrollTo(0, top);
+    });
+    await page.waitForFunction(() => {
+      const last = [...document.querySelectorAll<HTMLElement>(".scroll-color-text__line")].at(-1);
+      if (!last) return false;
+      return Number.parseFloat(getComputedStyle(last).getPropertyValue("--reveal")) > 0;
+    });
+    const almostTopLast = await lines
+      .last()
+      .evaluate((item) => Number.parseFloat(getComputedStyle(item).getPropertyValue("--reveal")));
+    expect(almostTopLast).toBeLessThan(100);
+
+    await page.locator(".scroll-color-text").evaluate((text) => {
+      const top = text.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo(0, top);
+    });
+    await expect(lines.last()).toHaveCSS("--reveal", "100%");
+  });
+
+  test("Del horno de Ale no renderiza play ni lightbox de video", async ({ page }) => {
+    await expect(page.locator(".media .play-wrap")).toHaveCount(0);
+    await expect(page.locator('[data-lightbox="video"]')).toHaveCount(0);
+    await expect(page.locator(".media-text-section")).toHaveCount(0);
+    await expect(page.locator(".statement-photo-img")).toBeVisible();
+  });
+
+  test("la foto de Ale aparece sin efecto de blur", async ({ page }) => {
+    const photo = page.locator(".statement-photo");
+    const blurVar = await photo.evaluate((el) =>
+      getComputedStyle(el).getPropertyValue("--blur").trim(),
+    );
+    expect(blurVar).toBe("");
+    await expect(page.locator(".statement-photo-img")).toHaveCSS("filter", "none");
+
+    await photo.scrollIntoViewIfNeeded();
+    await expect(photo).toHaveClass(/is-in/);
+  });
 });
 
 // ── Punto 12 · prefers-reduced-motion ──────────────────────────────────────
@@ -97,6 +166,16 @@ test.describe("prefers-reduced-motion", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.reload();
     await expect(page.locator(".slider-mask")).toHaveCount(0);
+  });
+
+  test("la frase editorial queda revelada sin animación", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.reload();
+    await expect(page.locator(".statement-section .scroll-color-text__line").first()).toHaveCSS(
+      "--reveal",
+      "100%",
+    );
+    await expect(page.locator(".statement-photo-img")).toHaveCSS("filter", "none");
   });
 });
 

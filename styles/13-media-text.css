@@ -1,10 +1,6 @@
-/* ══════════════════════════════════════════════════════════════════════════
-   13-media-text.css — Grid de 2 columnas asimétrico (spec §6.3).
-
-   ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
-
-   Medidas de referencia a 1440px: columna izquierda ≈493×300, derecha ≈617px.
-   ══════════════════════════════════════════════════════════════════════════ */
+/*
+   13-media-text.css - Grid de 2 columnas asimetrico para foto + texto.
+*/
 
 .media-text {
   display: grid;
@@ -15,18 +11,11 @@
   align-items: center;
 }
 
-/* DESVÍO D-10: el spec lo declara como `background:url(media.webp) 50%/cover`.
-   Un background CSS no admite srcset ni lazy loading, y es una foto de 493×300
-   que se enviaría a tamaño completo a un móvil de 390px. Pasa a contener un
-   `<img srcset>` posicionado en absoluto, conservando `height:300px` y el
-   centrado flex del botón de play. */
 .media {
   position: relative;
   overflow: hidden;
   height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  border-radius: 8px;
 }
 
 .media-img {
@@ -37,39 +26,15 @@
   object-fit: cover;
 }
 
-/* El botón de play va por encima de la foto. */
-.media .play-wrap {
-  position: relative;
-  z-index: 2;
-  /* El spec le da `height:100%` con `margin-top:35px; margin-bottom:50px`. Dentro
-     de este `.media` de 300px con `overflow:hidden` (que añade el desvío D-10 al
-     meter un <img> en vez de un background), esos márgenes desplazaban el botón
-     35px por debajo del centro y lo recortaban. Se anulan para que quede
-     centrado, que es lo que el diseño muestra. */
-  margin: 0;
-}
-
-/* Los anillos son blancos y el spec asume una foto oscura detrás. La foto
-   disponible es clara, así que sin esto el botón desaparece. Una sombra los
-   mantiene visibles sobre cualquier imagen sin cambiar el diseño. */
-.media .play-ring,
-.media .play-ring--h,
-.media .play-icon {
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.55));
-}
-
-/* ══════════════════ min-width ascendente ══════════════════ */
-
 @media (min-width: 1440px) {
   .media-text {
     grid-template-columns: 0.8fr 1fr;
   }
+
   .w-90-desktop {
     width: 90%;
   }
 }
-
-/* ══════════════════ max-width descendente ══════════════════ */
 
 @media (max-width: 991px) {
   .media-text {
@@ -83,6 +48,11 @@
     flex-direction: column;
     row-gap: 40px;
   }
+
+  .media {
+    width: 100%;
+  }
+
   .media-copy {
     text-align: center;
   }

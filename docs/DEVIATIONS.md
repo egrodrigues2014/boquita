@@ -40,13 +40,14 @@ mirar capturas reales. Ninguno se habría visto leyendo el CSS.
 | D-19 | `.newsletter-form .input { flex: none }` a ≤479px | **Corrige un conflicto latente del propio spec.** `.input{flex:1}` está pensado para la fila; al pasar a `flex-direction:column` el eje principal es el vertical y `flex-basis:0` gana sobre `height:60px`, así que el input **colapsaba a 21px**. El punto 10 del checklist exige 60px. | ✅ Fase 1 |
 | D-23 | La rejilla del catálogo de la portada puede renderizar **menos de 8** productos, contra el punto 5 del checklist | Sólo ocurre si la tabla `products` tiene entre 1 y 7 filas: con la base ausente, vacía o caída se sirve el fallback de 14 y son 8 exactos. La alternativa era rellenar con productos del fallback que no estén en el catálogo servido, y sus tarjetas llevarían a un 404 porque `/tienda/[slug]` resuelve contra el mismo `getCatalog()`. Una rejilla de 6 celdas es un defecto de maquetación; una tarjeta que lleva a un 404 le cuesta un pedido. Se avisa por consola y hay tests que fijan las dos ramas. | ✅ Fase 2 |
 | D-24 | El nav ya no usa megamenú de productos; `Catálogo` es enlace a `/tienda` con dropdown de categorías | El flujo real de compra vive en `/tienda`, con filtros y búsqueda. Duplicar los 14 productos en el header hacía ruido y competía con el destino principal. El dropdown queda como ayuda contextual: categorías, sin guiones decorativos y con hover/focus visible. | ✅ Header v1 |
+| D-25 | El footer visible cambia de CTA/newsletter solapada a cierre editorial de 4 columnas | La newsletter todavía no tiene backend ni contrato legal final; mostrar un formulario `action="#"` era ruido. El cierre actual prioriza marca, navegación, dirección y contacto real. | ✅ Home v2 |
 
 ## No son desvíos
 
 Cosas que parecen apartarse del spec pero no lo hacen:
 
 - **`.mt-40` vale 30px, no 40px.** Es una rareza del original y se copia literal
-  (`styles/04-layout.css`). Cambiarla desplazaría los botones del hero y el CTA del footer.
+  (`styles/04-layout.css`). Cambiarla desplazaría los botones del hero.
 - **`.inline-img` sigue siendo `background-image`**, no `next/image`. Tiene que vivir dentro del
   flujo del `h2` a `height:1em`; ningún `<img>` hace eso sin romper la caja de línea.
 - **Los `%` del transform de `.track` se resuelven contra la caja propia** (100% de `.scroller`),

@@ -11,21 +11,24 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 .section--overlap-up {
-  padding-bottom: 0;
-  margin-bottom: -130px;
+  background: var(--white);
+  margin-top: 0;
+  padding-block: clamp(72px, 8vw, 112px) clamp(96px, 10vw, 140px);
+  margin-bottom: 0;
 }
 
 .service-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: auto;
-  column-gap: 50px;
+  column-gap: clamp(54px, 7vw, 92px);
   width: 100%;
+  align-items: center;
 }
 
 .service-img {
   position: relative;
-  top: -130px;
+  top: 0;
   width: 100%;
   height: auto;
   object-fit: cover;
@@ -58,13 +61,13 @@
 
 @media (min-width: 1280px) {
   .section--overlap-up {
-    margin-bottom: -170px;
+    margin-top: 0;
   }
   .service-grid {
     column-gap: 90px;
   }
   .service-img {
-    top: -170px;
+    top: 0;
   }
   .stats {
     width: 90%;
@@ -78,7 +81,7 @@
 
 @media (max-width: 991px) {
   .section--overlap-up {
-    margin-bottom: 0;
+    margin-top: 0;
   }
   .service-grid {
     display: flex;
@@ -93,7 +96,7 @@
     width: 80%;
     align-self: center;
     text-align: center;
-    margin-top: -80px;
+    margin-top: 48px;
   }
   .stats {
     width: 90%;
@@ -109,7 +112,7 @@
     width: 100%;
     align-items: center;
     text-align: center;
-    margin-top: -100px;
+    margin-top: 42px;
   }
   .stats {
     margin-top: 20px;

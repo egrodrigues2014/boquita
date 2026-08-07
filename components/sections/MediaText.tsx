@@ -2,38 +2,15 @@ import { Picture } from "@/components/ui/Picture";
 import type { HomeContent } from "@/types/content";
 
 /**
- * Media + texto: grid de 2 columnas asimétrico (spec §6.3).
- *
- * El botón de play son tres capas concéntricas (§3.4). En esta fase es un enlace
- * directo al reel; en la fase de interacciones pasa a abrir el lightbox.
- *
- * DESVÍO D-10: el spec declara `.media` como `background:url(...) 50%/cover`.
- * Un background no admite srcset ni lazy loading, y es una foto de 493×300 que
- * se enviaría a tamaño completo a un móvil de 390px. Pasa a un `<img srcset>`
- * posicionado en absoluto dentro del `.media`, conservando su `height:300px` y
- * el centrado flex.
+ * Foto + texto: presenta el origen de Boquita sin overlay de video.
  */
 export function MediaText({ mediaText }: { mediaText: HomeContent["mediaText"] }) {
   return (
-    <section className="section" id="video">
+    <section className="section media-text-section" id="video">
       <div className="container">
         <div className="media-text">
-          <div className="media">
+          <div className="media" aria-label={mediaText.poster.alt}>
             <Picture image={mediaText.poster} className="media-img" />
-            {/* Es un <button>, no un <a>: abre un lightbox, no navega.
-                El `data-lightbox` lo recoge el listener delegado de <Lightbox>. */}
-            <button
-              type="button"
-              className="play-wrap"
-              data-lightbox="video"
-              aria-label={mediaText.videoLabel}
-            >
-              <span className="play-ring" aria-hidden="true" />
-              <span className="play-ring--h" aria-hidden="true" />
-              <span className="play-icon" aria-hidden="true">
-                ▶
-              </span>
-            </button>
           </div>
 
           <div className="media-copy">

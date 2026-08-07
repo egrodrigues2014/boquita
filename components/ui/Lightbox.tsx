@@ -5,7 +5,7 @@ import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import type { ImageRef } from "@/types/content";
 
 /**
- * Lightbox para la imagen de vídeo y las fotos de la galería (spec §4.7).
+ * Lightbox para las fotos de la galería.
  *
  * Usa el **`<dialog>` nativo** con `showModal()`, que trae gratis: capa
  * superior, trampa de foco, cierre con Escape, `::backdrop` y `aria-modal`
@@ -23,11 +23,9 @@ import type { ImageRef } from "@/types/content";
 export type LightboxGroups = {
   /** Fotos de la galería, en su orden único (8). */
   gallery: ImageRef[];
-  /** URL del vídeo a incrustar y su título accesible. */
-  video: { url: string; title: string };
 };
 
-type OpenState = { kind: "gallery"; index: number } | { kind: "video" } | null;
+type OpenState = { kind: "gallery"; index: number } | null;
 
 export function Lightbox({ groups }: { groups: LightboxGroups }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -49,9 +47,7 @@ export function Lightbox({ groups }: { groups: LightboxGroups }) {
       triggerRef.current = trigger;
 
       const kind = trigger.dataset.lightbox;
-      if (kind === "video") {
-        setOpen({ kind: "video" });
-      } else if (kind === "gallery") {
+      if (kind === "gallery") {
         setOpen({ kind: "gallery", index: Number(trigger.dataset.lightboxIndex ?? 0) });
       }
     };
@@ -100,7 +96,7 @@ export function Lightbox({ groups }: { groups: LightboxGroups }) {
     <dialog
       className="lightbox"
       ref={dialogRef}
-      aria-label={isGallery ? "Galería de fotos" : "Vídeo"}
+      aria-label="Galería de fotos"
       onKeyDown={onKeyDown}
       // `close` se dispara también con Escape, así que es el único sitio donde
       // hay que sincronizar el estado de vuelta.
@@ -120,20 +116,6 @@ export function Lightbox({ groups }: { groups: LightboxGroups }) {
             <path d="M3 3 L19 19 M19 3 L3 19" stroke="currentColor" strokeWidth="2" fill="none" />
           </svg>
         </button>
-
-        {open?.kind === "video" && (
-          // El iframe se monta SÓLO mientras el lightbox está abierto: si viviera
-          // en el shell de la página, cargaría scripts de terceros en cada visita.
-          <div className="lightbox-video">
-            <iframe
-              src={groups.video.url}
-              title={groups.video.title}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
-        )}
 
         {isGallery && current && (
           <>

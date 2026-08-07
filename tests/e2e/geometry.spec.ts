@@ -1,28 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
 
-/**
- * Los puntos 1 a 10 del checklist §9 del spec, como aserciones ejecutables.
- *
- * Cada `test` se corresponde con un punto numerado. Los valores esperados se
- * derivan del ancho del viewport, siguiendo las mismas tablas de breakpoints del
- * spec, para que un cambio de CSS que rompa un breakpoint concreto falle sólo en
- * ese proyecto y sea evidente cuál.
- */
-
-/** Elige el valor que corresponde al ancho actual, con la cascada del spec. */
-function byWidth<T>(
-  width: number,
-  values: { base: T; min1280?: T; min1440?: T; min1920?: T; max991?: T; max767?: T; max479?: T },
-): T {
-  if (width <= 479 && values.max479 !== undefined) return values.max479;
-  if (width <= 767 && values.max767 !== undefined) return values.max767;
-  if (width <= 991 && values.max991 !== undefined) return values.max991;
-  if (width >= 1920 && values.min1920 !== undefined) return values.min1920;
-  if (width >= 1440 && values.min1440 !== undefined) return values.min1440;
-  if (width >= 1280 && values.min1280 !== undefined) return values.min1280;
-  return values.base;
-}
-
 async function style(page: Page, selector: string, property: string): Promise<string> {
   return page.evaluate(
     ([sel, prop]) => {
@@ -42,162 +19,106 @@ async function box(page: Page, selector: string) {
 
 test.beforeEach(async ({ page }) => {
   await page.goto("/");
-  // Hay que esperar a las fuentes de verdad: Cormorant Infant es mucho más
-  // estrecha que su fallback Georgia, así que medir antes del swap da conteos de
-  // línea equivocados en los anchos pequeños.
-  //
-  // Ojo: `page.evaluate(() => document.fonts.ready)` NO espera — resuelve a un
-  // FontFaceSet que no es serializable. Hay que encadenar a un valor simple.
   await page.evaluate(() => document.fonts.ready.then(() => true));
 });
 
-// ── 1 ──────────────────────────────────────────────────────────────────────
-test("1 · hero 100vh, imagen a sangre derecha bajo el navbar", async ({
-  page,
-  viewport,
-}) => {
-  const width = viewport!.width;
-  const heroBox = await box(page, ".hero");
-  const imgBox = await box(page, ".hero-img");
-  const navBox = await box(page, ".navbar");
+test("hero ocupa la primera pantalla con imagen full-bleed", async ({ page, viewport }) => {
+  const hero = await box(page, ".hero");
+  const image = await box(page, ".hero-img");
 
-  expect(await style(page, ".navbar", "position")).toBe("absolute");
-  expect(await style(page, ".navbar", "background-color")).not.toBe("rgba(0, 0, 0, 0)");
+  expect(hero.height).toBeCloseTo(viewport!.height, 0);
+  expect(await style(page, ".hero-img", "position")).toBe("absolute");
+  expect(await style(page, ".hero-img", "object-fit")).toBe("cover");
+  expect(image.x).toBeLessThanOrEqual(0);
+  expect(image.x + image.width).toBeGreaterThanOrEqual(viewport!.width);
+});
 
-  if (width >= 992) {
-    // 100vh exacto.
-    expect(heroBox.height).toBeCloseTo(viewport!.height, 0);
-    // A sangre en el borde derecho.
-    expect(imgBox.x + imgBox.width).toBeCloseTo(width, 0);
-    // La foto arranca bajo el header: no queda debajo de cesta/WhatsApp.
-    expect(imgBox.y).toBeGreaterThanOrEqual(navBox.y + navBox.height - 1);
-
-    // Anchos del §6.1.
-    const expected = byWidth(width, {
-      base: 43.5,
-      min1280: 46,
-      min1440: 38,
-      min1920: 39,
-    });
-    expect(imgBox.width / width).toBeCloseTo(expected / 100, 2);
+test("statement usa fondo crema, escala compacta y layout hibrido", async ({ page, viewport }) => {
+  await expect(page.locator(".statement-section h2")).toContainText("Del horno de Ale");
+  await expect(page.locator(".statement-section h2")).toContainText("a tu mesa");
+  await expect(page.locator(".statement-section h2")).toContainText(
+    "Ale Budowski hornea en su",
+  );
+  await expect(page.locator(".statement-section h2")).toContainText(
+    "pequeñas y el sabor de lo hecho a mano.",
+  );
+  await expect(page.locator(".statement-section .scroll-color-text__line")).toHaveCount(6);
+  await expect(page.locator(".statement-photo-img")).toBeVisible();
+  await expect(page.locator(".media-text-section")).toHaveCount(0);
+  expect(await style(page, ".statement-section", "background-color")).toBe("rgb(250, 245, 236)");
+  expect(await style(page, ".statement-photo-img", "filter")).toBe("none");
+  const bodySize = Number.parseFloat(
+    await style(page, ".scroll-color-text__line--body", "font-size"),
+  );
+  if (viewport!.width <= 479) {
+    expect(bodySize).toBe(18);
+  } else if (viewport!.width <= 767) {
+    expect(bodySize).toBe(20);
   } else {
-    // A ≤991 la imagen pasa a estática, a todo el ancho y con alto fijo.
-    expect(await style(page, ".hero-img", "position")).toBe("static");
-    expect(imgBox.width).toBeCloseTo(width, 0);
-    expect(imgBox.height).toBeCloseTo(
-      byWidth(width, { base: 420, max991: 420, max767: 360, max479: 320 }),
-      0,
-    );
+    expect(bodySize).toBeGreaterThan(20);
+  }
+
+  const titleLine = await box(page, ".scroll-color-text__line--title");
+  const titleBase = await box(
+    page,
+    ".scroll-color-text__line--title .scroll-color-text__base",
+  );
+  expect(titleBase.height).toBeCloseTo(titleLine.height, 1);
+
+  const copy = await box(page, ".statement-copy");
+  const photo = await box(page, ".statement-photo");
+  if (viewport!.width >= 992) {
+    expect(photo.x).toBeGreaterThan(copy.x + copy.width);
+    expect(photo.y).toBeGreaterThan(copy.y + 80);
+  } else {
+    expect(photo.y).toBeGreaterThan(copy.y + copy.height);
   }
 });
 
-// ── 2 ──────────────────────────────────────────────────────────────────────
-test("2 · h1 del hero en 2 líneas, segunda en ámbar, 70→72→86px", async ({ page, viewport }) => {
-  const width = viewport!.width;
+test("imagen ancha vive en banda blanca y catalogo conserva banda crema", async ({ page }) => {
+  expect(await style(page, ".overlap-wrapper", "background-color")).toBe("rgb(250, 245, 236)");
+  expect(await style(page, ".wide-img-block", "background-color")).toBe("rgb(255, 255, 255)");
+  expect(await style(page, ".cream-block", "background-color")).toBe("rgb(250, 245, 236)");
+  expect(await style(page, ".cream-block", "margin-top")).toBe("0px");
 
-  // La escala del spec §2.3, sin desvíos: el titular se acortó para caber en
-  // ella, en vez de tocar los tamaños para que cupiera el titular.
-  const fontSize = await style(page, ".h1-hero", "font-size");
-  expect(fontSize).toBe(
-    `${byWidth(width, { base: 70, min1440: 72, min1920: 86, max991: 52, max767: 46 })}px`,
-  );
-
-  // La segunda línea usa --gold-display (#B07208), no el dorado de relleno.
-  expect(await style(page, ".text-primary", "color")).toBe("rgb(176, 114, 8)");
-
-  // Exactamente 2 líneas de texto, garantizadas por el <br> duro.
-  //
-  // No se usa `getClientRects().length`: sobre un elemento de bloque devuelve
-  // UNA caja, sin importar cuántas líneas de texto contenga. Con `line-height:1em`
-  // en el h1, la altura dividida por el tamaño de fuente sí da el número de líneas.
-  const lines = await page.locator(".h1-hero").first().evaluate((el) => {
-    const size = Number.parseFloat(getComputedStyle(el).fontSize);
-    return Math.round(el.clientHeight / size);
-  });
-  expect(lines).toBe(2);
-});
-
-// ── 3 ──────────────────────────────────────────────────────────────────────
-test("3 · los dos recortes van DENTRO del flujo del h2", async ({ page }) => {
-  const h2 = await box(page, ".section--no-bottom h2");
-  const inline1 = await box(page, ".inline-img--1");
-  const inline2 = await box(page, ".inline-img--2");
-
-  for (const img of [inline1, inline2]) {
-    // Contenidos vertical y horizontalmente en la caja del h2.
-    expect(img.y).toBeGreaterThanOrEqual(h2.y - 2);
-    expect(img.y + img.height).toBeLessThanOrEqual(h2.y + h2.height + 2);
-    expect(img.x).toBeGreaterThanOrEqual(h2.x - 2);
-    expect(img.x + img.width).toBeLessThanOrEqual(h2.x + h2.width + 2);
-    // 100px de ancho, alto de una línea.
-    expect(img.width).toBeCloseTo(100, 0);
-  }
-
-  expect(await style(page, ".inline-img--1", "background-image")).not.toBe("none");
-  expect(await style(page, ".inline-img--2", "background-image")).not.toBe("none");
-});
-
-// ── 4 ──────────────────────────────────────────────────────────────────────
-test("4 · la imagen ancha queda por encima del bloque crema", async ({ page, viewport }) => {
-  const width = viewport!.width;
-
-  expect(await style(page, ".cream-block", "margin-top")).toBe(
-    `${byWidth(width, { base: -200, max991: -150, max767: -100 })}px`,
-  );
-
-  // El z-index de .wide-img es lo que hace visible el solape.
-  expect(await style(page, ".wide-img", "z-index")).toBe("1");
-
+  const band = await box(page, ".wide-img-block");
   const wide = await box(page, ".wide-img");
   const cream = await box(page, ".cream-block");
-  // La foto se extiende por debajo de donde arranca el crema.
-  expect(wide.y + wide.height).toBeGreaterThan(cream.y);
+  expect(wide.y).toBeGreaterThan(band.y);
+  expect(wide.y + wide.height).toBeLessThan(cream.y);
+  expect(wide.x + wide.width / 2).toBeCloseTo(band.x + band.width / 2, 1);
 });
 
-// ── 5 ──────────────────────────────────────────────────────────────────────
-test("5 · rejilla de catálogo 2×4 con 1.2fr 1fr y gaps 80/70/60", async ({ page, viewport }) => {
-  const width = viewport!.width;
+test("catalogo mantiene la rejilla editorial de 8 productos", async ({ page, viewport }) => {
+  await expect(page.locator(".menu-item")).toHaveCount(8);
 
-  expect(await page.locator(".menu-item").count()).toBe(8);
-
-  if (width >= 768) {
+  if (viewport!.width >= 768) {
     const columns = (await style(page, ".menu-grid", "grid-template-columns")).split(/\s+/);
     expect(columns).toHaveLength(2);
     const ratio = Number.parseFloat(columns[0]!) / Number.parseFloat(columns[1]!);
     expect(ratio).toBeCloseTo(1.2, 1);
-
-    expect(await style(page, ".menu-grid", "column-gap")).toBe(
-      `${byWidth(width, { base: 80, min1280: 70, min1440: 60 })}px`,
-    );
-    expect(await style(page, ".menu-grid", "row-gap")).toBe("30px");
   } else {
-    // A ≤767 pasa a lista vertical, con nombre y precio a los extremos.
     expect(await style(page, ".menu-grid", "flex-direction")).toBe("column");
-    expect(await style(page, ".menu-item-head", "justify-content")).toBe("space-between");
   }
 });
 
-// ── 6 ──────────────────────────────────────────────────────────────────────
-test("6 · la imagen de servicio sobresale 130/170px con margen compensatorio", async ({
-  page,
-  viewport,
-}) => {
-  const width = viewport!.width;
-  const overhang = byWidth(width, { base: -130, min1280: -170, max991: 0 });
+test("sobre Boquita empieza alineado con su foto", async ({ page, viewport }) => {
+  const section = await box(page, ".section--overlap-up");
+  const image = await box(page, ".service-img");
 
-  expect(await style(page, ".section--overlap-up", "margin-bottom")).toBe(`${overhang}px`);
-  expect(await style(page, ".service-img", "top")).toBe(
-    // A ≤991 la imagen ya no sobresale, pero el `top` del spec sigue siendo -130.
-    `${byWidth(width, { base: -130, min1280: -170 })}px`,
-  );
-  expect(await style(page, ".section--overlap-up", "padding-bottom")).toBe("0px");
+  expect(await style(page, ".section--overlap-up", "background-color")).toBe("rgb(255, 255, 255)");
+  expect(await style(page, ".service-img", "top")).toBe("0px");
+  if (viewport!.width >= 992) {
+    expect(image.y).toBeGreaterThan(section.y);
+    expect(await style(page, ".section--overlap-up", "margin-bottom")).toBe("0px");
+    const copy = await box(page, ".service-copy");
+    const imageCenter = image.y + image.height / 2;
+    const copyCenter = copy.y + copy.height / 2;
+    expect(Math.abs(imageCenter - copyCenter)).toBeLessThan(80);
+  }
 });
 
-// ── 7 ──────────────────────────────────────────────────────────────────────
-test("7 · las dos filas de galería desbordan y están recortadas", async ({ page }) => {
-  // Las fotos de galería son `loading="lazy"` y viven bajo el pliegue: hay que
-  // traerlas al viewport y esperar a que carguen ANTES de medir. Sin esto los
-  // items no tienen tamaño y la tira parece caber sin desbordar.
+test("galeria desborda horizontalmente sin publicar testimonios falsos", async ({ page }) => {
   await page.locator(".gallery").scrollIntoViewIfNeeded();
   await page.waitForFunction(() => {
     const imgs = [...document.querySelectorAll<HTMLImageElement>(".gallery-img")];
@@ -205,104 +126,40 @@ test("7 · las dos filas de galería desbordan y están recortadas", async ({ pa
   });
 
   expect(await style(page, ".scroller", "overflow")).toBe("hidden");
-
   for (const row of [1, 2]) {
-    const items = await page.locator(`.track--${row} .gallery-item`).count();
-    // 7 por fila: es lo que produce el desborde de ~161%.
-    expect(items).toBe(7);
-
+    await expect(page.locator(`.track--${row} .gallery-item`)).toHaveCount(7);
     const overflow = await page
       .locator(`.track--${row}`)
       .evaluate((el) => el.scrollWidth / (el.parentElement as HTMLElement).clientWidth);
     expect(overflow).toBeGreaterThan(1.3);
   }
 
-  // Offsets estáticos opuestos: la base del movimiento en direcciones contrarias.
-  expect(await style(page, ".track--1", "left")).not.toBe(await style(page, ".track--2", "left"));
-
-  // Sólo 8 URL únicas para 14 elementos: las repetidas comparten petición.
-  const unique = await page.locator(".gallery-img").evaluateAll(
-    (imgs) => new Set(imgs.map((i) => (i as HTMLImageElement).currentSrc || (i as HTMLImageElement).src)).size,
-  );
-  expect(unique).toBe(8);
-});
-
-// ── 8 ──────────────────────────────────────────────────────────────────────
-test("8 · no se publican testimonios mientras falte fuente real", async ({ page }) => {
-  await expect(page.getByRole("heading", { name: "Lo que dicen nuestros clientes" })).toHaveCount(
-    0,
-  );
   await expect(page.locator(".review-card")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Ver reseñas siguientes" })).toHaveCount(0);
 });
 
-// ── 9 ──────────────────────────────────────────────────────────────────────
-test("9 · la tarjeta CTA flota a caballo entre el blanco y el bloque oscuro", async ({
-  page,
-  viewport,
-}) => {
-  const width = viewport!.width;
+test("footer muestra 4 columnas editoriales sin CTA ni newsletter visibles", async ({ page }) => {
+  await page.locator(".footer").scrollIntoViewIfNeeded();
 
-  expect(await style(page, ".footer-dark", "margin-top")).toBe(
-    `${byWidth(width, { base: -198, max767: -258 })}px`,
-  );
-
-  const card = await box(page, ".cta-card");
-  const dark = await box(page, ".footer-dark");
-
-  // El borde superior del bloque oscuro cae DENTRO de la tarjeta.
-  expect(dark.y).toBeGreaterThan(card.y);
-  expect(dark.y).toBeLessThan(card.y + card.height);
-
-  expect(await style(page, ".cta-card", "z-index")).toBe("1");
-
-  // El bloque tiene que ser OSCURO de verdad. Este test comprobaba el solape y
-  // el z-index pero no el color, y el pie estuvo BLANCO desde la Fase 1: el
-  // elemento re-declara `--text-dark: #ffffff` para invertir su tinta, y su
-  // propio `background: var(--text-dark)` resolvía a blanco. Lo encontró axe.
-  expect(await style(page, ".footer-dark", "background-color")).toBe("rgb(58, 42, 26)");
-  // Y la tarjeta crema encima debe seguir siendo crema, no heredar la inversión.
-  expect(await style(page, ".cta-card", "background-color")).toBe("rgb(250, 245, 236)");
-
-  // La tarjeta NO debe estar dentro de .footer-dark: si lo estuviera heredaría
-  // los tokens de tinta invertidos y perdería el contraste.
-  const nested = await page
-    .locator(".cta-card")
-    .evaluate((el) => !!el.closest(".footer-dark"));
-  expect(nested).toBe(false);
-});
-
-// ── 10 ─────────────────────────────────────────────────────────────────────
-test("10 · newsletter de 560px con input transparente y botón ámbar", async ({
-  page,
-  viewport,
-}) => {
-  const width = viewport!.width;
-
-  const form = await box(page, ".newsletter-form");
-  if (width >= 768) {
-    expect(form.width).toBeCloseTo(560, 0);
+  await expect(page.locator(".cta-card")).toHaveCount(0);
+  await expect(page.locator(".newsletter-form")).toHaveCount(0);
+  await expect(page.locator(".footer-cols > *")).toHaveCount(4);
+  await expect(page.locator(".footer-brand-col")).toContainText("Boquita");
+  await expect(page.locator(".footer-brand-col")).toContainText("Sweet & Salty");
+  await expect(page.locator(".footer-nav .footer-link")).toHaveCount(4);
+  await expect(page.locator(".footer-address")).toContainText("Calle Obelisco");
+  await expect(page.locator(".footer-contact")).toContainText("+506 7132 2355");
+  await expect(page.locator(".footer-contact")).toContainText("@boquita_cr");
+  if ((await page.viewportSize())!.width >= 992) {
+    const links = await page.locator(".footer-contact-link").evaluateAll((items) =>
+      items.slice(0, 2).map((item) => item.getBoundingClientRect().height),
+    );
+    expect(links.every((height) => height < 46)).toBe(true);
   }
-
-  const input = await box(page, ".newsletter-form .input");
-  expect(input.height).toBeCloseTo(60, 0);
-  expect(await style(page, ".newsletter-form .input", "background-color")).toBe("rgba(0, 0, 0, 0)");
-  expect(await style(page, ".newsletter-form .input", "border-top-color")).toBe("rgb(255, 255, 255)");
-
-  // El botón es relleno dorado con etiqueta MARRÓN (desvío D-0).
-  //
-  // Esta aserción decía «blanca», codificando el propio bug: dentro de
-  // `.footer-dark`, `--text-dark` está invertido a blanco y `.btn` lo usaba para
-  // su etiqueta → 2.08:1 sobre el dorado. Ahora usa `--on-gold`, que no se
-  // invierte en ningún ámbito.
-  expect(await style(page, ".btn--footer", "background-color")).toBe("rgb(232, 168, 27)");
-  expect(await style(page, ".btn--footer", "color")).toBe("rgb(58, 42, 26)");
+  await expect(page.locator(".footer-copy")).toContainText("© 2026 Boquita — Sweet & Salty");
 });
 
-// ── Contenedor ─────────────────────────────────────────────────────────────
-test("el contenedor da 1170px de contenido real", async ({ page, viewport }) => {
-  const width = viewport!.width;
+test("contenedor mantiene el ancho maximo del sistema", async ({ page, viewport }) => {
   const container = await box(page, ".cream-block .container");
-  const expected = Math.min(1200, width) - 30;
-  expect(container.width - 30).toBeCloseTo(Math.min(1170, expected), 0);
+  const expected = Math.min(1170, Math.min(1200, viewport!.width) - 30);
+  expect(container.width - 30).toBeCloseTo(expected, 0);
 });

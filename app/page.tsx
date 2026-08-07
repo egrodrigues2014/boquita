@@ -2,7 +2,6 @@ import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { Gallery } from "@/components/sections/Gallery";
 import { Hero } from "@/components/sections/Hero";
-import { MediaText } from "@/components/sections/MediaText";
 import { OverlapMenu } from "@/components/sections/OverlapMenu";
 import { Service } from "@/components/sections/Service";
 import { Statement } from "@/components/sections/Statement";
@@ -22,9 +21,9 @@ import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
  * la tarjeta CTA), así que reordenar rompe la geometría.
  *
  *   1 header.navbar        absoluto, sobre el hero
- *   2 section.hero         100vh, imagen a sangre derecha bajo el header
- *   3 section.statement    frase con 2 imágenes en el flujo del texto
- *   4 section.media-text   still de vídeo + texto, grid asimétrico
+ *   2 section.hero         100vh, imagen full-bleed con copy centrado
+ *   3 section.statement    frase editorial con color revelado al hacer scroll
+ *   4 section.media-text   foto + texto, grid asimétrico sin video
  *   5 wrapper              imagen ancha + bloque crema del catálogo
  *   6 section.service      imagen que sobresale + 2 métricas
  *   7 section.gallery      2 filas desbordadas
@@ -50,8 +49,7 @@ export default async function HomePage() {
 
       <main id="contenido">
         <Hero hero={home.hero} />
-        <Statement statement={home.statement} />
-        <MediaText mediaText={home.mediaText} />
+        <Statement mediaText={home.mediaText} />
         <OverlapMenu wideImage={home.wideImage} menu={home.menu} />
         <Service service={home.service} />
         <Gallery gallery={home.gallery} />
@@ -66,7 +64,6 @@ export default async function HomePage() {
       <Lightbox
         groups={{
           gallery: home.gallery.rows.flat(),
-          video: { url: home.mediaText.videoUrl, title: home.mediaText.videoLabel },
         }}
       />
     </>

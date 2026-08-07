@@ -103,22 +103,13 @@ export const homeSchema = z.object({
     image: contentImage,
   }),
 
-  statement: z.object({
-    // La frase entera debe caber en ~3 líneas a 50px. Cada tramo, acotado.
-    partA: z.string().min(10).max(90),
-    partB: z.string().min(5).max(90),
-    partC: z.string().min(5).max(90),
-    // Exactamente 2 huecos: es lo que inspecciona el punto 3 del checklist.
-    inline: z.tuple([imageRef, imageRef]),
-  }),
+  statement: z.object({}).strict(),
 
   mediaText: z.object({
     titleTop: z.string().min(2).max(30),
     titleBottom: z.string().min(2).max(30),
     body: z.string().min(40).max(280),
     poster: contentImage,
-    videoUrl: z.string().url(),
-    videoLabel: z.string().min(5).max(60),
   }),
 
   wideImage: contentImage,
@@ -171,7 +162,7 @@ export const homeSchema = z.object({
     brandText: z.string().min(40).max(300),
     // No se rellenan huecos con Facebook/email falsos: sólo canales reales.
     social: z.array(social).min(2).max(4),
-    links: z.array(link).length(5),
+    links: z.array(link).length(4),
     address: z.string().min(10).max(160),
     addressTodo: z.boolean().optional(),
     phones: z

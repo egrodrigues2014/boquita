@@ -12,12 +12,19 @@
 
 .overlap-wrapper {
   position: relative;
+  background: var(--primary-light);
+}
+
+.wide-img-block {
+  background: var(--white);
+  padding-block: clamp(58px, 7vw, 104px) clamp(34px, 4vw, 58px);
 }
 
 .wide-img {
-  width: 100%;
+  width: min(100%, 940px);
   height: auto;
   display: block;
+  margin-inline: auto;
   position: relative;
   /* ⚠ OBLIGATORIO: sin este z-index el fondo crema se pinta encima de la foto
      y el solape desaparece. Es lo que verifica el punto 4 del checklist. */
@@ -26,8 +33,8 @@
 
 .cream-block {
   background: var(--primary-light);
-  margin-top: -200px;
-  padding-top: 250px;
+  margin-top: 0;
+  padding-top: clamp(64px, 7vw, 96px);
   padding-bottom: 130px;
 }
 
@@ -148,8 +155,8 @@
 
 @media (max-width: 991px) {
   .cream-block {
-    margin-top: -150px;
-    padding-top: 190px;
+    margin-top: 0;
+    padding-top: 64px;
   }
   .menu-layout {
     flex-direction: column;
@@ -165,8 +172,8 @@
 
 @media (max-width: 767px) {
   .cream-block {
-    margin-top: -100px;
-    padding-top: 140px;
+    margin-top: 0;
+    padding-top: 52px;
   }
   .menu-grid {
     display: flex;
