@@ -73,10 +73,14 @@ Los dos hallazgos de más valor no estaban en la auditoría: las tres variables 
 `.section--no-bottom` sin efecto en dos de los tres breakpoints (el atajo `padding-block` de los
 overrides responsivos lo pisaba por orden de aparición).
 
-⚠ **Deuda conocida:** `seo-perf.spec.ts:184` («el elemento LCP es la foto del hero») falla en los
-ocho anchos. Es anterior al bloque —lo introdujo el rediseño de la portada— y la causa sigue sin
-identificar: descartadas por medición la exclusión por baja entropía, el `z-index: -2` y el
-`filter: blur`. Pertenece a UI-050.
+**Por qué la foto del hero no es el elemento LCP, y no hay que "arreglarlo".** Chrome excluye de LCP
+las imágenes cuyo rectángulo cubre el viewport entero, porque a esa escala casi siempre son fondo
+decorativo. Desde que el hero es full-bleed, la foto entra en esa categoría — y el heurístico acierta:
+va desenfocada 2px, atenuada al 74% y bajo dos gradientes; el contenido es el titular de encima. El
+LCP real es texto del hero, a ~1.1s contra un presupuesto de 2.5s. Comprobado dándole `height: 85%`:
+con eso vuelve a ser candidata al instante. **No encoger la imagen para que "vuelva a contar"**: no
+mejora nada para el usuario, sólo engaña a la métrica. Lo fija `seo-perf.spec.ts`, que ahora afirma
+que el LCP cae DENTRO del hero, no que sea la foto.
 
 ### La portada
 

@@ -181,20 +181,70 @@ test.describe("presupuestos de rendimiento", () => {
     expect(kb, `${kb} KB en la primera vista (${breakdown})`).toBeLessThan(1200);
   });
 
-  test("el elemento LCP es la foto del hero, y va precargada", async ({ page }) => {
+  /**
+   * El LCP cae en el hero, y la foto del hero va precargada. Son dos cosas
+   * distintas, y conviene no confundirlas otra vez.
+   *
+   * Este test afirmaba `expect(lcpElement).toContain("hero-img")`, y dejó de ser
+   * cierto cuando el rediseño convirtió el hero en full-bleed. **La foto ya no
+   * puede ser el elemento LCP, y no es un fallo:** Chrome excluye de LCP las
+   * imágenes cuyo rectángulo cubre el viewport entero, porque a esa escala casi
+   * siempre son fondo decorativo. Aquí acierta — la foto va desenfocada 2px,
+   * atenuada al 74% y bajo dos gradientes; el contenido es el titular encima.
+   *
+   * Comprobado dándole `height: 85%` en vez de `100%`: con eso vuelve a ser
+   * candidata al instante, con 1.001.798 px². No es entropía (todos los
+   * derivados están muy por encima de 0.05 bpp), ni el `z-index: -2`, ni el
+   * `filter: blur` — se descartaron los tres por medición.
+   *
+   * Así que lo que se afirma es lo que de verdad importa y sigue siendo cierto:
+   * que el LCP caiga DENTRO del hero (es decir, sobre el pliegue) y que la foto
+   * se precargue bien. Medido: ~1.1s, contra un presupuesto de 2.5s.
+   *
+   * ⚠ No hacer la imagen un poco más pequeña que el viewport para que "vuelva a
+   * contar". Eso no mejora nada para el usuario: sólo engaña a la métrica.
+   */
+  test("el LCP cae dentro del hero, y la foto del hero va precargada", async ({ page }) => {
     await page.goto("/", { waitUntil: "load" });
 
-    const lcpElement = await page.evaluate(
+    // Hay que esperar a que el LCP SE ESTABILICE, no leer el primer callback.
+    // El LCP se revisa al alza según pintan elementos más grandes: a los 192ms el
+    // candidato es el logo, y el texto del hero no llega hasta ~1.1s (los
+    // `.reveal` lo retrasan). Resolver en el primer callback devolvía «logo» y
+    // hacía fallar el test por un motivo que no tiene nada que ver con el hero.
+    //
+    // Se considera estable cuando pasan 800ms sin candidatos nuevos.
+    const lcp = await page.evaluate(
       () =>
-        new Promise<string>((resolve) => {
+        new Promise<{ cls: string; ms: number; dentroDelHero: boolean }>((resolve) => {
+          let ultimo: (PerformanceEntry & { element?: Element }) | undefined;
+          let quieto: ReturnType<typeof setTimeout>;
+
+          const entregar = () => {
+            clearTimeout(quieto);
+            resolve({
+              cls: ultimo?.element?.className ?? "",
+              ms: Math.round(ultimo?.startTime ?? 0),
+              dentroDelHero: !!ultimo?.element?.closest?.(".hero"),
+            });
+          };
+
           new PerformanceObserver((list) => {
-            const last = list.getEntries().at(-1) as (PerformanceEntry & { element?: Element }) | undefined;
-            resolve(last?.element?.className ?? "");
+            ultimo = list.getEntries().at(-1) as typeof ultimo;
+            clearTimeout(quieto);
+            quieto = setTimeout(entregar, 800);
           }).observe({ type: "largest-contentful-paint", buffered: true });
-          setTimeout(() => resolve(""), 1200);
+
+          // Tope duro, por si no llegara ningún candidato.
+          setTimeout(entregar, 5000);
         }),
     );
-    expect(lcpElement).toContain("hero-img");
+
+    expect(
+      lcp.dentroDelHero,
+      `el LCP se fue fuera del hero: ${lcp.cls || "sin elemento"} a los ${lcp.ms}ms. ` +
+        "La primera pintura grande ya no está sobre el pliegue.",
+    ).toBe(true);
 
     // El preload del hero debe declarar el MISMO `sizes` que el <img>, o el
     // navegador elegiría un candidato distinto y descargaría dos archivos.

@@ -347,15 +347,22 @@ comprobar antes que su premisa sigue siendo cierta.
 Las 93 tareas restantes **no se han verificado**. Verificarlas es el primer paso de su
 ejecución, no un trámite previo opcional.
 
-### Deuda conocida al cerrar este bloque
+### Resuelto tras cerrar el bloque
 
-**El test `seo-perf.spec.ts:184` («el elemento LCP es la foto del hero») falla en los
-ocho anchos, y es el único rojo de la suite** (899 en verde + 53 skipped de 960). Es anterior a este bloque: lo introdujo el rediseño de la portada
-(`8719a97`), no los quick wins. El hero deja de ser candidato a LCP; los tres candidatos
-que Chrome reporta son el logo (7.138 px²), un párrafo y el H1 (125.060 px²).
-Descartadas por medición tres hipótesis: la exclusión por baja entropía (todos los
-derivados están muy por encima de 0.05 bpp), el `z-index: -2` y el `filter: blur(2px)`.
-La causa sigue sin identificar. Pertenece a UI-050.
+**El LCP del hero.** `seo-perf.spec.ts` afirmaba que el elemento LCP era la foto del hero, y fallaba
+en los ocho anchos desde el rediseño de la portada. No era un fallo del código: **Chrome excluye de
+LCP las imágenes cuyo rectángulo cubre el viewport entero**, porque a esa escala casi siempre son
+fondo decorativo. Desde que el hero es full-bleed la foto entra en esa categoría, y el heurístico
+acierta — va desenfocada, atenuada y bajo dos gradientes; el contenido es el titular de encima.
+
+Descartadas por medición la exclusión por baja entropía, el `z-index: -2` y el `filter: blur`.
+Confirmado dándole `height: 85%` en vez de `100%`: con eso vuelve a ser candidata al instante, con
+1.001.798 px². El LCP real es texto del hero, a ~1.1s contra un presupuesto de 2.5s.
+
+El test pasa a afirmar lo que importa y sigue siendo cierto: que el LCP caiga **dentro del hero** —es
+decir, sobre el pliegue— y que la foto se precargue con el `sizes` correcto. Nota para UI-050 y
+UI-106: **no** encoger la imagen para que vuelva a contar como LCP; eso no mejora nada para el
+usuario, sólo engaña a la métrica.
 
 ## 8. Conflictos con decisiones documentadas
 
