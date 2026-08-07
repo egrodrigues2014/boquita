@@ -25,8 +25,14 @@
 } /* variante slider */
 
 .section {
+  /* El padding vertical va en una variable porque la primera sección de cada
+     página lo necesita SUMADO a la altura de la cabecera, y cambia de 80 a
+     120px en 1280. Con el número escrito a mano en los dos sitios, el de abajo
+     se queda atrás en cuanto alguien toca el de arriba. */
+  --section-pad: 80px;
+
   position: relative;
-  padding-block: 80px;
+  padding-block: var(--section-pad);
 }
 
 /* La navbar es `position:absolute`: no ocupa sitio en el flujo, así que la
@@ -42,9 +48,22 @@
    Se suma al padding en vez de sustituirlo para que el ritmo vertical de la
    sección siga siendo el mismo bajo la cabecera. */
 main > .section:first-child {
-  padding-top: calc(var(--header-h) + 80px);
+  padding-top: calc(var(--header-h) + var(--section-pad));
 }
 
+/* ⚠ Esta regla estuvo SIN EFECTO en dos de los tres breakpoints, y el motivo es
+   exactamente la cascada frágil que documenta la cabecera de cada hoja.
+
+   Los overrides responsivos escribían el atajo (`.section{padding-block:120px}`
+   a ≥1280, `60px` a ≤767). El atajo reescribe también `padding-bottom`, iban
+   DESPUÉS que esta regla y tenían su misma especificidad (0,1,0), así que
+   ganaban por orden: el modificador quedaba anulado y las secciones marcadas
+   como «sin fondo» arrastraban 120px (o 60px) de padding inferior igualmente.
+   En `/sobre-nosotros` eran 240px de aire fantasma a ≥1280.
+
+   Se arregla solo desde que los overrides tocan `--section-pad` en vez del
+   atajo: ya no reescriben `padding-bottom`, y esta regla vuelve a aplicarse.
+   Lo fija `geometry.spec.ts`. */
 .section--no-bottom {
   padding-bottom: 0;
 }
@@ -53,7 +72,7 @@ main > .section:first-child {
 
 @media (min-width: 1280px) {
   .section {
-    padding-block: 120px;
+    --section-pad: 120px;
   }
 }
 
@@ -61,7 +80,7 @@ main > .section:first-child {
 
 @media (max-width: 767px) {
   .section {
-    padding-block: 60px;
+    --section-pad: 60px;
   }
 }
 
