@@ -392,3 +392,47 @@ test.describe("metadatos por vista de catálogo", () => {
     expect(await titulo(page)).toContain("Catálogo");
   });
 });
+
+/**
+ * UI-031. El repo usa `aria-disabled` y no `disabled` en los steppers y en las
+ * flechas del slider, a propósito: cuando un elemento ENFOCADO se deshabilita,
+ * el navegador manda el foco al <body>, y quien navega con teclado hasta un
+ * extremo pierde el punto de anclaje. Está razonado en TestimonialsSlider.tsx.
+ *
+ * Pero `aria-disabled` no deshabilita nada por su cuenta: es una promesa que
+ * tiene que cumplir el handler. Si alguien quita el clamp, el control queda
+ * anunciado como no disponible y funcionando igualmente — que es peor que no
+ * anunciarlo. Esto fija la promesa.
+ */
+test.describe("los controles aria-disabled no hacen nada al pulsarlos", () => {
+  test("el − del stepper de la ficha no baja de 1", async ({ page }) => {
+    await page.goto("/tienda/queque-de-zanahoria");
+
+    const menos = page.getByRole("button", { name: /Quitar una unidad/ });
+    const cantidad = page.locator(".qty-value").first();
+
+    await expect(cantidad).toHaveText("1");
+    await expect(menos).toHaveAttribute("aria-disabled", "true");
+
+    // `force: true` es obligatorio y dice algo por sí solo: Playwright considera
+    // `aria-disabled="true"` como no accionable y un `click()` normal esperaría
+    // hasta agotar el timeout. O sea, la semántica se está anunciando bien. Lo
+    // que se quiere comprobar aquí es lo otro: que si el usuario consigue
+    // pulsarlo igualmente —puntero, Enter, un lector que lo active—, no pase nada.
+    await menos.click({ force: true });
+    await menos.click({ force: true });
+    await expect(cantidad, "el stepper bajó por debajo del mínimo").toHaveText("1");
+  });
+
+  test("el botón anunciado como no disponible conserva el foco", async ({ page }) => {
+    await page.goto("/tienda/queque-de-zanahoria");
+
+    const menos = page.getByRole("button", { name: /Quitar una unidad/ });
+    await menos.focus();
+    await menos.click({ force: true });
+
+    // Con `disabled` real el navegador habría mandado el foco al <body>: eso es
+    // exactamente lo que la decisión documentada evita.
+    await expect(menos, "el control perdió el foco al pulsarlo en el extremo").toBeFocused();
+  });
+});
