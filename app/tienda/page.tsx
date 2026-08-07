@@ -26,16 +26,68 @@ import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion } from "@/types/sho
  * El recuento del catálogo va en la descripción, así que la metadata no puede ser
  * un objeto estático: «Los 14 productos» tiene que dejar de decir 14 el día que
  * la tabla tenga 15.
+ *
+ * Y como los filtros son `searchParams`, las 11 vistas son la MISMA ruta: sin
+ * leerlos aquí, «Salado» y «Navidad» compartían título, descripción y canonical
+ * con el catálogo entero. Eso importa más de lo que parece en este producto,
+ * porque la forma de compartir una vista filtrada es pegar su URL en WhatsApp, y
+ * WhatsApp muestra exactamente este título y esta descripción.
  */
-export async function generateMetadata(): Promise<Metadata> {
-  const catalog = await getCatalog();
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ categoria?: string; ocasion?: string; q?: string }>;
+}): Promise<Metadata> {
+  const [params, catalog] = await Promise.all([searchParams, getCatalog()]);
+
+  const categoria = isCategoria(params.categoria) ? params.categoria : undefined;
+  const ocasion = isOcasion(params.ocasion) ? params.ocasion : undefined;
+  const q = params.q?.trim() ?? "";
+
+  const encontrados = filterShopProducts(catalog, { categoria, ocasion, q }).length;
+
+  // Búsqueda: no se indexa. Son infinitas URLs de contenido derivado, y una
+  // búsqueda sin resultados sería una página vacía en el índice.
+  if (q) {
+    return {
+      title: `«${q}» en el catálogo`,
+      description:
+        encontrados > 0
+          ? `${encontrados} ${encontrados === 1 ? "producto" : "productos"} de Boquita para «${q}».`
+          : `Ningún producto de Boquita coincide con «${q}». Mirá el catálogo completo.`,
+      robots: { index: false, follow: true },
+      alternates: { canonical: "/tienda" },
+    };
+  }
+
+  const partes = [categoria && CATEGORIAS[categoria], ocasion && OCASIONES[ocasion]].filter(Boolean);
+
+  if (partes.length === 0) {
+    return {
+      title: "Catálogo",
+      description:
+        `Los ${catalog.length} productos de Boquita: queques de zanahoria, galletas de granola ` +
+        "sin gluten, polvorones españoles, brigadeiros, biscotti y bocaditos salados. " +
+        "Horneado por encargo en Santa Ana.",
+      alternates: { canonical: "/tienda" },
+    };
+  }
+
+  // Las vistas filtradas sí se indexan y apuntan a sí mismas: son destinos de
+  // navegación reales —el dropdown del header enlaza a ellas— y responden a
+  // búsquedas concretas («queques Santa Ana»), no a contenido duplicado.
+  const query = new URLSearchParams();
+  if (categoria) query.set("categoria", categoria);
+  if (ocasion) query.set("ocasion", ocasion);
+
   return {
-    title: "Catálogo",
+    title: partes.join(" · "),
     description:
-      `Los ${catalog.length} productos de Boquita: queques de zanahoria, galletas de granola ` +
-      "sin gluten, polvorones españoles, brigadeiros, biscotti y bocaditos salados. " +
+      `${encontrados} ${encontrados === 1 ? "producto" : "productos"} de Boquita` +
+      `${categoria ? ` en ${CATEGORIAS[categoria].toLowerCase()}` : ""}` +
+      `${ocasion ? ` para ${OCASIONES[ocasion].toLowerCase()}` : ""}. ` +
       "Horneado por encargo en Santa Ana.",
-    alternates: { canonical: "/tienda" },
+    alternates: { canonical: `/tienda?${query.toString()}` },
   };
 }
 

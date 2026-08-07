@@ -331,3 +331,64 @@ test.describe("la portada enlaza bien con la tienda", () => {
     await expect(page.locator(".shop-card-name")).toHaveText("Brigadeiros");
   });
 });
+
+/**
+ * UI-067. Los filtros del catálogo son `searchParams`, así que las 11 vistas son
+ * la misma ruta. Antes de esto compartían título, descripción y canonical con el
+ * catálogo entero.
+ *
+ * No es cosmética: la forma de compartir una vista filtrada en este producto es
+ * pegar la URL en WhatsApp, y WhatsApp lee exactamente este título.
+ */
+test.describe("metadatos por vista de catálogo", () => {
+  const titulo = (page: import("@playwright/test").Page) => page.title();
+
+  test("el catálogo sin filtros conserva su título", async ({ page }) => {
+    await page.goto("/tienda");
+    expect(await titulo(page)).toContain("Catálogo");
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/tienda$/);
+  });
+
+  test("la categoría cambia título, descripción y canonical", async ({ page }) => {
+    await page.goto("/tienda?categoria=salado");
+
+    expect(await titulo(page)).toContain("Salado");
+    expect(await titulo(page)).not.toContain("Catálogo");
+
+    const desc = await page.locator('meta[name="description"]').getAttribute("content");
+    expect(desc).toContain("salado");
+
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      /categoria=salado/,
+    );
+  });
+
+  test("categoría y ocasión juntas aparecen las dos", async ({ page }) => {
+    await page.goto("/tienda?categoria=queques&ocasion=cumpleanos");
+    const t = await titulo(page);
+    expect(t).toContain("Queques");
+    expect(t).toContain("Cumpleaños");
+  });
+
+  test("la búsqueda no se indexa y dice qué se buscó", async ({ page }) => {
+    await page.goto("/tienda?q=chocolate");
+
+    expect(await titulo(page)).toContain("chocolate");
+    // Infinitas URLs de contenido derivado no entran en el índice.
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    // El canonical de una búsqueda apunta al catálogo, no a sí misma.
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", /\/tienda$/);
+  });
+
+  test("una búsqueda sin resultados no promete productos que no hay", async ({ page }) => {
+    await page.goto("/tienda?q=zzzzzzzz");
+    const desc = await page.locator('meta[name="description"]').getAttribute("content");
+    expect(desc).toMatch(/Ning[úu]n producto/i);
+  });
+
+  test("un parámetro inválido cae en el catálogo completo", async ({ page }) => {
+    await page.goto("/tienda?categoria=inventada");
+    expect(await titulo(page)).toContain("Catálogo");
+  });
+});
