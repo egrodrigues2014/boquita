@@ -193,22 +193,31 @@ componentes de formulario (UI-032/033), los de superficie (UI-036/037/038) y los
 
 ## 4. Quick Wins — con estado verificado
 
-| Orden | ID | Tarea | Prio | Compl. | Estado verificado |
-| --- | --- | --- | --- | --- | --- |
-| 1 | UI-012 | Favicon, apple-touch-icon, manifest, theme-color | 🔴 | XS | Parcial — falta todo salvo `themeColor` |
-| 2 | UI-015 | Navbar sticky con estado scrolled | 🔴 | S | Confirmado |
-| 3 | UI-016 | `--header-h` y fin del recorte de contenido | 🔴 | S | Confirmado |
-| 4 | UI-005 | Arreglar `--ff-quote` vacío | 🟡 | XS | ✅ **Hecho** (`6029921`) — y eran tres, no una |
-| 5 | UI-025 | Logo sin deformación del 4% | 🟠 | XS | **No reproducido** — medir |
-| 6 | UI-096 | Quitar `outline:0` del buscador | 🔴 | S | Confirmado |
-| 7 | UI-054 | CTA "Ver todo el catálogo" en la home | 🔴 | XS | ✅ **Ya existía** — el hallazgo es falso |
-| 8 | UI-027 | Orden de encabezados | 🟠 | S | Plausible — confirmar en DOM |
-| 9 | UI-003 | Contraste de los cuatro pares infractores | 🔴 | S | ✅ **Ya cerrado** y verificado por test |
-| 10 | UI-024 | Alineación de los datos de contacto del pie | 🟢 | XS | Plausible — medir |
-| 11 | UI-067 | Títulos y metadatos por vista de catálogo | 🟡 | S | Parcial |
-| 12 | UI-092 | Reveal on scroll: 100 px → 16–24 px | 🟡 | XS | ⚠ **Conflicto** — §8 |
-| 13 | UI-060 | Contraste y partición del texto scroll-color | 🟡 | S | Por medir |
-| 14 | UI-031 | `aria-disabled` → `disabled` real | 🟠 | S | ⚠ **Conflicto** — §8 |
+| Orden | ID | Tarea | Prio | Resultado |
+| --- | --- | --- | --- | --- |
+| 1 | UI-012 | Favicon, apple-touch-icon, manifest, theme-color | 🔴 | ✅ **Hecho** `0b51f6b` |
+| 2 | UI-015 | Cabecera visible al hacer scroll | 🔴 | ✅ **Hecho** `897a649` — `fixed`, no `sticky` |
+| 3 | UI-016 | `--header-h` y fin del recorte de contenido | 🔴 | ✅ **Hecho** `0f091dc`, `fcf61f6` |
+| 4 | UI-005 | Variables referenciadas y no declaradas | 🟡 | ✅ **Hecho** `6029921` — eran tres, no una |
+| 5 | UI-025 | Logo sin deformación del 4% | 🟠 | ❌ **No reproducido** — todos los assets son exactamente cuadrados y `.logo` usa `width:auto`. Deformación 0% |
+| 6 | UI-096 | Anillo de foco del buscador | 🔴 | ✅ **Hecho** `ac01373` |
+| 7 | UI-054 | CTA "Ver todo el catálogo" en la home | 🔴 | ❌ **Ya existía** — 4 enlaces a `/tienda` |
+| 8 | UI-027 | Orden de encabezados | 🟠 | ❌ **No reproducido** — el drawer cerrado es `inert` + `visibility:hidden`. Blindado en `c86c530` |
+| 9 | UI-003 | Contraste de los cuatro pares infractores | 🔴 | ❌ **Ya cerrado** — el hallazgo confunde el umbral AA-large |
+| 10 | UI-024 | Alineación de los datos de contacto del pie | 🟢 | ❌ **No reproducido** — las 4 columnas comparten `text-align` y `left` |
+| 11 | UI-067 | Títulos y metadatos por vista de catálogo | 🟡 | ✅ **Hecho** `6d55e9f` |
+| 12 | UI-092 | Reveal on scroll: 100 px → 16–24 px | 🟡 | ⛔ **No se ejecuta** — gana el §4.1 del spec. Conflicto C-2 |
+| 13 | UI-060 | Contraste del texto scroll-color | 🟡 | ✅ **Hecho** `d7a5568` — estaba en 1.32:1 |
+| 14 | UI-031 | `aria-disabled` → `disabled` real | 🟠 | ❌ **No es un defecto** — los 5 usos son correctos. Blindado en `e78d272` |
+
+**Balance: 7 ejecutados, 6 no reproducidos o ya cerrados, 1 rechazado por conflicto.**
+Casi la mitad de los quick wins de la auditoría no describían el estado real del
+repositorio. Los seis descartados se cierran con la medición que lo demuestra, no por
+opinión — y cuatro de ellos dejan un test detrás para que la conclusión no caduque.
+
+Los dos hallazgos de más valor de este bloque **no estaban en la auditoría**: las tres
+variables `var()` rotas (UI-005) y `.section--no-bottom` sin efecto en dos de los tres
+breakpoints. Los encontró el inventario de UI-001, no la lista de tareas.
 
 ---
 
@@ -321,21 +330,32 @@ que respetarlo en toda edición.
 
 ## 7. Estado de verificación — resumen
 
-De las 14 tareas verificadas hasta ahora:
+Los 14 quick wins están cerrados (§4). De las 108 tareas:
 
 | Resultado | Tareas |
 | --- | --- |
-| ✅ Ya cerradas antes de empezar | UI-003, UI-054 |
-| ✅ Cerradas en esta pasada | UI-005 |
-| Confirmadas, listas para ejecutar | UI-012 (parcial), UI-015, UI-016, UI-096 |
-| Premisa no reproducida — medir antes | UI-024, UI-025, UI-060 |
-| Parciales | UI-027, UI-067 |
-| ⚠ En conflicto con decisión documentada | UI-031, UI-092 |
+| ✅ Ejecutadas | UI-005, UI-012, UI-015, UI-016, UI-060, UI-067, más UI-001 y UI-014 |
+| ❌ No reproducidas o ya cerradas | UI-003, UI-024, UI-025, UI-027, UI-031, UI-054 |
+| ⛔ Rechazadas por conflicto | UI-092 |
+| Sin verificar | Las 93 restantes |
 
-Las 94 restantes no se han verificado todavía. **Verificarlas es el primer paso de su ejecución**,
-no un trámite previo opcional.
+**Tasa de acierto de la auditoría en el único bloque verificado a fondo: 7 de 14.**
+Es el dato que debe gobernar la ejecución del resto: la convención 9 —verificar antes
+de ejecutar— no es una formalidad, y ninguna tarea de este documento debe aplicarse sin
+comprobar antes que su premisa sigue siendo cierta.
 
----
+Las 93 tareas restantes **no se han verificado**. Verificarlas es el primer paso de su
+ejecución, no un trámite previo opcional.
+
+### Deuda conocida al cerrar este bloque
+
+**El test `seo-perf.spec.ts:184` («el elemento LCP es la foto del hero») falla en los
+cuatro anchos.** Es anterior a este bloque: lo introdujo el rediseño de la portada
+(`8719a97`), no los quick wins. El hero deja de ser candidato a LCP; los tres candidatos
+que Chrome reporta son el logo (7.138 px²), un párrafo y el H1 (125.060 px²).
+Descartadas por medición tres hipótesis: la exclusión por baja entropía (todos los
+derivados están muy por encima de 0.05 bpp), el `z-index: -2` y el `filter: blur(2px)`.
+La causa sigue sin identificar. Pertenece a UI-050.
 
 ## 8. Conflictos con decisiones documentadas
 
@@ -550,6 +570,7 @@ alterar**: las `max-width` se solapan.
 - [ ] El orden de cascada documentado sigue intacto tras la migración.
 
 ### UI-012 · Assets de marca: favicon, apple-touch-icon, manifest `[reconstruido]` 🔴 XS
+**Resultado.** ✅ Hecho en `0b51f6b`. Generados extendiendo `scripts/build-images.mjs`; e2e en `seo-perf.spec.ts`.
 **Estado.** **Parcial.** `themeColor: "#3a2a1a"` ya existe en
 [`app/layout.tsx:60`](../app/layout.tsx#L60). Falta todo lo demás: no hay `icon.*`, `apple-icon.*`
 ni `manifest` en `app/`, ni `favicon.ico` en `public/`.
@@ -574,6 +595,7 @@ pero oculta por producto*, y marcarla en el CSS. **Sin borrar nada.**
 - [ ] Cero reglas borradas en esta tarea.
 
 ### UI-014 · Baseline visual de las 9 vistas `[inferido]` 🔴 M
+**Resultado.** ✅ Hecho en `93aa24c`. ⚠ Medido al usarla: dos capturas consecutivas de la portada sin cambio de código difieren ~5.6% de subpíxeles por las animaciones dirigidas por scroll. Un diff de la portada por debajo de ~6% no prueba nada; las páginas internas sí son estables.
 **Contexto.** La convención 7 exige baseline antes de tocar CSS. Ya existe infraestructura:
 `tests/e2e/screenshots.spec.ts` y 10 capturas en `tests/e2e/__screenshots__/` (portada a 8 anchos,
 pie, detalle de menú).
@@ -591,6 +613,7 @@ capturas de dev).
 ## FASE 2 — Layout global
 
 ### UI-015 · Navbar sticky con estado scrolled `[reconstruido]` 🔴 S
+**Resultado.** ✅ Hecho en `897a649`, con `position: fixed` y no `sticky` — `sticky` ocupa sitio en el flujo y descuadraría el hero. Tests en `geometry.spec.ts`.
 **Estado.** **Confirmado.** [`10-navbar.css:10`](../styles/10-navbar.css#L10) es `position:absolute`:
 la cabecera desaparece al hacer scroll, y la home mide varios miles de píxeles.
 **Objetivo.** Cabecera `sticky` con un estado visual al separarse del top (sombra o borde), sin
@@ -606,6 +629,7 @@ los 8 anchos.
 - [ ] No tapa el contenido al navegar a un ancla (ver UI-016).
 
 ### UI-016 · Token `--header-h` y fin del recorte de contenido `[reconstruido]` 🔴 S
+**Resultado.** ✅ Hecho en `0f091dc` y `fcf61f6`. El contenido estaba tapado 31px (41 en la ficha) a ≤991. La corrección destapó además `.section--no-bottom`, que no hacía efecto en dos de los tres breakpoints.
 **Estado.** **Confirmado.** No existe el token. Hay un `scroll-margin-top: 110px` fijo en
 [`40-prose.css:31`](../styles/40-prose.css#L31), y la altura real del navbar la fija `.logo`
 (72 px, 86 px a ≥1280) más el padding — es decir, el 110 es un número mágico que ya no coincide.
@@ -658,6 +682,7 @@ de fondo, igual que el drawer del carrito.
 **Dependencias.** Bloqueada por UI-021 · Relacionada con UI-097.
 
 ### UI-024 · Alineación de los datos de contacto del pie `[reconstruido]` 🟢 XS
+**Resultado.** ❌ **No reproducido.** Medido a 390 y 1280: las cuatro columnas comparten `text-align:left`, `align-items:flex-start` y el mismo `left`. El hallazgo es anterior a la reescritura del pie en `8719a97`. **No ejecutar.**
 **Estado.** **Plausible, sin medir.** [`18-footer.css`](../styles/18-footer.css) mezcla
 `text-align:left` (l.7) y `center` (l.150) en distintos bloques. Puede ser deliberado por breakpoint.
 **Implementación.** Medir primero. Si la mezcla es intencionada por breakpoint, cerrar como *no
@@ -669,6 +694,7 @@ hallazgo de la auditoría puede ser anterior a esa reescritura.
 - [ ] Alineación coherente o justificación escrita de la diferencia.
 
 ### UI-025 · Logo sin deformación `[reconstruido]` 🟠 XS
+**Resultado.** ❌ **No reproducido.** Los cuatro derivados y el original son exactamente cuadrados (aspect 1.0000) y `.logo` usa `width:auto`: deformación 0%. Servirlo en SVG sigue siendo una mejora posible, pero no hay bug. **No ejecutar.**
 **Estado.** **No reproducido.** `.logo { height:72px; width:auto }` no deforma, y `object-fit:fill`
 no aparece en ninguna hoja del repo. El logo se sirve como PNG/WebP a 43 y 86 px con `srcSet`.
 **Implementación.** Medir la relación de aspecto renderizada contra la intrínseca del fichero. Si
@@ -691,6 +717,7 @@ imagen que se renderiza a 523 px, forzando al navegador a elegir un candidato de
 - [ ] Ningún candidato servido por debajo del ancho de render.
 
 ### UI-027 · Orden de encabezados `[reconstruido]` 🟠 S
+**Resultado.** ❌ **No reproducido.** En el DOM el H2 del carrito precede al H1 en las seis páginas, pero el drawer cerrado lleva `inert` y `visibility:hidden`: nunca llega al árbol de accesibilidad. La auditoría leyó el marcado, no el árbol. Blindado en `c86c530`. **No ejecutar.**
 **Estado.** **Plausible, por confirmar en el DOM.** El drawer del carrito monta un `<h2>`
 ([`CartDrawer.tsx:76`](../components/cart/CartDrawer.tsx#L76)) y se renderiza desde el layout, así que
 puede preceder al `<h1>` de la página en orden de documento — en todas las páginas a la vez.
@@ -732,6 +759,7 @@ sobre tokens de color, espaciado y radio.
 **Dependencias.** Bloqueada por UI-028, UI-010 · Bloquea UI-031.
 
 ### UI-031 · QtyStepper `[reconstruido]` 🟠 S
+**Resultado.** ❌ **No es un defecto.** Los cinco usos de `aria-disabled` son correctos y los cinco handlers hacen no-op de verdad (clamp en ficha y store, guarda explícita en el slider). Invariante fijado en `e78d272`. Queda vivo el objetivo real: extraer el QtyStepper único, que es fase 3.
 **Estado.** ⚠ **Conflicto C-1 (§8).** El título superviviente pide `aria-disabled` → `disabled` real.
 Hay 5 usos de `aria-disabled` y al menos uno es deliberado y razonado en el código.
 **Objetivo real.** Extraer el patrón ±1 (hoy duplicado entre
@@ -840,7 +868,7 @@ el foco y que respete `prefers-reduced-motion`.
 - **UI-051 · Statement: escala y medida de línea** `[inferido]` 🟡 M — bloqueada por UI-004.
 - **UI-052 · Ritmo entre secciones de la home** `[inferido]` 🟡 S — bloqueada por UI-018.
 - **UI-053 · Rejilla del catálogo en la home** `[inferido]` 🟠 M — bloqueada por UI-036.
-- **UI-054 · CTA "Ver todo el catálogo"** `[reconstruido]` 🔴 XS — ✅ **Ya existe.** El hallazgo es
+- **UI-054 · CTA "Ver todo el catálogo"** `[reconstruido]` 🔴 XS — ❌ **Ya existía; no ejecutar.** El hallazgo es
   falso: [`content/home.ts:264`](../content/home.ts#L264) define
   `{ label: "Ver los 14 productos", href: "/tienda" }`, y hay tres enlaces más a `/tienda`
   (l.173, l.236, l.357). **No ejecutar.** Lo que sí queda en pie del hallazgo original —que la home
@@ -853,7 +881,7 @@ el foco y que respete `prefers-reduced-motion`.
   hasta tener los 6 testimonios reales (`CONTENT_TODO.md §3`). Ver conflicto C-3.
 - **UI-059 · Cierre editorial del pie** `[inferido]` 🟢 S — reescrito en `8719a97`; re-verificar el
   hallazgo antes de tocar.
-- **UI-060 · Texto scroll-color: contraste y partición** `[reconstruido]` 🟡 S — **por medir.**
+- **UI-060 · Texto scroll-color: contraste** `[reconstruido]` 🟡 S — ✅ **Hecho** en `d7a5568`. El estado sin revelar estaba en 1.32:1 (titular) y 1.36:1 (cuerpo) sobre crema, contra un umbral aplicable de 3:1. Unificados en el token `--text-ghost` a 3.31:1, cubierto por `contrast.test.ts`. La partición de palabras sigue pendiente y depende de UI-051. Detalle original:
   [`ScrollColorText.tsx`](../components/ui/ScrollColorText.tsx) superpone `__base` y `__fill`; hay que
   calcular el ratio del estado intermedio, no sólo el inicial y el final. La partición de palabras
   depende de la medida de línea que fije UI-051.
@@ -870,7 +898,7 @@ el foco y que respete `prefers-reduced-motion`.
 - **UI-065 · Filtros y búsqueda** `[inferido]` 🟠 M — bloqueada por UI-044. Ya existe
   [`shopSearch.ts`](../lib/shopSearch.ts).
 - **UI-066 · Orden y recuento de resultados** `[inferido]` 🟡 S.
-- **UI-067 · Títulos y metadatos por vista** `[reconstruido]` 🟡 S — **parcial.**
+- **UI-067 · Títulos y metadatos por vista** `[reconstruido]` 🟡 S — ✅ **Hecho** en `6d55e9f`. Detalle:
   [`app/tienda/page.tsx:30`](../app/tienda/page.tsx#L30) ya tiene `generateMetadata()` con el recuento
   en la descripción. Falta diferenciar catálogo / filtrado por categoría / búsqueda, y que la
   búsqueda vacía no indexe.
@@ -937,7 +965,7 @@ el foco y que respete `prefers-reduced-motion`.
 - **UI-089 · Transiciones de hover y foco** `[inferido]` 🟡 S.
 - **UI-090 · Apertura y cierre de drawer y dialog** `[inferido]` 🟡 S.
 - **UI-091 · Entrada y salida de toasts** `[inferido]` 🟡 S — bloqueada por UI-040.
-- **UI-092 · Reveal on scroll** `[reconstruido]` 🟡 XS — ⚠ **Conflicto C-2 (§8).** Los 100 px de
+- **UI-092 · Reveal on scroll** `[reconstruido]` 🟡 XS — ⛔ **No se ejecuta.** Decidido: gana el spec normativo. Conflicto C-2 (§8). Los 100 px de
   [`05-components.css:172`](../styles/05-components.css#L172) los manda el §4.1 del spec normativo.
   Cambiarlos exige modificar el spec o registrar un desvío.
 - **UI-093 · Parallax** `[inferido]` 🟢 S — ya existe [`parallax.ts`](../lib/parallax.ts) con 23 tests.
@@ -953,7 +981,8 @@ el foco y que respete `prefers-reduced-motion`.
   UI-003. Reutilizar [`contrast.test.ts`](../tests/unit/contrast.test.ts) y
   [`lib/color.ts`](../lib/color.ts); extender a los pares nuevos que introduzcan las fases 3–4.
 - **UI-096 · Anillo de foco visible en todo elemento interactivo** `[reconstruido]` 🔴 S —
-  **confirmado.** [`10-navbar.css:169`](../styles/10-navbar.css#L169) tiene `outline: 0` en el
+  ✅ **Hecho** en `ac01373`. El anillo sube al contenedor porque `.nav-search` tiene
+  `overflow:hidden` y recortaría el del input. Detalle: [`10-navbar.css:169`](../styles/10-navbar.css#L169) tiene `outline: 0` en el
   buscador, contradiciendo el propio reset ([`02-reset.css:91`](../styles/02-reset.css#L91): «Nunca
   outline:none») y el anillo de [`99-a11y.css`](../styles/99-a11y.css). Quitarlo y verificar el ratio
   del anillo sobre el fondo del buscador con `lib/color.ts`.

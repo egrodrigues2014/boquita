@@ -22,15 +22,15 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 
 ## De un vistazo
 
-*Última revisión: 6 de agosto de 2026.*
+*Última revisión: 7 de agosto de 2026.*
 
 | | |
 | --- | --- |
-| Rama | `main`, remoto `origin` en `https://github.com/egrodrigues2014/boquita.git` |
+| Rama | trabajo en `ui/quick-wins`; `main` con la portada cinemática. Remoto `origin` en `https://github.com/egrodrigues2014/boquita.git` |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
 | Sin commitear | Al cerrar este bloque debe quedar **limpio**. Verificar con `git status --short` |
-| Tests unitarios | **173 en verde**, 9 ficheros (`npm test`, verificado el 6 ago tras header/búsqueda) |
-| Tests e2e | **651 en verde + 45 skipped** de 696 casos configurados (`NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=dot`, verificado el 6 ago; `.next` local quedó bloqueado por Windows/OneDrive) |
+| Tests unitarios | **176 en verde**, 10 ficheros (`npm test`, verificado el 7 ago tras el bloque de quick wins) |
+| Tests e2e | **960 casos configurados** en 8 ficheros × 8 anchos (eran 696). Ejecutar con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=dot`; `.next` local queda bloqueado por Windows/OneDrive. ⚠ Falla `seo-perf.spec.ts:184` en los 4 anchos probados, por deuda anterior a este bloque (ver *Cimientos*) |
 | Desplegado | **no.** Nunca se ha desplegado. No hay proyecto de Vercel creado |
 | Base de datos | Neon Postgres configurada, migrada y sembrada: `npm run db:seed` dejó **14 filas** en `products` |
 | Lanzable | **no**: faltan testimonios reales, métrica defendible, panorámica original y dominio/hosting. Ver [🔴](#-bloquea-el-lanzamiento) |
@@ -53,8 +53,30 @@ y el pipeline de imágenes.
   `scripts/build-images.mjs` genera los derivados con sharp; nunca hace upscale, aborta si un tamaño
   supera el recorte.
 - `/dev/tokens` es la página de especímenes (`force-static`, `noindex`).
+- `--header-h` (101px, 115px a ≥1280) es la altura de la cabecera. La navbar es `position: fixed` y
+  no ocupa sitio en el flujo, así que todo lo que empiece por debajo de ella depende de este token.
+  Si cambia el tamaño del logo en `10-navbar.css`, cambia aquí.
+- `--text-ghost` es el estado «aún no revelado» del `ScrollColorText`.
 
-Verificado por `tests/unit/contrast.test.ts` (31) y `tests/unit/format.test.ts` (8).
+Verificado por `tests/unit/contrast.test.ts` (33), `tests/unit/format.test.ts` (8) y
+`tests/unit/css-vars.test.ts` (3), este último añadido porque tres `var()` apuntaban a variables
+inexistentes sin que nada lo detectara: una referencia sin fallback a una variable no declarada no
+degrada, tumba la propiedad entera en silencio.
+
+### Bloque de quick wins UI/UX
+
+Ejecutados los 14 quick wins de `docs/implementation_tasks.md` en la rama `ui/quick-wins`.
+**7 se ejecutaron; 6 no se reproducían o ya estaban cerrados; 1 se rechazó por chocar con el spec.**
+El desglose por tarea, con la medición de cada descarte, está en el §4 de ese documento.
+
+Los dos hallazgos de más valor no estaban en la auditoría: las tres variables `var()` rotas y
+`.section--no-bottom` sin efecto en dos de los tres breakpoints (el atajo `padding-block` de los
+overrides responsivos lo pisaba por orden de aparición).
+
+⚠ **Deuda conocida:** `seo-perf.spec.ts:184` («el elemento LCP es la foto del hero») falla en los
+cuatro anchos. Es anterior al bloque —lo introdujo el rediseño de la portada— y la causa sigue sin
+identificar: descartadas por medición la exclusión por baja entropía, el `z-index: -2` y el
+`filter: blur`. Pertenece a UI-050.
 
 ### La portada
 
@@ -112,6 +134,18 @@ Verificado por `tests/e2e/paginas.spec.ts` (12).
 Cero violaciones de axe en **9 estados** (portada en reposo, con lightbox abierto, con dropdown
 desplegado, con drawer abierto, carrito con productos, catálogo, ficha, sobre-nosotros, aviso-legal),
 sobre `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa` y `wcag22aa`.
+
+Tres cosas que axe **no** ve y por eso se afirman a mano (todas de UI-096/027/031):
+
+- El anillo de foco del buscador. Un `outline:0` deja el elemento perfectamente accesible en el
+  árbol, sólo invisible para quien navega con teclado. Va en el contenedor y no en el input, porque
+  `.nav-search` tiene `overflow:hidden` y recortaría el anillo por la mitad.
+- El H2 del carrito precede al H1 en el DOM, pero el drawer cerrado lleva `inert` y
+  `visibility:hidden`: no llega al árbol de accesibilidad. El test fija esa condición, porque si
+  alguien la quita el problema pasa a ser real.
+- `aria-disabled` en steppers y flechas es deliberado —un `disabled` real manda el foco al `<body>`
+  al llegar al extremo—, pero no deshabilita nada por su cuenta: el no-op lo sostiene el handler, y
+  hay test que lo comprueba.
 
 Verificado por `tests/e2e/a11y.spec.ts` (9).
 
