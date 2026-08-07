@@ -150,7 +150,7 @@
 }
 
 .nav-search:focus-within {
-  border-color: var(--gold-fill);
+  border-color: var(--gold-line);
   box-shadow: 0 0 0 2px rgba(232, 168, 27, 0.24);
 }
 
@@ -175,8 +175,11 @@
   justify-content: center;
   width: 50px;
   flex: none;
-  color: var(--text-dark);
-  background: var(--gold-fill);
+  /* `--on-gold`, no `--text-dark`: es la etiqueta que va ENCIMA del relleno
+     dorado, y ése es el token que no se invierte en ningún ámbito. Mismo valor
+     hoy, pero el que sobrevive a un contexto oscuro. */
+  color: var(--on-gold);
+  background: var(--gold);
   transition: filter 0.2s;
 }
 

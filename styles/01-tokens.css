@@ -27,7 +27,14 @@
      (Desvío D-12 en docs/DEVIATIONS.md) */
   --ff-display: var(--font-display), Georgia, "Times New Roman", serif;
   --ff-sans: var(--font-sans), system-ui, "Segoe UI", Arial, sans-serif;
-  --ff-quote: var(--font-quote), Lato, system-ui, sans-serif;
+  /* El fallback DENTRO del var() no es decorativo. `--font-quote` no lo declara
+     nadie a propósito: Lato sólo la usa `blockquote` y no se carga hasta que
+     algún componente la necesite (ver app/fonts.ts). Pero `var(--font-quote)` a
+     secas NO degrada — una referencia sin fallback a una variable inexistente
+     hace la declaración inválida en tiempo de cómputo, y `font-family` acaba
+     heredando en vez de caer a la siguiente familia de la lista. Con el
+     fallback, la cadena Lato → system-ui funciona como estaba escrito. */
+  --ff-quote: var(--font-quote, Lato), system-ui, sans-serif;
 
   /* ── Tinta ──────────────────────────────────────────────────────────── */
   --text-dark: #3a2a1a; /* marrón de marca: h1,h3,h5,h6, body, etiqueta de botón */

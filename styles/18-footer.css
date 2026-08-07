@@ -47,7 +47,7 @@
 .footer-brand-name,
 .footer-brand-tagline {
   color: var(--white);
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-size: clamp(30px, 3vw, 42px);
   line-height: 1.02;
 }

@@ -29,7 +29,7 @@
 }
 
 .scroll-color-text__heading {
-  font-family: var(--ff-serif);
+  font-family: var(--ff-display);
   font-weight: 700;
   line-height: 1.05;
   text-transform: uppercase;

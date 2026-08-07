@@ -46,5 +46,10 @@ export const sans = Libre_Franklin({
  * Lato (spec §2.2) se usa en UN solo selector: blockquote. En la portada no hay
  * ningún blockquote, así que no se carga aquí — se importaría dentro del
  * componente que lo necesite (un post del blog, una cita destacada).
- * --ff-quote en 01-tokens.css ya degrada con elegancia si no está presente.
+ *
+ * Por eso `--font-quote` NO se declara, y por eso `--ff-quote` en 01-tokens.css
+ * tiene que escribirse `var(--font-quote, Lato)`, CON el fallback dentro. Sin él
+ * no degrada nada: una referencia a una variable inexistente invalida la
+ * declaración en tiempo de cómputo y `font-family` acaba heredando la sans, que
+ * es lo contrario de lo que se pretendía. Lo cubre tests/unit/css-vars.test.ts.
  */
