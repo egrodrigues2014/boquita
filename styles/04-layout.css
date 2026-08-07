@@ -29,6 +29,22 @@
   padding-block: 80px;
 }
 
+/* La navbar es `position:absolute`: no ocupa sitio en el flujo, así que la
+   primera sección de cada página empieza en y=0, DEBAJO de la cabecera.
+   Con 80px de padding contra una cabecera de 101px, el contenido superior
+   quedaba tapado 31px en todas las páginas internas por debajo de 1280 (41px en
+   la ficha, donde el enlace de volver va antes que el eyebrow). A ≥1280 se
+   salvaba por 15px de casualidad, no por diseño.
+
+   La portada no entra aquí: su primer hijo es `.hero`, que ya se reserva
+   `padding-block: 132px` por su cuenta.
+
+   Se suma al padding en vez de sustituirlo para que el ritmo vertical de la
+   sección siga siendo el mismo bajo la cabecera. */
+main > .section:first-child {
+  padding-top: calc(var(--header-h) + 80px);
+}
+
 .section--no-bottom {
   padding-bottom: 0;
 }

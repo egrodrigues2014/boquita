@@ -163,3 +163,57 @@ test("contenedor mantiene el ancho maximo del sistema", async ({ page, viewport 
   const expected = Math.min(1170, Math.min(1200, viewport!.width) - 30);
   expect(container.width - 30).toBeCloseTo(expected, 0);
 });
+
+/**
+ * La cabecera es `position:absolute`: no ocupa sitio en el flujo, así que nada
+ * garantiza por sí solo que el contenido empiece por debajo de ella.
+ *
+ * Antes de UI-016 no empezaba: con `.section` a 80px de padding contra una
+ * cabecera de 101px, las cuatro páginas internas tenían el contenido superior
+ * tapado 31px por debajo de 1280 — y a ≥1280 se salvaban por 15px de
+ * casualidad, porque el logo crece y la cabecera pasa a 115px.
+ *
+ * El `--header-h` de 01-tokens.css es lo que lo mantiene alineado. Este test es
+ * lo que impide que vuelva a desalinearse: si alguien cambia el alto del logo
+ * sin tocar el token, o el padding de `.section`, esto se pone rojo.
+ */
+test.describe("la cabecera no tapa el contenido", () => {
+  const INTERNAS = ["/tienda", "/tienda/brigadeiros", "/sobre-nosotros", "/aviso-legal", "/nope"];
+
+  for (const url of INTERNAS) {
+    test(`${url} empieza por debajo de la cabecera`, async ({ page }) => {
+      await page.goto(url);
+      await page.evaluate(() => document.fonts.ready.then(() => true));
+
+      const { navH, primerTop, quien } = await page.evaluate(() => {
+        const nav = document.querySelector(".navbar") as HTMLElement;
+        const main = document.querySelector("main") as HTMLElement;
+
+        let top = Number.POSITIVE_INFINITY;
+        let quien = "";
+        for (const el of main.querySelectorAll<HTMLElement>("h1,h2,h3,p,span,a,img")) {
+          const r = el.getBoundingClientRect();
+          if (r.width > 0 && r.height > 0 && r.top < top) {
+            top = r.top;
+            quien = `${el.tagName}.${el.className || "-"}`;
+          }
+        }
+        return { navH: nav.getBoundingClientRect().height, primerTop: top, quien };
+      });
+
+      expect(
+        primerTop,
+        `${quien} empieza en y=${Math.round(primerTop)} y la cabecera mide ${Math.round(navH)}px: queda tapado`,
+      ).toBeGreaterThanOrEqual(navH);
+    });
+  }
+
+  test("--header-h coincide con la altura real de la navbar", async ({ page }) => {
+    await page.goto("/tienda");
+    const { token, real } = await page.evaluate(() => ({
+      token: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h")),
+      real: (document.querySelector(".navbar") as HTMLElement).getBoundingClientRect().height,
+    }));
+    expect(token, "el token --header-h se ha desalineado de la navbar real").toBeCloseTo(real, 0);
+  });
+});

@@ -25,10 +25,14 @@
 }
 
 /* El navbar es `position:absolute` y taparía el titular al llegar por un enlace
-   con ancla. El margen de scroll lo compensa. */
+   con ancla. El margen de scroll lo compensa.
+
+   El 110px que había aquí no coincidía con ninguna de las dos alturas reales
+   (101 y 115): dejaba 9px de aire de más por debajo de 1280 y tapaba el titular
+   5px por encima. Con el token va exacto en ambos, más un respiro de 16px. */
 .prose h2,
 .faq-item dt {
-  scroll-margin-top: 110px;
+  scroll-margin-top: calc(var(--header-h) + 16px);
 }
 
 .prose p {

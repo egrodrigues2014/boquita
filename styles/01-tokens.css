@@ -83,6 +83,27 @@
 
   /* ── Foco ───────────────────────────────────────────────────────────── */
   --focus: #8a5a06;
+
+  /* ── Cabecera ────────────────────────────────────────────────────────────
+     Altura real de `.navbar`, medida: 12px de padding arriba y abajo más la
+     altura del logo (72px, 86px a ≥1280) más 1px de borde inferior.
+
+     Es un token y no un número repetido porque la navbar es `position:absolute`
+     y NO ocupa sitio en el flujo: todo lo que tenga que empezar por debajo de
+     ella necesita saber cuánto mide. Hoy lo necesitan el primer `.section` de
+     cada página interna y el `scroll-margin-top` de las anclas de 40-prose.css,
+     que llevaba un 110px fijo que no coincidía con ninguno de los dos valores.
+
+     ⚠ Si cambia el tamaño del logo en 10-navbar.css, cambia aquí. Lo verifica
+     `tests/e2e/geometry.spec.ts`. */
+  --header-h: 101px;
+}
+
+@media (min-width: 1280px) {
+  :root {
+    /* El logo pasa de 72px a 86px: +14px. */
+    --header-h: 115px;
+  }
 }
 
 /* ── El truco del contexto oscuro ──────────────────────────────────────────
