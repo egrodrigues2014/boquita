@@ -73,6 +73,12 @@
     transition: none !important;
   }
 
+  /* La sombra del estado scrolled sigue apareciendo —es información, no
+     decoración—, pero de golpe en vez de fundida. */
+  .navbar {
+    transition: none !important;
+  }
+
   /* En los enlaces del dropdown se conserva el cambio de color (es feedback
      útil) y se elimina sólo el deslizamiento de margin-left. */
   .nav-dropdown-link {

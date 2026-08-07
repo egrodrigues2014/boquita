@@ -217,3 +217,81 @@ test.describe("la cabecera no tapa el contenido", () => {
     expect(token, "el token --header-h se ha desalineado de la navbar real").toBeCloseTo(real, 0);
   });
 });
+
+/**
+ * UI-015. La cabecera era `position:absolute`, así que desaparecía al primer
+ * scroll — en una portada de varios miles de píxeles eso deja al usuario sin
+ * navegación durante casi toda la página.
+ *
+ * Se afirma `fixed` y no `sticky` a propósito: `sticky` ocuparía sitio en el
+ * flujo y descuadraría el hero y el `--header-h` de las páginas internas.
+ */
+test.describe("la cabecera acompaña el scroll", () => {
+  test("sigue en pantalla despues de bajar", async ({ page }) => {
+    await page.goto("/");
+    expect(await style(page, ".navbar", "position")).toBe("fixed");
+
+    const antes = await box(page, ".navbar");
+    expect(Math.round(antes.y)).toBe(0);
+
+    await page.evaluate(() => window.scrollTo(0, 2000));
+    await page.waitForFunction(() => window.scrollY > 1500);
+
+    const despues = await page.locator(".navbar").boundingBox();
+    expect(despues, "la cabecera desapareció al hacer scroll").not.toBeNull();
+    // `boundingBox` da coordenadas de viewport: una cabecera fija sigue en y=0.
+    expect(Math.round(despues!.y)).toBe(0);
+    expect(despues!.height).toBeCloseTo(antes.height, 0);
+  });
+
+  test("el estado scrolled solo aparece con contenido debajo", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator(".navbar")).not.toHaveClass(/navbar--scrolled/);
+
+    await page.evaluate(() => window.scrollTo(0, 600));
+    await expect(page.locator(".navbar")).toHaveClass(/navbar--scrolled/);
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(page.locator(".navbar")).not.toHaveClass(/navbar--scrolled/);
+  });
+
+  /* El drawer y el scrim son `position:fixed` DENTRO del navbar. Si alguien
+     añade `backdrop-filter` o `filter` a `.navbar`, se convierte en su bloque
+     contenedor y los confina a la caja de la cabecera. Ya pasó una vez. */
+  test("el navbar no crea bloque contenedor para el drawer", async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 0) > 991, "el drawer sólo existe a ≤991");
+
+    await page.goto("/");
+    for (const prop of ["filter", "backdropFilter", "transform", "perspective"]) {
+      const value = await page.evaluate((p) => {
+        const cs = getComputedStyle(document.querySelector(".navbar")!);
+        return cs[p as keyof CSSStyleDeclaration] as string;
+      }, prop);
+      expect(value, `.navbar tiene ${prop}: confinaría el drawer y el scrim`).toMatch(/^(none|)$/);
+    }
+
+    await page.getByRole("button", { name: /men/i }).first().click();
+    const drawer = await box(page, ".nav-menu");
+    expect(drawer.height).toBeGreaterThan(viewport!.height * 0.9);
+  });
+});
+
+/**
+ * `.section--no-bottom` estuvo sin efecto a ≥1280 y a ≤767: los overrides
+ * responsivos escribían el atajo `padding-block`, que reescribe también
+ * `padding-bottom`, iban después y tenían la misma especificidad. El modificador
+ * perdía por orden de aparición. En /sobre-nosotros eran 240px de aire fantasma.
+ *
+ * Se afirma en los tres breakpoints porque el fallo sólo aparecía en dos.
+ */
+test("las secciones sin fondo no arrastran padding inferior", async ({ page }) => {
+  await page.goto("/sobre-nosotros");
+  const paddings = await page
+    .locator("main > .section--no-bottom")
+    .evaluateAll((els) => els.map((el) => getComputedStyle(el).paddingBottom));
+
+  expect(paddings.length).toBeGreaterThan(0);
+  for (const pad of paddings) {
+    expect(pad, "un .section--no-bottom conserva padding inferior").toBe("0px");
+  }
+});

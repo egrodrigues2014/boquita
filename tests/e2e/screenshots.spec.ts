@@ -15,6 +15,15 @@ import { type Page, test } from "@playwright/test";
  * estuviera mal. Las capturas sirven para comparar antes/después a mano durante
  * un bloque de trabajo; lo que debe fallar solo se afirma en geometry.spec.ts.
  *
+ * ⚠ MEDIDO, no supuesto: dos capturas consecutivas de la portada SIN ningún
+ * cambio de código difieren en un ~5.6% de subpíxeles. La causa es el estado de
+ * las animaciones dirigidas por scroll —`ScrollColorText` y los `.reveal`—, que
+ * no aterriza en el mismo punto dos veces porque depende de cuándo se resolvió
+ * cada imagen. Consecuencia práctica: **un diff de píxeles de la portada por
+ * debajo de ~6% no prueba nada**. Para comparar de verdad hay que mirar bandas
+ * concretas, o usar las páginas internas, que sí son estables. Un
+ * `toHaveScreenshot` aquí sería intermitente desde el primer día.
+ *
  * Cubre las 9 vistas que la convención 7 del backlog exige como baseline:
  * portada, catálogo, catálogo filtrado, búsqueda sin resultados, ficha, carrito
  * abierto, sobre nosotros, aviso legal y 404.

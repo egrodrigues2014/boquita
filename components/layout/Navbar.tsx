@@ -142,6 +142,7 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [hoverEnabled, setHoverEnabled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLElement>(null);
 
   // El hover sólo se engancha en punteros de verdad y en escritorio: en un
@@ -180,6 +181,35 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [openDropdown]);
 
+  /**
+   * Estado `scrolled`: la cabecera se despega del top.
+   *
+   * Con `position: fixed` la cabecera flota sobre el contenido, y sin una
+   * separación visual el texto que pasa por debajo se confunde con el del nav.
+   * El realce sólo aparece cuando hay algo debajo, no en reposo.
+   *
+   * Listener pasivo + rAF: `scroll` dispara decenas de veces por gesto y aquí
+   * sólo interesa cruzar un umbral. El `passive` evita que el navegador espere a
+   * ver si alguien llama a preventDefault antes de desplazar.
+   */
+  useEffect(() => {
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      setScrolled(window.scrollY > 8);
+    };
+    const onScroll = () => {
+      if (frame === 0) frame = requestAnimationFrame(read);
+    };
+
+    read(); // el navegador puede restaurar la posición de scroll al volver atrás
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame !== 0) cancelAnimationFrame(frame);
+    };
+  }, []);
+
   useScrollLock(menuOpen);
   useFocusTrap(menuRef, menuOpen);
 
@@ -204,7 +234,10 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
   });
 
   return (
-    <header className="navbar" onKeyDown={onKeyDown}>
+    <header
+      className={scrolled ? "navbar navbar--scrolled" : "navbar"}
+      onKeyDown={onKeyDown}
+    >
       <div className="nav-container">
         <Link className="brand" href="/" aria-label="Boquita — Sweet & Salty, inicio">
           <img

@@ -6,14 +6,35 @@
    No reordenar: max-width:991 y max-width:767 se solapan y el orden decide.
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* `fixed`, no `sticky`. Los dos dejan la cabecera visible al hacer scroll, pero
+   `sticky` ocupa sitio en el flujo: empujaría `.hero` 101/115px hacia abajo, su
+   `min-height:100vh` dejaría de cuadrar con la ventana y los 132px de padding
+   del hero pasarían a SUMARSE a la cabecera en vez de compensarla. `fixed`
+   mantiene el comportamiento de `absolute` en el flujo — que es lo que la
+   portada y el `--header-h` de las páginas internas ya dan por supuesto — y
+   sólo cambia contra qué se ancla.
+
+   ⚠ Nada de `backdrop-filter` aquí para el efecto de scroll. Igual que
+   `filter`, crea un bloque contenedor para los descendientes `position:fixed`,
+   y el drawer de 320px y el scrim quedarían confinados a la caja del navbar.
+   Está documentado más abajo, en la regla de ≤991. La separación se consigue
+   con sombra, que no crea bloque contenedor. */
 .navbar {
-  position: absolute;
+  position: fixed;
   top: 0;
   width: 100%;
   padding-block: 12px;
   background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid rgba(232, 168, 27, 0.28);
   z-index: 100;
+  transition: box-shadow 0.2s ease;
+}
+
+/* Sólo cuando hay contenido pasando por debajo: en reposo la cabecera no
+   necesita despegarse de nada. Misma sombra que `.nav-dropdown-list`, para no
+   introducir un valor nuevo. */
+.navbar--scrolled {
+  box-shadow: 0 12px 28px rgba(58, 42, 26, 0.12);
 }
 
 .nav-container {
