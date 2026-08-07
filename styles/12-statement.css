@@ -1,5 +1,8 @@
 /*
-   12-statement.css - Historia de Ale con reveal secuencial por segmento.
+   12-statement.css - Historia de Ale: revelado secuencial, palabra a palabra.
+
+   ⚠ ORDEN DE MEDIA QUERIES: base → min-width ascendente → max-width descendente.
+   Ver la cabecera de 03-base.css.
 */
 
 .statement-section {
@@ -11,88 +14,97 @@
   align-items: stretch;
 }
 
+/* El titular ocupa la fila entera para poder centrarse respecto al CONTENEDOR y
+   no respecto a su columna. Debajo sigue la pareja texto | foto. */
 .statement-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.98fr) minmax(360px, 0.88fr);
-  gap: clamp(44px, 7vw, 112px);
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.88fr);
+  grid-template-areas:
+    "titulo titulo"
+    "texto  foto";
+  column-gap: clamp(44px, 7vw, 112px);
+  row-gap: clamp(30px, 3.8vw, 52px);
   width: 100%;
   align-items: start;
 }
 
-.statement-copy {
-  max-width: 690px;
+/* La raíz de ScrollColorText no pinta nada: se disuelve para que el <h2> y el
+   <p> sean celdas directas de la rejilla de arriba.
+   ⚠ Por esto mismo el componente mide el <h2> y no su raíz — un elemento sin
+   caja devuelve un rect a cero y el progreso saldría siempre a 1. */
+.scroll-color-text {
+  display: contents;
 }
 
-.scroll-color-text,
+/* Titular: misma familia y misma escala que el h2 de «Lo que sale del horno»
+   (03-base.css). No se reutiliza el elemento `h2` a secas porque aquí el color
+   lo pone el revelado, no el token de titular. */
 .scroll-color-text__heading {
-  margin: 0;
-}
-
-.scroll-color-text__heading {
+  grid-area: titulo;
+  margin: 0 0 clamp(8px, 1.4vw, 22px);
   font-family: var(--ff-display);
-  font-weight: 700;
-  line-height: 1.05;
+  font-weight: 400;
+  font-size: 50px;
+  line-height: 1em;
+  text-align: center;
   text-transform: uppercase;
+  color: var(--text-ghost);
 }
 
-.scroll-color-text__line {
+/* Cuerpo: calcado de `p.lead` (03-base.css) — misma familia, peso, tamaño e
+   interlineado que el lead del hero, a todos los anchos. */
+.scroll-color-text__body {
+  grid-area: texto;
+  /* Centrado vertical contra la foto: al bajar el cuerpo de 34px a 20px pasó a
+     ocupar tres líneas frente a los ~300px de la foto, y alineado arriba dejaba
+     un agujero de media banda debajo. */
+  align-self: center;
+  max-width: 690px;
+  margin: 0;
+  font-family: var(--ff-sans);
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 1.5em;
+  text-transform: none;
+  color: var(--text-ghost);
+}
+
+.scroll-color-text__word {
   --reveal: 100%;
   position: relative;
-  display: block;
+  display: inline-block;
 }
 
-.js .scroll-color-text__line {
+/* Con JS el revelado arranca a cero; sin JS el texto nace legible. */
+.js .scroll-color-text__word {
   --reveal: 0%;
-}
-
-.scroll-color-text__base,
-.scroll-color-text__fill {
-  display: block;
 }
 
 .scroll-color-text__fill {
   position: absolute;
   inset: 0;
+  /* `pre` para que el clon nunca envuelva por un redondeo de ancho: si lo
+     hiciera, se despegaría del texto de debajo. */
+  white-space: pre;
   clip-path: inset(0 calc(100% - var(--reveal)) 0 0);
 }
 
-.scroll-color-text__line--title {
-  color: var(--text-ghost);
-  font-family: var(--ff-sans);
-  font-size: clamp(34px, 4.2vw, 58px);
-  font-weight: 800;
-  letter-spacing: 0;
-  white-space: nowrap;
-}
-
-.scroll-color-text__line--title .scroll-color-text__fill {
+.scroll-color-text__heading .scroll-color-text__fill {
   color: var(--gold-ink);
 }
 
-.scroll-color-text__line--body {
-  color: var(--text-ghost);
-  font-family: var(--ff-sans);
-  font-size: clamp(24px, 2.35vw, 34px);
-  font-weight: 400;
-  line-height: 1.36;
-  text-transform: none;
-}
-
-.scroll-color-text__line--title + .scroll-color-text__line--body {
-  margin-top: clamp(30px, 3.8vw, 52px);
-}
-
-.scroll-color-text__line--body .scroll-color-text__fill {
+.scroll-color-text__body .scroll-color-text__fill {
   color: var(--body-text);
 }
 
 .statement-photo {
+  grid-area: foto;
   position: relative;
   overflow: hidden;
   width: 100%;
   max-width: 560px;
   justify-self: end;
-  margin-top: clamp(108px, 12vw, 180px);
+  margin-top: clamp(24px, 3vw, 56px);
   aspect-ratio: 493 / 300;
   border-radius: 8px;
   background: var(--gray);
@@ -105,8 +117,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .js .scroll-color-text__line,
-  .scroll-color-text__line {
+  .js .scroll-color-text__word,
+  .scroll-color-text__word {
     --reveal: 100%;
   }
 }
@@ -114,17 +126,25 @@
 @media (max-width: 991px) {
   .statement-grid {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "titulo"
+      "texto"
+      "foto";
     gap: 36px;
   }
 
-  .statement-copy {
+  .scroll-color-text__heading {
+    font-size: 42px;
+  }
+
+  .scroll-color-text__body {
     max-width: none;
     text-align: center;
   }
 
   .statement-photo {
     max-width: 720px;
-    margin-inline: auto;
+    justify-self: center;
     margin-top: 0;
   }
 }
@@ -134,21 +154,7 @@
     padding-block: 68px 82px;
   }
 
-  .scroll-color-text__line--title {
-    font-size: clamp(26px, 6.2vw, 34px);
-  }
-
-  .scroll-color-text__line--body {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 479px) {
-  .scroll-color-text__line--title {
-    font-size: clamp(20px, 5.3vw, 25px);
-  }
-
-  .scroll-color-text__line--body {
-    font-size: 18px;
+  .scroll-color-text__heading {
+    font-size: 34px;
   }
 }

@@ -88,17 +88,22 @@
      no» de un texto que el scroll va tiñendo; el estado revelado es --gold-ink
      en el titular y --body-text en el cuerpo.
 
-     No es decoración: es el mismo texto que el usuario está leyendo, así que le
-     aplica el umbral de contraste como a cualquier otro. Estaba en
-     rgba(176,114,8,.24) → 1.32:1 y rgba(107,91,77,.22) → 1.36:1, muy por debajo
-     del 3:1 que le corresponde (los dos pasos superan siempre los 24px, así que
-     cuentan como texto grande).
+     ⚠ Este token estuvo en 0.55 (3.31:1) para cumplir AA-large, y fue un error de
+     criterio: el umbral se miró contra el FONDO, que es la mitad que importa
+     menos aquí. Lo que hace legible el efecto es la distancia entre los dos
+     estados, y a 0.55 quedaba en 1.65× en el titular y 1.80× en el cuerpo — el
+     revelado se volvió imperceptible sin que ninguna medición lo señalara,
+     porque nadie medía ese par.
 
-     El alfa sale de la medición, no del ojo: con el dorado hacía falta 0.86 para
-     llegar a 3:1 —a esa opacidad el revelado ya no se distingue del punto de
-     partida y el efecto desaparece—. Partiendo del marrón basta 0.55, que además
-     separa cromáticamente los dos estados: fantasma marrón → dorado revelado. */
-  --text-ghost: rgba(58, 42, 26, 0.55); /* 3.31:1 sobre crema → AA-large ✓ */
+     A 0.22 el fantasma da 1.52:1 sobre crema (por debajo del 3:1 que le tocaría
+     como texto grande) y los saltos vuelven a 3.58× y 3.93×. La contrapartida
+     está aceptada y documentada como desvío D-26 en docs/DEVIATIONS.md; en corto:
+     el estado FINAL sí cumple (5.45:1 y 5.99:1), con `prefers-reduced-motion`
+     todo nace revelado, y sin JS `--reveal` vale 100% por defecto.
+
+     Quien vigila esto ahora es el par, no el umbral: tests/unit/contrast.test.ts
+     exige que el salto fantasma → revelado se mantenga por encima de 3.5×. */
+  --text-ghost: rgba(58, 42, 26, 0.22); /* #cfc8be sobre crema — ver D-26 */
 
   /* ── Cabecera ────────────────────────────────────────────────────────────
      Altura real de `.navbar`, medida: 12px de padding arriba y abajo más la

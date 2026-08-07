@@ -29,8 +29,9 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 | Rama | trabajo en `ui/quick-wins`; `main` con la portada cinemática. Remoto `origin` en `https://github.com/egrodrigues2014/boquita.git` |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
 | Sin commitear | Al cerrar este bloque debe quedar **limpio**. Verificar con `git status --short` |
-| Tests unitarios | **176 en verde**, 10 ficheros (`npm test`, verificado el 7 ago tras el bloque de quick wins) |
-| Tests e2e | **907 en verde + 53 skipped** de 960 casos, **0 fallos** (8 ficheros × 8 anchos; eran 696). Verificado el 7 ago con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=dot`; `.next` local queda bloqueado por Windows/OneDrive |
+| Tests unitarios | **179 en verde**, 10 ficheros (`npm test`, verificado el 7 ago tras rehacer el statement) |
+| Tests e2e | **883 en verde + 53 skipped + 24 en rojo** de 960 casos (8 ficheros × 8 anchos; eran 696). Los 24 son **3 tests × 8 anchos**, todos del statement, todos por buscar `.scroll-color-text__line` —clase que dejó de existir al pasar el revelado de trozos a palabras—: `geometry.spec.ts:36`, `interactions.spec.ts:73` y `:171`. Quedan en rojo **a propósito**, pendientes de reestructurar contra el markup nuevo; decisión del cliente el 7 ago. Verificado con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=dot`; `.next` local queda bloqueado por Windows/OneDrive |
+| ⚠ Sin cobertura | `interactions.spec.ts:171` era el único test de que el statement respeta `prefers-reduced-motion`. Comprobado a mano el 7 ago (36 palabras a `--reveal:100%`, con y sin JS), pero **hoy no lo vigila nadie** |
 | Desplegado | **no.** Nunca se ha desplegado. No hay proyecto de Vercel creado |
 | Base de datos | Neon Postgres configurada, migrada y sembrada: `npm run db:seed` dejó **14 filas** en `products` |
 | Lanzable | **no**: faltan testimonios reales, métrica defendible, panorámica original y dominio/hosting. Ver [🔴](#-bloquea-el-lanzamiento) |

@@ -11,7 +11,7 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { THRESHOLD, contrastRatio } from "@/lib/color";
+import { THRESHOLD, contrastRatio, flatten, parseColor } from "@/lib/color";
 import { footerBackground, getTokens } from "@/lib/tokens";
 
 const tokens = getTokens();
@@ -22,6 +22,14 @@ const WHITE = light["--white"]!;
 const CREAM = light["--primary-light"]!;
 
 const { AA_NORMAL, AA_LARGE, NON_TEXT } = THRESHOLD;
+
+/**
+ * `--text-ghost` es translúcido, así que hay que aplanarlo contra el crema ANTES
+ * de compararlo con el color revelado. Pasárselo a `contrastRatio` en crudo lo
+ * compondría sobre el color revelado, que no es lo que ve nadie.
+ */
+const ghostFlat = flatten(parseColor(light["--text-ghost"]!), parseColor(CREAM));
+const GHOST = `rgb(${Math.round(ghostFlat.r)}, ${Math.round(ghostFlat.g)}, ${Math.round(ghostFlat.b)})`;
 
 describe("tokens: sanidad", () => {
   it("los tokens esperados existen en :root", () => {
@@ -71,23 +79,48 @@ describe("contexto claro: texto ámbar <24px usa --gold-ink (AA normal)", () => 
   });
 });
 
-describe("statement: texto aún no revelado (UI-060)", () => {
-  // El ScrollColorText pinta el texto dos veces: `--text-ghost` debajo y el
-  // color revelado encima, recortado por scroll. El de debajo es el MISMO texto
-  // que el usuario lee mientras baja, no un adorno, así que le aplica el umbral.
-  //
-  // Los dos pasos superan siempre los 24px (`clamp(34px,…)` el titular,
-  // `clamp(24px,…)` el cuerpo), así que el umbral aplicable es AA-large.
-  it("--text-ghost sobre crema ≥ 3:1", () => {
-    expect(contrastRatio(light["--text-ghost"]!, CREAM)).toBeGreaterThanOrEqual(AA_LARGE);
+describe("statement: el revelado por scroll tiene que VERSE (desvío D-26)", () => {
+  /**
+   * Lo que vigila este bloque es el SALTO entre los dos estados, no el contraste
+   * de cada uno contra el fondo.
+   *
+   * Antes vigilaba lo segundo, y por eso no sirvió de nada. UI-060 subió
+   * `--text-ghost` a 3.31:1 sobre el crema para cumplir AA-large; el test pasó,
+   * y el efecto quedó en 1.65× en el titular y 1.80× en el cuerpo — o sea,
+   * invisible. Nadie medía el par, que es justo el número que decide si el
+   * usuario ve algo o no.
+   *
+   * La contrapartida (el fantasma queda por debajo de AA-large mientras dura la
+   * animación) es una decisión tomada y documentada en D-26, no un descuido: el
+   * estado final sí cumple —lo comprueban los dos últimos casos—, con
+   * `prefers-reduced-motion` todo nace revelado, y sin JS `--reveal` vale 100%.
+   */
+  const MIN_DELTA = 3.5;
+
+  it(`titular: fantasma → --gold-ink ≥ ${MIN_DELTA}:1`, () => {
+    expect(contrastRatio(GHOST, light["--gold-ink"]!)).toBeGreaterThanOrEqual(MIN_DELTA);
   });
 
-  // Y tiene que seguir siendo claramente más tenue que su estado revelado: si
-  // alguien lo oscurece "para cumplir mejor", el efecto de revelado se pierde.
-  it("--text-ghost es más tenue que el revelado del titular", () => {
-    expect(contrastRatio(light["--text-ghost"]!, CREAM)).toBeLessThan(
-      contrastRatio(light["--gold-ink"]!, CREAM),
-    );
+  it(`cuerpo: fantasma → --body-text ≥ ${MIN_DELTA}:1`, () => {
+    expect(contrastRatio(GHOST, light["--body-text"]!)).toBeGreaterThanOrEqual(MIN_DELTA);
+  });
+
+  it("el fantasma es más claro que los dos estados revelados, no más oscuro", () => {
+    // Sin esto, el par podría cumplir el mínimo yendo en la dirección contraria
+    // (fantasma oscuro → revelado claro), que no es el efecto que se busca.
+    const luz = (color: string) => contrastRatio(color, "#000000");
+    expect(luz(GHOST)).toBeGreaterThan(luz(light["--gold-ink"]!));
+    expect(luz(GHOST)).toBeGreaterThan(luz(light["--body-text"]!));
+  });
+
+  it("el estado FINAL del titular cumple AA sobre crema", () => {
+    // 50/42/34px → le bastaría AA-large, pero --gold-ink llega a AA normal.
+    expect(contrastRatio(light["--gold-ink"]!, CREAM)).toBeGreaterThanOrEqual(AA_NORMAL);
+  });
+
+  it("el estado FINAL del cuerpo cumple AA sobre crema", () => {
+    // 20px, igual que el lead del hero → AA normal, sin excusas de tamaño.
+    expect(contrastRatio(light["--body-text"]!, CREAM)).toBeGreaterThanOrEqual(AA_NORMAL);
   });
 });
 

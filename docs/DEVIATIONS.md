@@ -41,6 +41,35 @@ mirar capturas reales. Ninguno se habría visto leyendo el CSS.
 | D-23 | La rejilla del catálogo de la portada puede renderizar **menos de 8** productos, contra el punto 5 del checklist | Sólo ocurre si la tabla `products` tiene entre 1 y 7 filas: con la base ausente, vacía o caída se sirve el fallback de 14 y son 8 exactos. La alternativa era rellenar con productos del fallback que no estén en el catálogo servido, y sus tarjetas llevarían a un 404 porque `/tienda/[slug]` resuelve contra el mismo `getCatalog()`. Una rejilla de 6 celdas es un defecto de maquetación; una tarjeta que lleva a un 404 le cuesta un pedido. Se avisa por consola y hay tests que fijan las dos ramas. | ✅ Fase 2 |
 | D-24 | El nav ya no usa megamenú de productos; `Catálogo` es enlace a `/tienda` con dropdown de categorías | El flujo real de compra vive en `/tienda`, con filtros y búsqueda. Duplicar los 14 productos en el header hacía ruido y competía con el destino principal. El dropdown queda como ayuda contextual: categorías, sin guiones decorativos y con hover/focus visible. | ✅ Header v1 |
 | D-25 | El footer visible cambia de CTA/newsletter solapada a cierre editorial de 4 columnas | La newsletter todavía no tiene backend ni contrato legal final; mostrar un formulario `action="#"` era ruido. El cierre actual prioriza marca, navegación, dirección y contacto real. | ✅ Home v2 |
+| D-26 | En el statement, el texto **aún no revelado** (`--text-ghost`) baja a 1.52:1 sobre el crema, por debajo del 3:1 que le tocaría como texto grande | Es el estado transitorio de una animación, y subirlo la mataba. Detalle abajo. | ✅ Home v2 |
+
+## D-26: el estado sin revelar del statement
+
+El `ScrollColorText` de la portada pinta cada palabra dos veces —el fantasma debajo y el color
+revelado encima, recortado por el scroll—. En Fase 1 el fantasma estaba en 1.36:1 y la tarea UI-060
+lo subió a 3.31:1 para cumplir AA-large. Cumplía el umbral y **mataba el efecto**: al acercarlo tanto
+al color final, el salto quedó en 1.65× en el titular y 1.80× en el cuerpo. En pantalla se lee como
+que no pasa nada, que fue exactamente el reporte del cliente.
+
+El umbral estaba mirando la mitad equivocada del problema: medía fantasma contra fondo, cuando lo que
+decide si el efecto existe es fantasma contra revelado. Se vuelve a `rgba(58,42,26,.22)` (`#cfc8be`),
+con lo que los saltos quedan en **3.58×** (titular) y **3.93×** (cuerpo).
+
+Lo que sostiene el desvío:
+
+- **El estado final sí cumple, y con margen**: `--gold-ink` da 5.45:1 y `--body-text` 5.99:1 sobre
+  crema. Ambos son AA *normal*, no AA-large, aunque por tamaño les bastaría lo segundo.
+- **Con `prefers-reduced-motion: reduce` no existe el estado intermedio**: todo nace revelado, tanto
+  por CSS (`12-statement.css`) como por la rama de JS del componente.
+- **Sin JavaScript tampoco existe**: `--reveal` vale `100%` por defecto y es la clase `.js` quien lo
+  baja a `0%`.
+- **Es transitorio por construcción**: el revelado se completa dentro de un scroll de una altura de
+  viewport, y el texto queda en su color final mientras se lee.
+
+Lo vigila `tests/unit/contrast.test.ts`, que ya **no** comprueba el umbral absoluto del fantasma sino
+el salto entre los dos estados (mínimo 3.5×) más el cumplimiento AA del estado final. Si alguien
+vuelve a oscurecer el fantasma «para cumplir mejor», el build cae ahí — que es lo que no ocurrió la
+primera vez.
 
 ## No son desvíos
 
