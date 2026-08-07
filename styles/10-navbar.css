@@ -154,6 +154,21 @@
   box-shadow: 0 0 0 2px rgba(232, 168, 27, 0.24);
 }
 
+/* El anillo de foco del buscador va en el CONTENEDOR, no en el input.
+   `.nav-search` tiene `overflow: hidden` para recortar las esquinas del botón
+   dorado, y eso recortaría un `outline` dibujado en el input de dentro: el
+   anillo saldría partido por la mitad. Un elemento no recorta su propio
+   outline, sólo el de sus descendientes, así que subirlo un nivel lo arregla.
+
+   `:has(:focus-visible)` y no `:focus-within`: el anillo es para quien navega
+   con teclado. Con `:focus-within` aparecería también al hacer clic, que es
+   justo el ruido que `:focus-visible` existe para evitar. El realce suave de
+   arriba sí se queda en `:focus-within`, porque ese sí conviene en ambos casos. */
+.nav-search:has(:focus-visible) {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
 .nav-search-input {
   flex: 1;
   min-width: 0;
@@ -165,7 +180,11 @@
   background: transparent;
 }
 
-.nav-search-input:focus {
+/* Excepción consciente a la regla «nunca outline:none» de 02-reset.css: el
+   anillo NO se suprime, se traslada a `.nav-search:has(:focus-visible)` de
+   arriba, que es el único sitio donde no lo recorta el `overflow: hidden`.
+   Sin esta línea saldrían dos anillos, y el de dentro, partido. */
+.nav-search-input:focus-visible {
   outline: 0;
 }
 

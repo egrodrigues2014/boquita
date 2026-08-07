@@ -118,4 +118,31 @@ test.describe("accesibilidad", () => {
     await page.goto("/aviso-legal");
     await audit(page, "aviso legal");
   });
+
+  /* axe no detecta esto: un `outline:0` deja el elemento perfectamente
+     accesible en el árbol, sólo invisible para quien navega con teclado. El
+     buscador lo tuvo hasta UI-096, y hay que afirmarlo a mano. */
+  test("el buscador del header muestra anillo de foco al llegar por teclado", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip((viewport?.width ?? 0) <= 991, "el buscador no se renderiza por debajo de 992");
+
+    await page.goto("/");
+    await page.locator(".nav-search-input").focus();
+
+    // El anillo vive en el contenedor: el input está dentro de un
+    // `overflow:hidden` que lo recortaría.
+    //
+    // Hay que mirar `outlineStyle`, NO `outlineWidth`: `outline-width` computa a
+    // `medium` (3px) aunque el estilo sea `none`, así que una aserción sobre el
+    // ancho pasa igual con el anillo suprimido y no comprueba nada.
+    const ring = await page.locator(".nav-search").evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { style: s.outlineStyle, width: s.outlineWidth, color: s.outlineColor };
+    });
+
+    expect(ring.style, "el contenedor del buscador no dibuja anillo de foco").not.toBe("none");
+    expect(parseFloat(ring.width)).toBeGreaterThanOrEqual(2);
+  });
 });
