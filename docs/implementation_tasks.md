@@ -350,7 +350,7 @@ ejecución, no un trámite previo opcional.
 ### Deuda conocida al cerrar este bloque
 
 **El test `seo-perf.spec.ts:184` («el elemento LCP es la foto del hero») falla en los
-cuatro anchos.** Es anterior a este bloque: lo introdujo el rediseño de la portada
+ocho anchos, y es el único rojo de la suite** (899 en verde + 53 skipped de 960). Es anterior a este bloque: lo introdujo el rediseño de la portada
 (`8719a97`), no los quick wins. El hero deja de ser candidato a LCP; los tres candidatos
 que Chrome reporta son el logo (7.138 px²), un párrafo y el H1 (125.060 px²).
 Descartadas por medición tres hipótesis: la exclusión por baja entropía (todos los

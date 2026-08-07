@@ -30,7 +30,7 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
 | Sin commitear | Al cerrar este bloque debe quedar **limpio**. Verificar con `git status --short` |
 | Tests unitarios | **176 en verde**, 10 ficheros (`npm test`, verificado el 7 ago tras el bloque de quick wins) |
-| Tests e2e | **960 casos configurados** en 8 ficheros × 8 anchos (eran 696). Ejecutar con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=dot`; `.next` local queda bloqueado por Windows/OneDrive. ⚠ Falla `seo-perf.spec.ts:184` en los 4 anchos probados, por deuda anterior a este bloque (ver *Cimientos*) |
+| Tests e2e | **899 en verde + 53 skipped** de 960 casos (8 ficheros × 8 anchos; eran 696), verificado el 7 ago con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=dot` — `.next` local queda bloqueado por Windows/OneDrive. ⚠ Los **8 fallos son el mismo test** en los 8 anchos: `seo-perf.spec.ts:184`, deuda anterior a este bloque (ver *Cimientos*) |
 | Desplegado | **no.** Nunca se ha desplegado. No hay proyecto de Vercel creado |
 | Base de datos | Neon Postgres configurada, migrada y sembrada: `npm run db:seed` dejó **14 filas** en `products` |
 | Lanzable | **no**: faltan testimonios reales, métrica defendible, panorámica original y dominio/hosting. Ver [🔴](#-bloquea-el-lanzamiento) |
@@ -74,7 +74,7 @@ Los dos hallazgos de más valor no estaban en la auditoría: las tres variables 
 overrides responsivos lo pisaba por orden de aparición).
 
 ⚠ **Deuda conocida:** `seo-perf.spec.ts:184` («el elemento LCP es la foto del hero») falla en los
-cuatro anchos. Es anterior al bloque —lo introdujo el rediseño de la portada— y la causa sigue sin
+ocho anchos. Es anterior al bloque —lo introdujo el rediseño de la portada— y la causa sigue sin
 identificar: descartadas por medición la exclusión por baja entropía, el `z-index: -2` y el
 `filter: blur`. Pertenece a UI-050.
 
