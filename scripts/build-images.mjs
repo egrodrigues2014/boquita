@@ -218,12 +218,27 @@ const LOGO_VARIANT_SIZES = {
   transparent: [
     [43, 43],
     [86, 86],
+    // 192 y 512 son los dos tamaños que pide el manifest de PWA. El original es
+    // 816×816, así que siguen siendo reducciones: no se rompe la regla de no
+    // hacer upscale nunca.
+    [192, 192],
+    [512, 512],
   ],
   light: [
     [36, 36],
     [72, 72],
   ],
 };
+
+/**
+ * Iconos de pestaña y de iOS. Van a `app/`, no a `public/img/`, porque Next los
+ * descubre por convención de nombre de fichero (`app/icon.png`,
+ * `app/apple-icon.png`) y emite él mismo los <link> con su hash de versión.
+ *
+ * 180×180 es el tamaño que pide apple-touch-icon; el mismo fichero sirve de
+ * favicon de alta densidad.
+ */
+const APP_ICON_PX = 180;
 
 const PRODUCTS = [
   { name: "queque-de-zanahoria", src: "ig-24-obj61.jpg" },
@@ -501,11 +516,51 @@ async function writeLogoVariant(variant, [w, h]) {
   written++;
 }
 
+/**
+ * Escribe app/icon.png y app/apple-icon.png.
+ *
+ * Se diferencian en la transparencia, y no es un capricho:
+ *   · icon.png     transparente, para que el disco dorado se recorte limpio
+ *                  contra la pestaña clara u oscura del navegador.
+ *   · apple-icon   OPACO. iOS no respeta el canal alfa en los iconos de
+ *                  pantalla de inicio: compone lo transparente sobre negro, y
+ *                  un wordmark marrón oscuro sobre negro es un cuadrado negro.
+ *                  Se deja el fondo blanco del original.
+ */
+async function writeAppIcons() {
+  const srcPath = path.join(ROOT, "assets", "logo-boquita.jpg");
+  const appDir = path.join(ROOT, "app");
+
+  // Opaco: reducción directa del original, sin tocar el alfa.
+  await sharp(srcPath, { failOn: "error" })
+    .resize(APP_ICON_PX, APP_ICON_PX, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
+    .toFile(path.join(appDir, "apple-icon.png"));
+  written++;
+
+  // Transparente: mismo tratamiento de borde que las variantes de marca.
+  const { data, info } = await sharp(srcPath, { failOn: "error" })
+    .resize(APP_ICON_PX, APP_ICON_PX, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+
+  const out = transparentizeEdgeBackground(data, info.width, info.height, info.channels);
+
+  await sharp(out, { raw: { width: info.width, height: info.height, channels: info.channels } })
+    .png({ compressionLevel: 9, adaptiveFiltering: true })
+    .toFile(path.join(appDir, "icon.png"));
+  written++;
+}
+
 async function processLogoVariants() {
   if (CHECK_ONLY) {
     console.log("  ✓ brand/logo-variants: se generan desde logo-boquita.jpg sin upscale");
+    console.log("  ✓ app/icon.png y app/apple-icon.png: idem, a 180×180");
     return;
   }
+
+  await writeAppIcons();
 
   for (const [variant, sizes] of Object.entries(LOGO_VARIANT_SIZES)) {
     for (const size of sizes) {

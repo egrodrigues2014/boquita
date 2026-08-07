@@ -74,6 +74,47 @@ test.describe("SEO local", () => {
     expect(response.status()).toBe(200);
     expect(response.headers()["content-type"]).toContain("image/png");
   });
+
+  /* Los tres devolvían 404 hasta UI-012. Un favicon roto no rompe ninguna
+     página, así que sobrevive indefinidamente si nadie lo afirma. */
+  test("sirve el icono de pestaña y el de iOS", async ({ request }) => {
+    for (const path of ["/icon.png", "/apple-icon.png"]) {
+      const response = await request.get(path);
+      expect(response.status(), `${path} no responde 200`).toBe(200);
+      expect(response.headers()["content-type"]).toContain("image/png");
+    }
+  });
+
+  test("sirve el manifest con sus iconos y el theme-color de la marca", async ({ page, request }) => {
+    const response = await request.get("/manifest.webmanifest");
+    expect(response.status()).toBe(200);
+
+    const manifest = JSON.parse(await response.text());
+    expect(manifest.name).toContain("Boquita");
+    expect(manifest.icons.map((i: { sizes: string }) => i.sizes)).toEqual(["192x192", "512x512"]);
+
+    // Los iconos que declara tienen que existir de verdad.
+    for (const icon of manifest.icons) {
+      expect((await request.get(icon.src)).status(), `${icon.src} no existe`).toBe(200);
+    }
+
+    // El theme-color del manifest y el del <meta> no pueden divergir: si lo
+    // hacen, Android y el navegador pintan la barra de distinto color.
+    const meta = await page.locator('meta[name="theme-color"]').getAttribute("content");
+    expect(manifest.theme_color).toBe(meta);
+  });
+
+  test("el HTML enlaza icono, apple-touch-icon y manifest", async ({ page }) => {
+    await expect(page.locator('link[rel="icon"]')).toHaveAttribute("href", /icon\.png/);
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+      "href",
+      /apple-icon\.png/,
+    );
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+      "href",
+      "/manifest.webmanifest",
+    );
+  });
 });
 
 test.describe("presupuestos de rendimiento", () => {
