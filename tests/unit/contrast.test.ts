@@ -71,6 +71,26 @@ describe("contexto claro: texto ámbar <24px usa --gold-ink (AA normal)", () => 
   });
 });
 
+describe("statement: texto aún no revelado (UI-060)", () => {
+  // El ScrollColorText pinta el texto dos veces: `--text-ghost` debajo y el
+  // color revelado encima, recortado por scroll. El de debajo es el MISMO texto
+  // que el usuario lee mientras baja, no un adorno, así que le aplica el umbral.
+  //
+  // Los dos pasos superan siempre los 24px (`clamp(34px,…)` el titular,
+  // `clamp(24px,…)` el cuerpo), así que el umbral aplicable es AA-large.
+  it("--text-ghost sobre crema ≥ 3:1", () => {
+    expect(contrastRatio(light["--text-ghost"]!, CREAM)).toBeGreaterThanOrEqual(AA_LARGE);
+  });
+
+  // Y tiene que seguir siendo claramente más tenue que su estado revelado: si
+  // alguien lo oscurece "para cumplir mejor", el efecto de revelado se pierde.
+  it("--text-ghost es más tenue que el revelado del titular", () => {
+    expect(contrastRatio(light["--text-ghost"]!, CREAM)).toBeLessThan(
+      contrastRatio(light["--gold-ink"]!, CREAM),
+    );
+  });
+});
+
 describe("contexto claro: tinta neutra", () => {
   it.each([
     ["--text-dark", "blanco", WHITE],
