@@ -119,6 +119,46 @@ test.describe("accesibilidad", () => {
     await audit(page, "aviso legal");
   });
 
+  /**
+   * UI-027 sostenía que el H2 del carrito precede al H1 en todas las páginas y
+   * rompe el orden de encabezados. En el DOM es cierto: el drawer se monta en el
+   * header, antes de `<main>`.
+   *
+   * En el árbol de accesibilidad NO lo es, y ésa es la que cuenta. El drawer
+   * cerrado lleva `inert` y `visibility: hidden`, y cada uno por separado ya
+   * saca su subárbol del árbol de accesibilidad: ningún lector de pantalla
+   * encuentra ese H2 antes del H1. Abierto es un diálogo modal con foco
+   * atrapado, donde el H2 es su título y está en su sitio.
+   *
+   * Este test existe para que la conclusión no caduque en silencio: si alguien
+   * quita el `inert` o cambia el ocultado por algo que no poda el árbol, el
+   * hallazgo original pasa a ser real y esto se pone rojo.
+   */
+  test("el carrito cerrado no aporta encabezados al documento", async ({ page }) => {
+    await page.goto("/tienda");
+
+    const estado = await page.evaluate(() => {
+      const titulo = document.querySelector("#cart-title") as HTMLElement;
+      const drawer = titulo.closest(".cart-drawer") as HTMLElement;
+      return {
+        inert: drawer.hasAttribute("inert"),
+        visibility: getComputedStyle(drawer).visibility,
+        h1DespuesEnElDom: !!(
+          titulo.compareDocumentPosition(document.querySelector("h1")!) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+        ),
+      };
+    });
+
+    // Se afirma la premisa además de la conclusión: si el H1 dejara de ir
+    // después en el DOM, este test estaría comprobando otra cosa.
+    expect(estado.h1DespuesEnElDom).toBe(true);
+    expect(
+      estado.inert || estado.visibility === "hidden",
+      "el carrito cerrado quedó expuesto al árbol de accesibilidad: su H2 pasa a preceder al H1 de verdad",
+    ).toBe(true);
+  });
+
   /* axe no detecta esto: un `outline:0` deja el elemento perfectamente
      accesible en el árbol, sólo invisible para quien navega con teclado. El
      buscador lo tuvo hasta UI-096, y hay que afirmarlo a mano. */
