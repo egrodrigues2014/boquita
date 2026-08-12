@@ -2,349 +2,661 @@ import { productImage } from "@/lib/productImage";
 import type { ShopProduct } from "@/types/shop";
 
 /**
- * El catálogo completo: 14 productos.
+ * El catálogo completo: 23 productos y 60 presentaciones.
  *
- * Este archivo es el FALLBACK de la tabla `products` (ver `lib/db/catalog.ts`):
- * se usa tal cual cuando no hay `DATABASE_URL`, cuando la tabla está vacía o
- * cuando una fila no pasa `shopSchema`. No es contenido muerto — es el modo en
- * que corren CI y cualquier máquina recién clonada.
+ * **Es el catálogo real de Ale**, cargado desde `data/boquita_products_catalog.xlsx`.
+ * Ese Excel es la referencia de fondo: nombres, precios, descripciones,
+ * ingredientes, alérgenos, ocasiones y tamaños salen de ahí. Lo que se cambió al
+ * traerlo, y nada más:
  *
- * ⚠ TODOS los precios son placeholders. El menú fijado de Instagram tiene los
- * reales, pero es una imagen y su texto no se puede extraer. Ver
- * docs/CONTENT_TODO.md §2. Los tests afirman que siguen marcados, para que
- * cerrar ese TODO sea un acto explícito y no un olvido.
+ *  · **Tildes y erratas.** El Excel viene sin acentos y con algún desliz
+ *    («limon», «lacteos», «Coffe Cake», «chocolatre», «Polvorones Espanoles»).
+ *  · **Nombres en orden natural.** «Zanahoria Queque Cupcake» → «Cupcakes de
+ *    zanahoria».
+ *  · **Etiquetas de presentación.** Los cupcakes traen las tres filas con el mismo
+ *    `sale_unit` («molde cupcake») y sólo se distinguen por `package_quantity`, así
+ *    que aquí son «6 unidades», «12 unidades» y «24 unidades». `DUL-020` decía
+ *    «grande 15 (personas)».
+ *  · **El mousse sin azúcar.** El Excel le da a `DUL-019` una tercera fila con
+ *    otro nombre («Mousse de Chocolate S/Azucar»); es la misma ficha con una
+ *    presentación más, no un producto aparte.
  *
- * Las fotos y su procedencia están razonadas en docs/IMAGE_MAP.md. Las marcadas
- * `photoTodo` funcionan pero convendría rehacerlas.
+ * Este archivo es el FALLBACK de las tablas `products` y `product_variants` (ver
+ * `lib/db/catalog.ts`): se usa tal cual cuando no hay `DATABASE_URL`, cuando la
+ * tabla está vacía o cuando una fila no pasa `shopSchema`. No es contenido muerto
+ * — es el modo en que corren CI y cualquier máquina recién clonada.
+ *
+ * **Los precios ya no son placeholders**: son los de Ale, así que no queda ningún
+ * `priceTodo`. `price` es siempre el de la presentación más barata y hay un
+ * `.refine()` en `content/shopSchema.ts` que lo comprueba producto a producto.
+ *
+ * Las fotos van nombradas por SKU en `assets/products/` y su asignación está en
+ * `docs/IMAGE_MAP.md`. Las dos marcadas `photoTodo` son miniaturas de ~400px:
+ * funcionan, pero sólo emiten un escalón de la escalera.
  */
 
 export const products: ShopProduct[] = [
   {
     slug: "queque-de-zanahoria",
     name: "Queque de zanahoria",
-    price: 14000,
-    priceTodo: true,
-    unit: "molde de 8 porciones",
-    summary: "El de siempre: zanahoria rallada a mano y frosting de queso crema.",
+    price: 2500,
+    priceFrom: true,
+    variants: [
+      { unit: "pequeño (2 personas)", price: 2500 },
+      { unit: "mediano (8-10 personas)", price: 12000 },
+      { unit: "grande (20 personas)", price: 24000 },
+    ],
     description: [
-      "Nuestro producto estrella y la razón por la que la mayoría nos escribe la primera vez. " +
-        "Zanahoria rallada a mano, mantequilla de verdad y un frosting de queso crema que no " +
-        "empalaga.",
-      "Se decora con coco rallado y pecanas. Si lo querés para una celebración, podemos " +
-        "escribir un mensaje encima sin costo extra.",
+      "Queque esponjoso de zanahoria, coco y nueces, relleno y cubierto por un rico frosting de " +
+        "queso crema.",
     ],
     categoria: "queques",
     ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
-    allergens: ["gluten", "huevo", "lácteos", "nueces"],
+    ingredients: [
+      "harina de trigo",
+      "zanahoria",
+      "coco",
+      "nueces",
+      "huevos",
+      "queso crema",
+      "mantequilla",
+      "canela",
+    ],
+    allergens: ["gluten", "huevo", "nueces", "lácteos"],
     leadTimeHours: 48,
     image: productImage(
       "queque-de-zanahoria",
-      [281, 562, 843],
-      "Queque de zanahoria entero con frosting de queso crema y pecanas, sobre un pie de cristal",
+      [300, 600, 900],
+      "Queque de zanahoria entero con frosting de queso crema rizado, coco rallado y una flor de pecanas en el centro",
+    ),
+  },
+  {
+    slug: "cupcakes-de-zanahoria",
+    name: "Cupcakes de zanahoria",
+    price: 8400,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 8400 },
+      { unit: "12 unidades", price: 15500 },
+      { unit: "24 unidades", price: 27600 },
+    ],
+    description: [
+      "Queque esponjoso de zanahoria, coco y nueces, relleno y cubierto por un rico frosting de " +
+        "queso crema.",
+    ],
+    categoria: "queques",
+    subcategoria: "cupcake",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: [
+      "harina de trigo",
+      "zanahoria",
+      "coco",
+      "nueces",
+      "huevos",
+      "queso crema",
+      "mantequilla",
+      "canela",
+    ],
+    allergens: ["gluten", "huevo", "nueces", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "cupcakes-de-zanahoria",
+      [533, 1067, 1600],
+      "Cupcakes de zanahoria en capsulillas de colores, cada uno con frosting de queso crema, coco rallado y una pecana",
+    ),
+  },
+  {
+    slug: "cupcakes-de-limon",
+    name: "Cupcakes de limón",
+    price: 4500,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 4500 },
+      { unit: "12 unidades", price: 8000 },
+      { unit: "24 unidades", price: 14000 },
+    ],
+    description: [
+      "Queque de limón, refrescante y rico en sabor, contiene jugo y ralladura de limón natural.",
+    ],
+    categoria: "queques",
+    subcategoria: "cupcake",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["harina de trigo", "limón", "mantequilla", "leche", "huevo"],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    // ⚠ La fuente mide 403×268: sólo da el escalón de 400 y en la ficha se ve
+    // blanda. Hace falta el original. Ver docs/CONTENT_TODO.md.
+    photoTodo: true,
+    image: productImage(
+      "cupcakes-de-limon",
+      [266],
+      "Cuatro cupcakes de limón con glaseado blanco por encima, sobre un plato de madera",
+    ),
+  },
+  {
+    slug: "queque-de-limon",
+    name: "Queque de limón",
+    price: 2250,
+    priceFrom: true,
+    variants: [
+      { unit: "pequeño (2 personas)", price: 2250 },
+      { unit: "mediano (8-10 personas)", price: 8000 },
+      { unit: "grande (20 personas)", price: 12500 },
+    ],
+    description: [
+      "Queque de limón, refrescante y rico en sabor, contiene jugo y ralladura de limón natural.",
+    ],
+    categoria: "queques",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["harina de trigo", "limón", "mantequilla", "leche", "huevo"],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "queque-de-limon",
+      [371, 741],
+      "Queque de limón en molde de corona, bañado en glaseado blanco que escurre, con ralladura verde por encima",
+    ),
+  },
+  {
+    slug: "cupcakes-devils-food",
+    name: "Cupcakes Devil's Food",
+    price: 8400,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 8400 },
+      { unit: "12 unidades", price: 15500 },
+      { unit: "24 unidades", price: 27600 },
+    ],
+    description: [
+      "Explosión de chocolate: bizcocho de chocolate oscuro, relleno y cubierto por brigadeiro, " +
+        "delicado, perfecto para los amantes del chocolate.",
+    ],
+    categoria: "queques",
+    subcategoria: "cupcake",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["harina de trigo", "chocolate", "mantequilla", "crema de leche", "huevo"],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "cupcakes-devils-food",
+      [410, 819],
+      "Cupcake de chocolate oscuro en capsulilla fucsia, con una espiral de brigadeiro y una chispa de chocolate encima",
+    ),
+  },
+  {
+    slug: "queque-devils-food",
+    name: "Queque Devil's Food",
+    price: 2500,
+    priceFrom: true,
+    variants: [
+      { unit: "pequeño (2 personas)", price: 2500 },
+      { unit: "mediano (8-10 personas)", price: 12000 },
+      { unit: "grande (20 personas)", price: 24000 },
+    ],
+    description: [
+      "Explosión de chocolate: bizcocho de chocolate oscuro, relleno y cubierto por brigadeiro, " +
+        "delicado, perfecto para los amantes del chocolate.",
+    ],
+    categoria: "queques",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["harina de trigo", "chocolate", "mantequilla", "crema de leche", "huevo"],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "queque-devils-food",
+      [384, 769],
+      "Queque de chocolate entero cubierto de brigadeiro en anillos, con siete trufas de granillo alrededor del borde",
+    ),
+  },
+  {
+    slug: "coffee-cake",
+    name: "Coffee cake",
+    price: 2250,
+    priceFrom: true,
+    variants: [
+      { unit: "pequeño (2 personas)", price: 2250 },
+      { unit: "mediano (8-10 personas)", price: 8000 },
+      { unit: "grande (20 personas)", price: 16500 },
+    ],
+    description: [
+      "Balance, confort, para tomar café: bizcocho de vainilla con nueces, dulce de leche, canela " +
+        "y chocolate.",
+    ],
+    categoria: "queques",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: [
+      "harina de trigo",
+      "chocolate",
+      "mantequilla",
+      "crema de leche",
+      "huevo",
+      "nueces",
+    ],
+    allergens: ["gluten", "huevo", "lácteos", "nueces"],
+    leadTimeHours: 48,
+    image: productImage(
+      "coffee-cake",
+      [225, 450, 675],
+      "Coffee cake redondo con cobertura de canela, nueces picadas y un hilo de chocolate en zigzag",
+    ),
+  },
+  {
+    slug: "queque-chocolate-chip-cookie",
+    name: "Queque chocolate chip cookie",
+    price: 2400,
+    priceFrom: true,
+    variants: [
+      { unit: "pequeño (2 personas)", price: 2400 },
+      { unit: "mediano (8-10 personas)", price: 9000 },
+      { unit: "grande (20 personas)", price: 14000 },
+    ],
+    description: [
+      "Un queque de galleta crocante afuera y esponjosa, suave, con chispas de chocolate por " +
+        "adentro. Para los amantes de las galletas.",
+    ],
+    categoria: "queques",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["harina de trigo", "chocolate", "mantequilla", "crema de leche", "huevo"],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "queque-chocolate-chip-cookie",
+      [400, 800, 1200],
+      "Queque de galleta con chispas de chocolate, partido en porciones y con rosetones de crema de chocolate en el borde",
+    ),
+  },
+  {
+    slug: "cupcakes-de-vainilla",
+    name: "Cupcakes de vainilla",
+    price: 7000,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 7000 },
+      { unit: "12 unidades", price: 12000 },
+      { unit: "24 unidades", price: 22000 },
+    ],
+    description: [
+      "Queque de vainilla, suave, terso, esponjoso, mi mejor versión de un pound cake, cubierto " +
+        "con butter cream de vainilla.",
+    ],
+    categoria: "queques",
+    subcategoria: "cupcake",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: [
+      "harina de trigo",
+      "huevos",
+      "crema de leche",
+      "mantequilla",
+      "dulce de leche",
+    ],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "cupcakes-de-vainilla",
+      [266, 533, 799],
+      "Cupcakes de vainilla con una espiral de butter cream cada uno, sobre una superficie de mármol blanco",
+    ),
+  },
+  {
+    slug: "queque-de-vainilla",
+    name: "Queque de vainilla",
+    price: 2150,
+    priceFrom: true,
+    variants: [
+      { unit: "pequeño (2 personas)", price: 2150 },
+      { unit: "mediano (8-10 personas)", price: 11500 },
+      { unit: "grande (20 personas)", price: 20700 },
+    ],
+    description: [
+      "Queque de vainilla, suave, terso, esponjoso, mi mejor versión de un pound cake, cubierto " +
+        "con butter cream de vainilla.",
+    ],
+    categoria: "queques",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: [
+      "harina de trigo",
+      "huevos",
+      "crema de leche",
+      "mantequilla",
+      "dulce de leche",
+    ],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    // ⚠ La fuente mide 407×320: sólo da el escalón de 400. Hace falta el original.
+    photoTodo: true,
+    image: productImage(
+      "queque-de-vainilla",
+      [314],
+      "Queque de vainilla en molde de corona con azúcar nevada, con varias rodajas cortadas y un bol de frutos rojos al lado",
+    ),
+  },
+  {
+    slug: "cupcakes-de-banano",
+    name: "Cupcakes de banano",
+    price: 4500,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 4500 },
+      { unit: "12 unidades", price: 8000 },
+      { unit: "24 unidades", price: 14000 },
+    ],
+    description: [
+      "Clásico pan de banano, suave, esponjoso, hecho con bananas naturales y cubierto por azúcar " +
+        "nevada.",
+    ],
+    categoria: "queques",
+    subcategoria: "cupcake",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["harina de trigo", "banano", "mantequilla", "leche", "huevo"],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "cupcakes-de-banano",
+      [573, 1146, 1719],
+      "Cupcakes de banano con espiral de butter cream, migas de galleta y una rodaja de banano encima de cada uno",
+    ),
+  },
+  {
+    slug: "banana-bread",
+    name: "Banana bread",
+    price: 1950,
+    priceFrom: true,
+    variants: [
+      { unit: "pequeño (2 personas)", price: 1950 },
+      { unit: "mediano (8-10 personas)", price: 6000 },
+      { unit: "grande (20 personas)", price: 12000 },
+    ],
+    description: [
+      "Clásico pan de banano, suave, esponjoso, hecho con bananas naturales y cubierto por azúcar " +
+        "nevada.",
+    ],
+    categoria: "queques",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["harina de trigo", "banano", "mantequilla", "leche", "huevo"],
+    allergens: ["gluten", "huevo", "lácteos"],
+    leadTimeHours: 48,
+    image: productImage(
+      "banana-bread",
+      [351, 703],
+      "Banana bread en molde de corona, espolvoreado con azúcar nevada, servido en un plato blanco",
     ),
   },
   {
     slug: "queque-personalizado",
     name: "Queque personalizado",
+    /**
+     * `price` es el `price_min` del Excel, no el mínimo de sus presentaciones: se
+     * cotiza, así que su única presentación no lleva importe. El `.refine()` de
+     * coherencia excluye por eso a los `priceOnRequest`.
+     */
     price: 22000,
     priceFrom: true,
     priceOnRequest: true,
-    priceTodo: true,
-    unit: "por encargo, según tamaño y diseño",
-    summary: "Vos mandás la foto o la idea y lo hacemos. Uno o dos pisos.",
+    variants: [{ unit: "por encargo, según tamaño y diseño", price: 22000 }],
     description: [
-      "Para cumpleaños, bodas y bautizos. Mandanos una foto de referencia o contanos la idea y " +
-        "te confirmamos si se puede hacer y cuánto sale.",
-      "El precio depende del tamaño, el número de pisos y la decoración, así que este se " +
-        "cotiza por WhatsApp. Los de dos pisos necesitan más tiempo: mejor avisar con una semana.",
+      "Queque por encargo. El precio depende del tamaño, los pisos y la decoración.",
+      "Los de dos pisos necesitan una semana de anticipación. Mandanos una foto de referencia o " +
+        "contanos la idea y te confirmamos si se puede y cuánto sale.",
     ],
     categoria: "queques",
+    subcategoria: "personalizado",
     ocasiones: ["cumpleanos", "bodas-bautizos", "baby-shower"],
-    allergens: ["gluten", "huevo", "lácteos"],
+    ingredients: ["según diseño"],
+    allergens: ["según diseño"],
     leadTimeHours: 168,
     image: productImage(
       "queque-personalizado",
-      [500, 1000, 1500],
-      "Queque de zanahoria de dos pisos decorado con rosetones de queso crema, nueces y velas doradas",
+      [533, 1067, 1600],
+      "Queque de zanahoria de dos pisos con frosting de queso crema, nueces, coco, zanahorias de azúcar y velas doradas de cumpleaños",
+    ),
+    imageB: productImage(
+      "queque-personalizado-b",
+      [604, 1209],
+      "Queque de chocolate sobre un pedestal dorado, decorado para una graduación bajo un rótulo de neón",
+    ),
+  },
+  {
+    slug: "polvorones-espanoles",
+    name: "Polvorones españoles",
+    price: 3000,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 3000 },
+      { unit: "12 unidades", price: 5000 },
+    ],
+    description: ["Deliciosas galletas de almendras molidas."],
+    categoria: "galletas",
+    ocasiones: ["oficinas", "regalos", "navidad"],
+    ingredients: ["harina de trigo", "manteca", "almendras", "harina de almendra", "huevo"],
+    allergens: ["gluten", "huevo"],
+    leadTimeHours: 48,
+    image: productImage(
+      "polvorones-espanoles",
+      [368, 737],
+      "Polvorones redondos espolvoreados con azúcar glas, recién salidos en la bandeja del horno",
     ),
   },
   {
     slug: "galletas-de-granola",
     name: "Galletas de granola",
-    price: 5500,
-    priceTodo: true,
-    unit: "caja de 6",
-    summary: "Sin gluten y bajas en azúcar, con granola casera y harina de almendra.",
-    description: [
-      "Crujientes por fuera y suaves por dentro. Llevan granola hecha en casa y harina de " +
-        "almendra en lugar de trigo, así que no tienen gluten.",
-      "Son las que más se piden para desayuno o para llevar a la oficina. Aguantan bien " +
-        "varios días en un recipiente cerrado.",
+    price: 3000,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 3000 },
+      { unit: "12 unidades", price: 5000 },
     ],
-    categoria: "sin-gluten-keto",
+    description: [
+      "Galletas energéticas, calificadas como súper alimentos, con ingredientes sanos y naturales.",
+    ],
+    categoria: "galletas",
     ocasiones: ["oficinas", "regalos"],
-    allergens: ["almendra", "huevo", "lácteos"],
+    ingredients: [
+      "harina de trigo",
+      "avena",
+      "coco",
+      "mantequilla",
+      "mantequilla de maní",
+      "granola",
+      "chocolate",
+      "huevos",
+      "almendras",
+    ],
+    allergens: ["gluten", "huevo", "nueces", "lácteos"],
     leadTimeHours: 48,
     image: productImage(
       "galletas-de-granola",
-      [500, 1000, 1500],
-      "Galletas de granola en un plato blanco con fresas laminadas y una taza de café",
+      [364, 729],
+      "Galletas de granola con forma de corazón, con avena y almendras a la vista, servidas en un plato blanco",
     ),
   },
   {
-    slug: "galletas-con-nutella",
-    name: "Galletas con Nutella",
-    price: 6000,
-    priceTodo: true,
-    unit: "caja de 6",
-    summary: "Galleta de chocolate chip con un centro de Nutella que se desborda.",
-    description: [
-      "Masa de chocolate chip horneada en molde, con un pozo de Nutella al centro. Se sirven " +
-        "tibias si se puede.",
-      "Las favoritas de los niños, y de bastantes adultos.",
+    slug: "galletas-de-miel-y-limon",
+    name: "Galletas de miel y limón",
+    price: 2500,
+    priceFrom: true,
+    variants: [
+      { unit: "120 g", price: 2500 },
+      { unit: "250 g", price: 4500 },
     ],
+    description: ["Galletas crujientes, llenas de sabor, perfectas para el café."],
     categoria: "galletas",
-    ocasiones: ["cumpleanos", "oficinas"],
-    allergens: ["gluten", "huevo", "lácteos", "avellana"],
+    ocasiones: ["oficinas", "regalos"],
+    ingredients: ["harina de trigo", "miel", "limón", "huevos", "mantequilla", "canela", "manteca"],
+    allergens: ["gluten", "huevo", "lácteos"],
     leadTimeHours: 48,
     image: productImage(
-      "galletas-con-nutella",
-      [500, 1000, 1500],
-      "Seis galletas de chocolate chip rellenas de Nutella sobre un plato blanco, con un jardín al fondo",
+      "galletas-de-miel-y-limon",
+      [445, 889],
+      "Montón de galletas redondas y crujientes de miel y limón, en una bandeja blanca sobre una mesa de madera",
     ),
   },
   {
-    slug: "polvorones-de-almendra",
-    name: "Polvorones de almendra",
-    price: 5000,
-    priceTodo: true,
-    unit: "caja de 8",
-    summary: "Receta española, 75% almendra. Se deshacen en la boca.",
-    description: [
-      "Auténtico sabor español, hechos a mano y espolvoreados con azúcar glas. La proporción " +
-        "alta de almendra es lo que les da esa textura que se desarma al morderlos.",
-      "En diciembre son lo que más sale, pero se hacen todo el año.",
+    slug: "barra-de-datiles",
+    name: "Barra de dátiles",
+    price: 12000,
+    priceFrom: true,
+    variants: [
+      { unit: "mediana", price: 12000 },
+      { unit: "grande", price: 22000 },
     ],
-    categoria: "bocaditos",
-    ocasiones: ["navidad", "regalos", "bodas-bautizos"],
-    allergens: ["almendra", "gluten", "lácteos"],
+    description: ["Barra crocante y suave a la vez, elaborada con dátiles."],
+    categoria: "dulces",
+    ocasiones: ["oficinas", "regalos"],
+    ingredients: ["harina de trigo", "mantequilla", "huevo", "dátiles", "nueces"],
+    allergens: ["gluten", "huevo", "lácteos", "nueces"],
     leadTimeHours: 48,
     image: productImage(
-      "polvorones-de-almendra",
-      [500, 1000, 1500],
-      "Bandeja de horno con polvorones de almendra cubiertos de azúcar glas",
+      "barra-de-datiles",
+      [524, 1048],
+      "Barra de dátiles entera en su bandeja de aluminio, espolvoreada con azúcar glas y con la etiqueta de Boquita",
     ),
   },
   {
     slug: "brigadeiros",
     name: "Brigadeiros",
-    price: 6500,
-    priceTodo: true,
-    unit: "docena",
-    summary: "El clásico brasileño: chocolate fino y leche condensada, con granillo.",
-    description: [
-      "Se hacen a fuego lento con chocolate de verdad y leche condensada, se enfrían y se " +
-        "ruedan a mano uno por uno.",
-      "Van en cápsulas de papel, listos para poner en una mesa de dulces o para regalar.",
+    price: 3000,
+    priceFrom: true,
+    variants: [
+      { unit: "6 unidades", price: 3000 },
+      { unit: "12 unidades", price: 5000 },
+      { unit: "24 unidades", price: 9000 },
     ],
-    categoria: "bocaditos",
-    ocasiones: ["cumpleanos", "baby-shower", "bodas-bautizos", "regalos"],
-    allergens: ["lácteos", "chocolate"],
+    description: [
+      "Ricas trufas de chocolate cubiertas por hormiguitas de chocolate. Un bocado de amor y " +
+        "felicidad.",
+    ],
+    categoria: "dulces",
+    ocasiones: ["oficinas", "regalos"],
+    ingredients: ["leche", "chocolate", "crema de leche", "mantequilla"],
+    allergens: ["lácteos"],
     leadTimeHours: 48,
     image: productImage(
       "brigadeiros",
-      [358, 716, 1073],
-      "Brigadeiros de chocolate cubiertos de granillo, en cápsulas de papel dentro de una caja de regalo",
+      [533, 1067, 1600],
+      "Doce brigadeiros de chocolate en capsulillas blancas, ordenados en una bandeja rectangular",
     ),
   },
   {
-    slug: "biscotti-de-almendra",
-    name: "Biscotti de almendra",
-    price: 5800,
-    priceTodo: true,
-    unit: "bolsa de 10",
-    summary: "Doble horneado, con almendra entera. Para mojar en café.",
-    description: [
-      "Se hornean dos veces, como manda la receta, así que quedan firmes y aguantan el café " +
-        "sin deshacerse. Llevan almendra entera.",
-      "También los hacemos con un dip de chocolate para acompañar.",
-    ],
-    categoria: "galletas",
-    ocasiones: ["oficinas", "regalos"],
-    allergens: ["gluten", "almendra", "huevo"],
-    leadTimeHours: 48,
-    image: productImage(
-      "biscotti-de-almendra",
-      [400, 800, 1200],
-      "Biscotti de almendra dispuestos alrededor de un cuenco de chocolate para mojar",
-    ),
-  },
-  {
-    slug: "biscotti-keto",
-    name: "Biscotti keto",
+    slug: "mousse-de-chocolate",
+    name: "Mousse de chocolate",
     price: 6500,
-    priceTodo: true,
-    unit: "bolsa de 10",
-    summary: "Harina de almendra y endulzante keto. Sin azúcar ni harina de trigo.",
-    description: [
-      "La versión sin azúcar de nuestros biscotti: harina de almendra y endulzante apto para " +
-        "dieta keto. Mismo doble horneado, misma textura.",
-      "Los pide bastante gente que lleva control de carbohidratos y no quiere renunciar al " +
-        "café con algo.",
+    priceFrom: true,
+    /**
+     * La tercera es la que el Excel apunta como «Mousse de Chocolate S/Azucar»:
+     * mismo tamaño que la grande normal, endulzada con monk fruit y 2.000 colones
+     * más. Es una presentación, no otro producto.
+     */
+    variants: [
+      { unit: "mediano (8 personas)", price: 6500 },
+      { unit: "grande (18 personas)", price: 12000 },
+      { unit: "grande sin azúcar (18 personas)", price: 14000 },
     ],
-    categoria: "sin-gluten-keto",
-    ocasiones: ["regalos", "oficinas"],
-    allergens: ["almendra", "huevo"],
+    description: [
+      "Espumoso pero chocolatoso, elaborado con chocolate oscuro, perfecto para personas " +
+        "intolerantes al gluten y lácteos.",
+      "La versión sin azúcar se endulza con monk fruit, así que también sirve para personas " +
+        "diabéticas.",
+    ],
+    categoria: "dulces",
+    ocasiones: ["oficinas", "regalos"],
+    ingredients: ["chocolate", "huevo", "monk fruit (sin azúcar)"],
+    allergens: ["huevo"],
     leadTimeHours: 48,
     image: productImage(
-      "biscotti-keto",
-      [500, 1000, 1500],
-      "Biscotti de almendra sin azúcar en un plato blanco, junto a una bolsa de regalo",
+      "mousse-de-chocolate",
+      [267, 533, 800],
+      "Tres mousses de chocolate en vasitos individuales con cucharilla, decorados con perlas de chocolate blanco y negro",
+    ),
+  },
+  {
+    slug: "pie-de-brigadeiro",
+    name: "Pie de brigadeiro",
+    price: 17350,
+    variants: [{ unit: "grande (15 personas)", price: 17350 }],
+    description: [
+      "Pie con crust de galleta de mantequilla, relleno de un delicioso brigadeiro de chocolate y " +
+        "decorado con flecos de sal marina.",
+    ],
+    categoria: "dulces",
+    ocasiones: ["oficinas", "regalos"],
+    ingredients: ["chocolate", "leche", "crema de leche", "mantequilla", "galleta molida"],
+    allergens: ["lácteos", "gluten"],
+    leadTimeHours: 48,
+    image: productImage(
+      "pie-de-brigadeiro",
+      [300, 600, 900],
+      "Pie de brigadeiro entero sobre una blonda blanca, con la cobertura de chocolate en espiral y fresas y arándanos en el centro",
     ),
   },
   {
     slug: "key-lime-pie",
     name: "Key lime pie",
-    price: 16000,
-    priceTodo: true,
-    unit: "molde de 8 porciones",
-    summary: "Base de galleta, crema de limón ácida y merengue tostado.",
-    description: [
-      "Ácido de verdad, no dulzón. Base de galleta con mantequilla, relleno de limón y " +
-        "merengue tostado con soplete por encima.",
-      "Se sirve frío. Mejor pedirlo para el mismo día que se va a comer.",
+    price: 2400,
+    priceFrom: true,
+    variants: [
+      { unit: "individual", price: 2400 },
+      { unit: "mediano (8 personas)", price: 12000 },
+      { unit: "grande (18 personas)", price: 21000 },
     ],
-    categoria: "queques",
-    ocasiones: ["cumpleanos", "bodas-bautizos"],
-    allergens: ["gluten", "huevo", "lácteos"],
+    description: [
+      "Clásico pie de limón de Florida, cremoso y cítrico, con crust de galleta y cubierto por un " +
+        "rico merengue italiano.",
+    ],
+    categoria: "dulces",
+    ocasiones: ["oficinas", "regalos"],
+    ingredients: ["leche", "huevo", "galleta", "mantequilla", "limón"],
+    allergens: ["lácteos", "gluten", "huevo"],
     leadTimeHours: 48,
-    // ⚠ La única foto disponible tiene luz plana y el relleno se ve desvaído.
-    photoTodo: true,
     image: productImage(
       "key-lime-pie",
-      [500, 1000, 1500],
-      "Key lime pie en un molde de cristal, con corona de merengue tostado",
+      [336, 673],
+      "Key lime pie entero en su molde de cristal, cubierto de merengue italiano rizado en espiral",
     ),
   },
   {
-    slug: "barras-de-datil",
-    name: "Barras de dátil",
-    price: 5500,
-    priceTodo: true,
-    unit: "bandeja de 9 porciones",
-    summary: "Dátil, avena y almendra. Sin azúcar añadida.",
-    description: [
-      "El dulzor sale sólo del dátil: no llevan azúcar añadida. Con avena y almendra, quedan " +
-        "densas y saciantes.",
-      "Buenas para llevar en la bolsa o para media mañana.",
+    slug: "cheesecake",
+    name: "Cheesecake",
+    price: 2500,
+    priceFrom: true,
+    variants: [
+      { unit: "individual", price: 2500 },
+      { unit: "mediano (8 personas)", price: 13000 },
+      { unit: "grande (18 personas)", price: 22000 },
     ],
-    categoria: "sin-gluten-keto",
+    description: [
+      "Cheesecake sencillo pero delicioso: crust de galleta molida relleno con una mezcla de queso " +
+        "crema y crema de leche, con cubierta de fresas naturales en láminas. El coulis va aparte.",
+    ],
+    categoria: "dulces",
     ocasiones: ["oficinas", "regalos"],
-    allergens: ["almendra", "avena"],
+    ingredients: ["leche", "huevo", "galleta", "mantequilla", "crema de leche", "fresas"],
+    allergens: ["lácteos", "gluten", "huevo", "fresas"],
     leadTimeHours: 48,
-    // ⚠ La foto es de una bandeja con tapa de plástico y reflejos; el producto
-    // apenas se distingue.
-    photoTodo: true,
     image: productImage(
-      "barras-de-datil",
-      [500, 1000, 1500],
-      "Bandeja de barras de dátil espolvoreadas con azúcar glas",
+      "cheesecake",
+      [341, 681],
+      "Cheesecake individual en un plato blanco, con coulis y láminas de fresa natural por encima",
     ),
   },
   {
-    slug: "mini-queques-de-manzana",
-    name: "Mini queques de manzana",
-    price: 7500,
-    priceTodo: true,
-    unit: "caja de 4",
-    summary: "Manzana, canela y azúcar glas. Del tamaño justo para regalar.",
-    description: [
-      "Esponjosos y húmedos, con trozos de manzana y canela. Se espolvorean con azúcar glas " +
-        "al salir del horno.",
-      "Van en caja individual, así que funcionan bien como detalle.",
+    slug: "quesillo",
+    name: "Quesillo",
+    price: 1600,
+    priceFrom: true,
+    variants: [
+      { unit: "individual", price: 1600 },
+      { unit: "mediano (10 personas)", price: 12000 },
     ],
-    categoria: "queques",
-    ocasiones: ["regalos", "oficinas", "cumpleanos"],
-    allergens: ["gluten", "huevo", "lácteos"],
+    description: ["Dulce cremoso de leche cubierto con caramelo."],
+    categoria: "dulces",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["leche", "huevos"],
+    allergens: ["lácteos", "huevo"],
     leadTimeHours: 48,
     image: productImage(
-      "mini-queques-de-manzana",
-      [500, 1000, 1500],
-      "Queque de manzana espolvoreado con azúcar glas sobre un plato blanco, en la terraza",
-    ),
-  },
-  {
-    slug: "coffee-cake-vegano",
-    name: "Coffee cake vegano",
-    price: 15000,
-    priceTodo: true,
-    unit: "molde de 8 porciones",
-    summary: "Sin nada de origen animal. Costra de canela y nueces.",
-    description: [
-      "Dos capas con una costra de canela y azúcar en medio y por encima, con nueces y chispas " +
-        "de chocolate. Sin huevo, sin leche y sin mantequilla.",
-      "Se llama coffee cake porque acompaña al café, no porque lleve café.",
-    ],
-    categoria: "queques",
-    ocasiones: ["oficinas", "cumpleanos"],
-    allergens: ["gluten", "nueces"],
-    leadTimeHours: 48,
-    image: productImage(
-      "coffee-cake-vegano",
-      [500, 1000, 1500],
-      "Coffee cake de dos capas con costra de canela, nueces y chispas de chocolate",
-    ),
-  },
-  {
-    slug: "cachitos-de-jamon",
-    name: "Cachitos de jamón",
-    price: 7500,
-    priceTodo: true,
-    unit: "media docena",
-    summary: "Lo salado de la casa: masa hojaldrada y jamón, con brillo de huevo.",
-    description: [
-      "Masa trabajada en casa, rellena de jamón y pintada con huevo antes de hornear. Salen " +
-        "dorados y brillantes.",
-      "Se piden mucho para reuniones de oficina y desayunos. Se pueden recalentar en horno " +
-        "unos minutos.",
-    ],
-    categoria: "salado",
-    ocasiones: ["oficinas", "cumpleanos"],
-    allergens: ["gluten", "huevo", "lácteos", "cerdo"],
-    leadTimeHours: 48,
-    // ⚠ La única foto lleva un rótulo incrustado y hay que recortarla; queda una
-    // franja estrecha. Es el único salado además del asado negro: vale la pena
-    // una foto nueva.
-    photoTodo: true,
-    image: productImage(
-      "cachitos-de-jamon",
-      [226, 452],
-      "Cachitos de jamón recién horneados, dorados y brillantes, sobre papel de horno",
-    ),
-  },
-  {
-    slug: "asado-negro",
-    name: "Asado negro",
-    price: 16000,
-    priceTodo: true,
-    unit: "por kilo",
-    summary: "Dulce y salado a la vez. Sólo por encargo.",
-    description: [
-      "Carne cocinada lentamente hasta que el azúcar se carameliza y toma ese color oscuro. " +
-        "Es el plato que le da la mitad del nombre a Boquita.",
-      "Se vende por kilo y va en su salsa. Necesita avisar con antelación porque la cocción " +
-        "es larga.",
-    ],
-    categoria: "salado",
-    ocasiones: ["cumpleanos", "bodas-bautizos"],
-    allergens: [],
-    leadTimeHours: 72,
-    // ⚠ La foto está tomada a sol duro y la corteza se ve casi quemada.
-    photoTodo: true,
-    image: productImage(
-      "asado-negro",
-      [500, 1000, 1500],
-      "Asado negro fileteado sobre una tabla de cortar",
+      "quesillo",
+      [321, 642],
+      "Quesillo individual desmoldado en un plato blanco, bañado en su caramelo",
     ),
   },
 ];

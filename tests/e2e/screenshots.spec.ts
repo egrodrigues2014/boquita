@@ -79,7 +79,7 @@ test("captura del catalogo", async ({ page }, testInfo) => {
 });
 
 test("captura del catalogo filtrado", async ({ page }, testInfo) => {
-  await page.goto("/tienda?categoria=salado");
+  await page.goto("/tienda?categoria=dulces");
   await shoot(page, "catalogo-filtrado", viewportWidth(testInfo));
 });
 

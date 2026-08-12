@@ -21,15 +21,15 @@ export const metadata: Metadata = {
   },
   description:
     "Repostería artesanal hecha en casa en Santa Ana, San José. " +
-    "Queques de zanahoria, galletas de granola sin gluten, polvorones españoles, " +
-    "brigadeiros y bocaditos salados. Horneamos por encargo, en tandas pequeñas.",
+    "Queques de zanahoria, limón y chocolate, cupcakes, polvorones españoles, " +
+    "galletas de granola, brigadeiros y pies. Horneamos por encargo, en tandas pequeñas.",
   applicationName: "Boquita",
   authors: [{ name: "Boquita — Sweet & Salty" }],
   keywords: [
     "repostería Santa Ana",
     "queque de zanahoria Costa Rica",
     "pastelería artesanal San José",
-    "galletas sin gluten Costa Rica",
+    "cupcakes Costa Rica",
     "polvorones Costa Rica",
     "brigadeiros San José",
     "queques por encargo Escazú",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: "Boquita — Sweet & Salty · Repostería artesanal en Santa Ana",
     description:
-      "Queques, galletas y bocaditos horneados por encargo en Santa Ana. " +
+      "Queques, cupcakes, galletas y dulces horneados por encargo en Santa Ana. " +
       "Pedidos por WhatsApp con 48 horas de anticipación.",
   },
   twitter: { card: "summary_large_image" },

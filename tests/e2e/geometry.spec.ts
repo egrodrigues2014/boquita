@@ -33,45 +33,49 @@ test("hero ocupa la primera pantalla con imagen full-bleed", async ({ page, view
   expect(image.x + image.width).toBeGreaterThanOrEqual(viewport!.width);
 });
 
-test("statement usa fondo crema, escala compacta y layout hibrido", async ({ page, viewport }) => {
-  await expect(page.locator(".statement-section h2")).toContainText("Del horno de Ale");
-  await expect(page.locator(".statement-section h2")).toContainText("a tu mesa");
-  await expect(page.locator(".statement-section h2")).toContainText(
+test("statement usa foto izquierda y texto con revelado", async ({ page, viewport }) => {
+  await page.locator(".statement-photo").scrollIntoViewIfNeeded();
+  await expect(page.locator(".statement-photo")).toHaveClass(/is-in/);
+
+  const titleText = await page
+    .locator(".scroll-color-text__heading .scroll-color-text__base")
+    .evaluateAll((items) => items.map((item) => item.textContent).join(" "));
+  expect(titleText).toContain("Del horno de Ale");
+  expect(titleText).toContain("a tu mesa");
+
+  const bodyText = await page
+    .locator(".scroll-color-text__body .scroll-color-text__base")
+    .evaluateAll((items) => items.map((item) => item.textContent).join(" "));
+  expect(bodyText).toContain(
     "Ale Budowski hornea en su",
   );
-  await expect(page.locator(".statement-section h2")).toContainText(
+  expect(bodyText).toContain(
     "pequeñas y el sabor de lo hecho a mano.",
   );
-  await expect(page.locator(".statement-section .scroll-color-text__line")).toHaveCount(6);
+  await expect(page.locator(".statement-dot")).toHaveCount(0);
   await expect(page.locator(".statement-photo-img")).toBeVisible();
   await expect(page.locator(".media-text-section")).toHaveCount(0);
-  expect(await style(page, ".statement-section", "background-color")).toBe("rgb(250, 245, 236)");
+  expect(await style(page, ".statement-section", "background-color")).toBe("rgb(255, 255, 255)");
   expect(await style(page, ".statement-photo-img", "filter")).toBe("none");
   const bodySize = Number.parseFloat(
-    await style(page, ".scroll-color-text__line--body", "font-size"),
+    await style(page, ".scroll-color-text__body", "font-size"),
   );
-  if (viewport!.width <= 479) {
-    expect(bodySize).toBe(18);
-  } else if (viewport!.width <= 767) {
-    expect(bodySize).toBe(20);
-  } else {
-    expect(bodySize).toBeGreaterThan(20);
-  }
+  expect(bodySize).toBe(18);
 
-  const titleLine = await box(page, ".scroll-color-text__line--title");
-  const titleBase = await box(
-    page,
-    ".scroll-color-text__line--title .scroll-color-text__base",
-  );
-  expect(titleBase.height).toBeCloseTo(titleLine.height, 1);
+  const titleLine = await box(page, ".scroll-color-text__heading");
+  const copy = await box(page, ".scroll-color-text__body");
+  expect(copy.y).toBeGreaterThan(titleLine.y + titleLine.height);
 
-  const copy = await box(page, ".statement-copy");
   const photo = await box(page, ".statement-photo");
   if (viewport!.width >= 992) {
-    expect(photo.x).toBeGreaterThan(copy.x + copy.width);
-    expect(photo.y).toBeGreaterThan(copy.y + 80);
+    expect(await style(page, ".scroll-color-text__heading", "text-align")).toBe("left");
+    expect(photo.x + photo.width).toBeLessThan(titleLine.x);
+    expect(Math.abs((photo.y + photo.height / 2) - (titleLine.y + titleLine.height / 2))).toBeLessThan(
+      180,
+    );
   } else {
-    expect(photo.y).toBeGreaterThan(copy.y + copy.height);
+    expect(await style(page, ".scroll-color-text__heading", "text-align")).toBe("center");
+    expect(titleLine.y).toBeGreaterThan(photo.y + photo.height);
   }
 });
 
@@ -79,13 +83,11 @@ test("imagen ancha vive en banda blanca y catalogo conserva banda crema", async 
   expect(await style(page, ".overlap-wrapper", "background-color")).toBe("rgb(250, 245, 236)");
   expect(await style(page, ".wide-img-block", "background-color")).toBe("rgb(255, 255, 255)");
   expect(await style(page, ".cream-block", "background-color")).toBe("rgb(250, 245, 236)");
-  expect(await style(page, ".cream-block", "margin-top")).toBe("0px");
-
   const band = await box(page, ".wide-img-block");
   const wide = await box(page, ".wide-img");
   const cream = await box(page, ".cream-block");
   expect(wide.y).toBeGreaterThan(band.y);
-  expect(wide.y + wide.height).toBeLessThan(cream.y);
+  expect(wide.y + wide.height).toBeGreaterThan(cream.y);
   expect(wide.x + wide.width / 2).toBeCloseTo(band.x + band.width / 2, 1);
 });
 

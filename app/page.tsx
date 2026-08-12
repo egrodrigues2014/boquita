@@ -7,7 +7,6 @@ import { Service } from "@/components/sections/Service";
 import { Statement } from "@/components/sections/Statement";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { Lightbox } from "@/components/ui/Lightbox";
 import { getHomeContent } from "@/lib/homeContent";
 import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
 
@@ -57,15 +56,6 @@ export default async function HomePage() {
       </main>
 
       <Footer footer={home.footer} />
-
-      {/* Un único lightbox para toda la página. Escucha por delegación los
-          `data-lightbox` que renderizan las secciones en el servidor, así que no
-          hace falta un provider de contexto ni convertirlas en cliente. */}
-      <Lightbox
-        groups={{
-          gallery: home.gallery.rows.flat(),
-        }}
-      />
     </>
   );
 }

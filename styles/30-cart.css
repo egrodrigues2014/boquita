@@ -411,11 +411,43 @@
 }
 
 .shop-card {
-  /* Resetea el `li` global. */
+  /**
+   * La tarjeta se sale de la cascada del `li` global (`03-base.css`) y de la del
+   * `ul`. De las declaraciones de abajo, TRES son imprescindibles y TRES son
+   * cortafuegos. Conviene saber cuál es cuál antes de «limpiar»: aquí ya se pisó
+   * un no-op dos veces.
+   *
+   * · `align-items: stretch` — IMPRESCINDIBLE. Sin él la tarjeta se queda con el
+   *   `align-items: center` del `li`, y en un flex en columna eso encoge cada
+   *   hijo al ancho de su texto. Es lo que hacía que el precio y la línea de
+   *   etiquetas se vieran centrados sin que nadie lo hubiera pedido. Mismo fallo
+   *   que tuvo el drawer del nav con `.nav-menu`.
+   *
+   * · `background` en forma de ATAJO — IMPRESCINDIBLE que siga siéndolo. El `li`
+   *   global trae `background: url(/icons/list-bullet.svg)`; el atajo devuelve
+   *   `background-image` a `none` y por eso ya no hace falta el `background:
+   *   none` que había aquí. Con `background-color` el bullet VUELVE, encima del
+   *   crema, en las 23 tarjetas. Lo vigila un test de `tienda.spec.ts`.
+   *
+   * · `padding: 0 0 20px` — el `0` de la izquierda tampoco es decorativo: anula
+   *   el `padding-left: 22px` que el `li` reserva para ese bullet. Escrito como
+   *   `padding-bottom: 20px`, la tarjeta entera se sangra 22px.
+   *
+   * · `color`, `font-size` y `font-weight` a `inherit` NO cambian ningún píxel
+   *   hoy: todos los hijos declaran los suyos o los reciben del `p` y del `a`
+   *   globales —el nombre, por ejemplo, hereda el peso 500 del `<a>` y no de
+   *   aquí—. Se quedan como cortafuegos para que el `color: var(--gold-ink)` del
+   *   `li` no alcance a un hijo nuevo que se olvide de declararlo.
+   *
+   * · Ya NO hay `text-align`. El texto va a la izquierda, que es el valor
+   *   inicial: ningún ancestro centra nada (`.container--start` alinea cajas
+   *   flex, no texto). Un `text-align: left` aquí sería declaración muerta.
+   */
   display: flex;
   flex-direction: column;
-  padding: 0;
-  background: none;
+  align-items: stretch;
+  padding: 0 0 20px;
+  background: var(--primary-light);
   color: inherit;
   font-size: inherit;
   font-weight: inherit;
@@ -426,48 +458,193 @@
   padding: 0;
 }
 
+/**
+ * Recorta la foto al ampliarse. Tiene que ser un elemento propio del JSX y no el
+ * `<picture>`: `components/ui/Picture.tsx` emite `<img>` suelto cuando el producto
+ * no tiene AVIF y `<picture>` cuando sí, y sólo pasa la clase al `<img>`.
+ *
+ * `display: block` es obligatorio — `overflow` se ignora en una caja inline. NO
+ * hace falta `line-height: 0`: `02-reset.css` ya deja el `<img>` en `display:
+ * block` (no hay hueco de descendente que tapar) y el `<picture>` en `display:
+ * contents` (no genera caja), así que los dos casos de `Picture` se maquetan
+ * igual.
+ *
+ * ⚠ El `overflow: hidden` va AQUÍ y NUNCA en `.shop-card`. El anillo de foco se
+ * pinta en `.shop-card-link` y en «Pedir», que son descendientes de la tarjeta, y
+ * lleva `outline-offset: 3px`: un `overflow` en la tarjeta se comería 6px de
+ * anillo por los cuatro lados. Es el problema que documenta `.nav-search` en
+ * `10-navbar.css`.
+ */
+.shop-card-media {
+  display: block;
+  overflow: hidden;
+}
+
 .shop-card-img {
   width: 100%;
   /* Cuadrado con `cover`: varias fotos son verticales y altas, y recortar en CSS
      mantiene la rejilla alineada sin generar un derivado por proporción. */
   aspect-ratio: 1;
   object-fit: cover;
+  /* El acercamiento al pasar el ratón. `transform` y no `width` ni `padding`: no
+     provoca reflow y no arrastra al texto de debajo (desvío D-29). La transición
+     va en la BASE para que también anime la variante de `:focus-visible`. */
+  transition: transform 0.35s ease-out;
+}
+
+/**
+ * El aire lateral de la zona de texto. Lo pone cada elemento y no la tarjeta,
+ * porque la foto va A SANGRE: con `padding-inline` en `.shop-card` la foto pasaría
+ * de 370 a 330px y los 370px MEDIDOS de `lib/productImage.ts` y de
+ * `scripts/build-images.mjs` —de donde salen `CARD_SIZES` y la escalera
+ * [400, 800, 1200]— pasarían a ser mentira. Es el mismo reparto que las filas del
+ * drawer a ≤991 (desvío D-28): el contenedor a sangre y el carril en cada fila.
+ */
+.shop-card-name,
+.shop-card-summary,
+.shop-card-tag,
+.shop-card-foot {
+  padding-inline: 20px;
 }
 
 .shop-card-name {
-  margin-top: 14px;
+  /**
+   * `display: block` en un `<span>` que parecía no necesitarlo: sin él la caja es
+   * inline y su `margin-top` se ignora en silencio. El aire que se veía entre la
+   * foto y el título era el interlineado, no estos 18px.
+   */
+  display: block;
+  margin-top: 18px;
   font-family: var(--ff-display);
   font-size: 24px;
   line-height: 1.15;
+  /**
+   * Dos líneas reservadas. ⚠ Lo que esto cuadra ya NO es el precio: desde que la
+   * fila de precio vive en `.shop-card-foot` y va anclada al fondo por el `flex:
+   * 1` del resumen, su altura no depende del nombre. Lo que cuadra ahora es el
+   * ARRANQUE de las descripciones entre columnas, que con la tarjeta alineada a
+   * la izquierda es la línea que sigue el ojo: «Queque chocolate chip cookie»
+   * ocupa dos líneas y su vecina una. Va en `lh` y no en `calc(2 * 1.15em)`
+   * porque así no puede desincronizarse del `line-height` de arriba. A una
+   * columna se anula: ver el bloque de ≤767. Lo protege el test «las tarjetas de
+   * una fila alinean descripción, etiquetas y fila de precio».
+   */
+  min-height: 2lh;
   text-transform: uppercase;
   color: var(--text-dark);
-}
-
-.shop-card-link:hover .shop-card-name {
-  color: var(--gold-ink);
-}
-
-.shop-card-price {
-  margin-top: 6px;
-  font-family: var(--ff-sans);
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--gold-ink);
 }
 
 .shop-card-summary {
   margin: 8px 0 0;
   font-size: 16px;
   line-height: 1.45;
+  /**
+   * Crece para empujar las etiquetas Y la fila de precio al fondo de la tarjeta.
+   * Las tarjetas de una misma fila ya miden lo mismo —son ítems de grid con
+   * `align-self: stretch`—, así que con esto las dos quedan a la misma altura
+   * entre columnas sin fijar ningún alto a mano, y da igual que una descripción
+   * ocupe dos líneas y la de al lado cuatro. Es lo que hace que la fila del
+   * precio sea el suelo de la tarjeta y no un renglón flotando a media altura.
+   */
+  flex: 1;
 }
 
 .shop-card-tag {
-  margin-top: 10px;
+  /* El `0` de abajo no es cosmético: el `p` global trae `margin: 10px 0`, y con la
+     fila de precio debajo ese margen fantasma se suma al hueco (los ítems de un
+     flex no colapsan márgenes). Antes no se veía porque las etiquetas eran el
+     último hijo y el fantasma se quedaba en el alto de la tarjeta. */
+  margin: 10px 0 0;
   font-family: var(--ff-sans);
   font-size: 13px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--body-text);
+}
+
+/**
+ * La fila del fondo: precio a la izquierda, «Pedir» a la derecha. Queda anclada
+ * abajo por el `flex: 1` de `.shop-card-summary`.
+ *
+ * SIN `flex-wrap`, a propósito, y esto es una medida y no una intuición. El par
+ * más ancho es «desde ₡ 22.000» (~125px a 18px, el queque personalizado) más el
+ * botón (~81px) más el hueco de 12: 218px. La tarjeta más estrecha del sitio son
+ * 337px, a 1100px de ventana —3 columnas de un contenido de 1070 con 30 de hueco—,
+ * o 297px descontando los dos carriles de 20. Sobran 79px, y 1100 es uno de los 8
+ * anchos de `playwright.config.ts`, así que el peor caso está en la suite. A ≤479
+ * la tarjeta es MÁS ancha (360-449px), no menos.
+ *
+ * Y un `wrap` condicional sería peor que un desborde: si envolviera en una tarjeta
+ * de la fila y no en su vecina, la fila crecería 46px sólo en una, el precio
+ * dejaría de cuadrar de altura entre columnas y el test de alineación se pondría
+ * rojo por una causa que no se le parece.
+ */
+.shop-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.shop-card-price {
+  /* `margin: 0` y no el `10px 0` del `p` global: es un ítem flex de
+     `.shop-card-foot`, y ese margen lo descentraría respecto del botón y
+     estiraría la fila 20px. */
+  margin: 0;
+  font-family: var(--ff-sans);
+  font-size: 18px;
+  font-weight: 500;
+  /* 18px sin negrita → AA normal, no AA-large. 5.45:1 sobre el crema de la
+     tarjeta; `--gold` aquí serían 2.09:1. */
+  color: var(--gold-ink);
+  /* «desde ₡ 22.000» nunca se parte por dentro: en dos líneas se lee como un
+     error. Mismo motivo que `.menu-item-price`. */
+  white-space: nowrap;
+}
+
+/* El botón es el ancla derecha de la fila: no se encoge ni se parte. */
+.shop-card-cta {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* ── Realce de la tarjeta ──────────────────────────────────────────────────
+   La foto se acerca al pasar el ratón por CUALQUIER parte de la tarjeta, no sólo
+   por la foto: toda la tarjeta lleva a la ficha y el realce tiene que decirlo.
+
+   Patrón del desvío D-29: `transform` (nada que provoque reflow), envuelto en
+   `@media (hover: hover) and (pointer: fine)` para que no se quede pegado tras un
+   toque en táctil, y `:focus-visible` FUERA de esa envoltura, porque el teclado
+   tiene que funcionar en cualquier dispositivo. El 1.06 aparece dos veces por eso
+   mismo; el nav hace lo propio con su `translateX(5px) scale(1.04)`.
+
+   El foco sólo amplía desde `.shop-card-link` y no desde toda la tarjeta: cuando
+   el foco está en «Pedir», su anillo ya es la señal, y mover la foto a 300px de
+   distancia del anillo despista más que ayuda.
+
+   Este `@media` no tiene componente de anchura, así que va en la zona base y no
+   rompe el orden base → min-width asc → max-width desc del fichero.
+
+   ⚠ Está enumerado en el kill-switch de `styles/99-a11y.css`: ese bloque va
+   selector por selector y su `*` final sólo apaga `animation-*`, no `transition`.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.shop-card-link:focus-visible .shop-card-img {
+  transform: scale(1.06);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .shop-card:hover .shop-card-img {
+    transform: scale(1.06);
+  }
+
+  /* Sustituye al `.shop-card-link:hover .shop-card-name` de antes: el realce es
+     ahora de la tarjeta entera, y dentro de la envoltura de puntero fino deja de
+     quedarse encendido después de un toque. */
+  .shop-card:hover .shop-card-name {
+    color: var(--gold-ink);
+  }
 }
 
 .shop-empty {
@@ -528,6 +705,84 @@
   font-size: 16px;
 }
 
+/* ── Selector de presentación ──────────────────────────────────────────────
+ *
+ * Va DENTRO de `.add-to-cart`, que es un flex con wrap, así que necesita
+ * `flex-basis: 100%` para ocupar su propia fila por encima del stepper y el
+ * botón. Sin eso se metería en la misma línea y quedaría de 200px.
+ *
+ * Es un `<fieldset>` con radios de verdad y no un `<select>`: los tres precios
+ * tienen que verse a la vez para poder comparar, que es la decisión real que se
+ * toma aquí. Un desplegable los esconde justo cuando importan.
+ */
+
+.variant-picker {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.variant-picker-legend {
+  padding: 0;
+  margin-bottom: 10px;
+  font-family: var(--ff-sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dark);
+}
+
+.variant-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px; /* área pulsable, igual que las filas del drawer del nav */
+  padding: 6px 12px;
+  border: 1px solid var(--gray);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-dark);
+}
+
+.variant-option + .variant-option {
+  margin-top: 8px;
+}
+
+.variant-option-unit {
+  flex: 1 1 auto;
+}
+
+.variant-option-price {
+  font-family: var(--ff-sans);
+  font-weight: 500;
+  color: var(--gold-ink);
+}
+
+/* `:has()` y no una clase de JS: el estado ya vive en el `:checked` del radio, y
+   duplicarlo en una clase es una segunda fuente de verdad que se desincroniza. */
+.variant-option:hover,
+.variant-option:has(input:focus-visible) {
+  border-color: var(--gold-line);
+  background: var(--primary-light);
+}
+
+.variant-option:has(input:checked) {
+  border-color: var(--gold-line);
+  background: var(--primary-light);
+  font-weight: 500;
+}
+
+/* ── Ficha con dos fotos ───────────────────────────────────────────────── */
+
+.product-gallery {
+  display: grid;
+  row-gap: 15px;
+  align-content: start;
+}
+
 /* ══════════════════ max-width descendente ══════════════════ */
 
 @media (max-width: 991px) {
@@ -543,6 +798,12 @@
   .shop-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 35px;
+  }
+  /* Una sola columna: las dos líneas reservadas para el nombre no cuadran el
+     arranque de ninguna descripción con nadie y sólo dejan un hueco debajo de los
+     títulos cortos. */
+  .shop-card-name {
+    min-height: 0;
   }
   .product-layout {
     display: flex;

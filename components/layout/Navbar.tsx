@@ -74,7 +74,10 @@ function Dropdown({
           aria-controls={id}
           onFocus={onOpen}
         >
-          {dropdown.label}
+          {/* El <span> existe para que el drawer pueda animar SÓLO el texto:
+              un transform sobre la fila arrastraría también el fondo y la barra
+              de hover. No cambia el nombre accesible. */}
+          <span className="nav-label">{dropdown.label}</span>
         </a>
       ) : (
         <button
@@ -91,7 +94,7 @@ function Dropdown({
           // Ocasiones. Cerrar es tarea de mouseleave, Escape o un clic fuera.
           onClick={hoverEnabled || isOpen ? onOpen : onToggle}
         >
-          {dropdown.label}
+          <span className="nav-label">{dropdown.label}</span>
         </button>
       )}
       <div
@@ -106,7 +109,7 @@ function Dropdown({
             href={item.href}
             {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
           >
-            {item.label}
+            <span className="nav-label">{item.label}</span>
           </a>
         ))}
       </div>
@@ -243,7 +246,7 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
           <img
             className="logo"
             src="/img/brand/logo-transparent-43x43.png"
-            srcSet="/img/brand/logo-transparent-43x43.png 43w, /img/brand/logo-transparent-86x86.png 86w"
+            srcSet="/img/brand/logo-transparent-43x43.png 43w, /img/brand/logo-transparent-86x86.png 86w, /img/brand/logo-transparent-192x192.png 192w"
             sizes="(min-width: 1280px) 86px, 72px"
             width={86}
             height={86}
@@ -282,7 +285,7 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
               <Dropdown dropdown={d1} {...dropdownProps(1)} />
               <Dropdown dropdown={d2} {...dropdownProps(2)} />
               <a className="nav-link" href={nav.link.href} onClick={closeAll}>
-                {nav.link.label}
+                <span className="nav-label">{nav.link.label}</span>
               </a>
               <Dropdown dropdown={d3} {...dropdownProps(3)} />
             </div>

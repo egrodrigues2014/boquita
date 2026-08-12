@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { products as fallbackCatalog } from "@/content/products";
-import { productToRow } from "@/lib/db/rows";
-import type { ProductRow } from "@/lib/db/schema";
+import { productToRow, productToVariantRows } from "@/lib/db/rows";
+import type { ProductRow, ProductVariantRow } from "@/lib/db/schema";
 import { imageHeightsOf, toImageHeights } from "@/lib/productImage";
 
 /**
@@ -16,8 +16,10 @@ import { imageHeightsOf, toImageHeights } from "@/lib/productImage";
  * test que necesita credenciales no se ejecuta en CI, y entonces no protege nada.
  */
 
-/** Filas que devolverá el doble en cada test. */
+/** Filas de `products` que devolverá el doble en cada test. */
 let rows: ProductRow[] = [];
+/** Filas de `product_variants`. Sin ellas un producto no es comprable y se descarta. */
+let variantRows: ProductVariantRow[] = [];
 /** Si es true, la consulta lanza: simula el cómputo caído o la credencial rotada. */
 let queryThrows = false;
 /** Si es false, `getDb()` devuelve null: simula la ausencia de DATABASE_URL. */
@@ -32,17 +34,27 @@ vi.mock("next/cache", () => ({
   unstable_cache: (fn: unknown) => fn,
 }));
 
+/**
+ * El doble distingue las dos consultas por su FORMA, no por la tabla: la de
+ * productos termina en `.orderBy(...)` y la de presentaciones se espera tal cual.
+ * Comparar la tabla exigiría importarla dentro de la factoría —que se hoistea— y
+ * escarbar en los internos de Drizzle.
+ */
 vi.mock("@/lib/db", () => ({
   getDb: () =>
     dbAvailable
       ? {
           select: () => ({
-            from: () => ({
-              orderBy: async () => {
+            from: () => {
+              const variantes = Promise.resolve(variantRows) as Promise<ProductVariantRow[]> & {
+                orderBy: () => Promise<ProductRow[]>;
+              };
+              variantes.orderBy = async () => {
                 if (queryThrows) throw new Error("connection terminated unexpectedly");
                 return rows;
-              },
-            }),
+              };
+              return variantes;
+            },
           }),
         }
       : null,
@@ -61,8 +73,22 @@ function validRow(index = 0): ProductRow {
   } as ProductRow;
 }
 
+/** Las presentaciones de ese mismo producto, como las devolvería la tabla. */
+function variantsOf(index = 0): ProductVariantRow[] {
+  const product = fallbackCatalog[index];
+  if (!product) throw new Error(`el fallback no tiene un producto en la posición ${index}`);
+  return productToVariantRows(product) as ProductVariantRow[];
+}
+
+/** Siembra el doble con estos productos del fallback, con sus presentaciones. */
+function seed(...indices: number[]) {
+  rows = indices.map((index) => validRow(index));
+  variantRows = indices.flatMap((index) => variantsOf(index));
+}
+
 beforeEach(() => {
   rows = [];
+  variantRows = [];
   queryThrows = false;
   dbAvailable = true;
   // El fallback avisa por consola cuando actúa. Es deliberado, pero no hace
@@ -80,7 +106,7 @@ describe("sin base de datos", () => {
     dbAvailable = false;
     const catalog = await getCatalog();
     expect(catalog).toEqual(fallbackCatalog);
-    expect(catalog).toHaveLength(14);
+    expect(catalog).toHaveLength(23);
   });
 
   it("getProduct sigue funcionando y no explota con un slug inexistente", async () => {
@@ -96,17 +122,26 @@ describe("sembrar y leer no pierde nada", () => {
     // Si esto falla, la tienda se ve distinta según de dónde venga el catálogo.
     for (const [index, product] of fallbackCatalog.entries()) {
       const row = { ...productToRow(product, index) } as ProductRow;
-      expect(rowToProduct(row), `${product.slug} no sobrevive el viaje`).toEqual(product);
+      expect(rowToProduct(row, variantsOf(index)), `${product.slug} no sobrevive el viaje`).toEqual(
+        product,
+      );
+    }
+  });
+
+  it("las 60 presentaciones vuelven con su etiqueta y su precio", () => {
+    for (const [index, product] of fallbackCatalog.entries()) {
+      const row = { ...productToRow(product, index) } as ProductRow;
+      expect(rowToProduct(row, variantsOf(index))?.variants).toEqual(product.variants);
     }
   });
 
   it("el catálogo entero desde la base es igual al fallback", async () => {
-    rows = fallbackCatalog.map((product, index) => validRow(index));
+    seed(...fallbackCatalog.map((_, index) => index));
     expect(await getCatalog()).toEqual(fallbackCatalog);
   });
 
   it("respeta el orden de sort_order y no el de llegada", async () => {
-    rows = [validRow(2), validRow(0), validRow(1)];
+    seed(2, 0, 1);
     // El doble no ordena —eso lo hace Postgres—, así que aquí sólo se afirma que
     // getCatalog no reordena por su cuenta: el ORDER BY es la única fuente.
     const catalog = await getCatalog();
@@ -115,6 +150,12 @@ describe("sembrar y leer no pierde nada", () => {
       fallbackCatalog[0]?.slug,
       fallbackCatalog[1]?.slug,
     ]);
+  });
+
+  it("las presentaciones se ordenan por sort_order aunque lleguen revueltas", () => {
+    const row = validRow(0);
+    const revueltas = [...variantsOf(0)].reverse();
+    expect(rowToProduct(row, revueltas)?.variants).toEqual(fallbackCatalog[0]?.variants);
   });
 });
 
@@ -131,22 +172,23 @@ describe("la tienda nunca se sirve vacía", () => {
   });
 
   it("ninguna fila utilizable → catálogo completo del fallback", async () => {
-    // Slugs que no están en el fallback Y con el summary desmaquetado: no hay
-    // nada que rescatar.
+    // Slugs que no están en el fallback Y sin presentaciones: no hay nada que
+    // rescatar.
     rows = [
-      { ...validRow(0), slug: "fantasma-uno", summary: "x" } as ProductRow,
-      { ...validRow(1), slug: "fantasma-dos", summary: "y" } as ProductRow,
+      { ...validRow(0), slug: "fantasma-uno" } as ProductRow,
+      { ...validRow(1), slug: "fantasma-dos" } as ProductRow,
     ];
+    variantRows = [];
     expect(await getCatalog()).toEqual(fallbackCatalog);
   });
 });
 
 describe("una fila mala no tumba el catálogo", () => {
-  it("un summary demasiado largo se sustituye por la versión del fallback", async () => {
-    // 400 caracteres desmaquetarían la tarjeta: el esquema permite 110. Es
-    // exactamente lo que el panel de la fase 3 va a poder guardar sin querer.
-    const roto = { ...validRow(0), summary: "a".repeat(400) } as ProductRow;
-    rows = [roto, validRow(1)];
+  it("una descripción desmaquetada se sustituye por la versión del fallback", async () => {
+    // 400 caracteres desmaquetarían la tarjeta: el esquema permite 300. Es
+    // exactamente lo que el panel de administración va a poder guardar sin querer.
+    seed(0, 1);
+    rows[0] = { ...validRow(0), description: ["a".repeat(400)] } as ProductRow;
 
     const catalog = await getCatalog();
     expect(catalog).toHaveLength(2);
@@ -155,21 +197,54 @@ describe("una fila mala no tumba el catálogo", () => {
   });
 
   it("un precio a convenir sin «desde» se rescata: engañaría con el importe", async () => {
-    const roto = { ...validRow(0), priceOnRequest: true, priceFrom: false } as ProductRow;
-    rows = [roto];
+    seed(0);
+    rows[0] = { ...validRow(0), priceOnRequest: true, priceFrom: false } as ProductRow;
     expect(await getCatalog()).toEqual([fallbackCatalog[0]]);
   });
 
-  it("una fila con image_heights de un solo escalón se rescata", async () => {
-    // Un srcSet de un elemento haría que un móvil se descargue la foto grande.
-    const roto = { ...validRow(0), imageHeights: [562] } as ProductRow;
-    rows = [roto];
+  /**
+   * El caso que de verdad importa del precio: si `price` deja de ser el de la
+   * presentación más barata, la tarjeta del catálogo anuncia un importe que el
+   * selector de la ficha no ofrece. No se ve hasta que alguien reclama, así que lo
+   * ataja el borde de lectura.
+   */
+  it("un precio que no es el de la variante más barata se rescata", async () => {
+    seed(0);
+    rows[0] = { ...validRow(0), price: 999 } as ProductRow;
+    expect(await getCatalog()).toEqual([fallbackCatalog[0]]);
+  });
+
+  it("varias presentaciones sin «desde» se rescatan", async () => {
+    seed(0);
+    rows[0] = { ...validRow(0), priceFrom: false } as ProductRow;
+    expect(await getCatalog()).toEqual([fallbackCatalog[0]]);
+  });
+
+  it("un producto sin presentaciones se rescata: no habría nada que añadir", async () => {
+    rows = [validRow(0)];
+    variantRows = [];
+    expect(await getCatalog()).toEqual([fallbackCatalog[0]]);
+  });
+
+  it("dos presentaciones con la misma etiqueta se rescatan", async () => {
+    // Serían una sola línea en el carrito, con el precio de la que se añadió antes.
+    seed(0);
+    const [primera] = variantsOf(0);
+    if (!primera) throw new Error("el primer producto del fallback no tiene presentaciones");
+    variantRows = [primera, { ...primera, price: primera.price + 1000, sortOrder: 1 }];
+    expect(await getCatalog()).toEqual([fallbackCatalog[0]]);
+  });
+
+  it("una fila con image_heights vacío se rescata", async () => {
+    seed(0);
+    rows[0] = { ...validRow(0), imageHeights: [] } as ProductRow;
     expect(await getCatalog()).toEqual([fallbackCatalog[0]]);
   });
 
   it("una fila inválida que NO está en el fallback se omite, no se inventa", async () => {
-    const fantasma = { ...validRow(0), slug: "producto-fantasma", summary: "x" } as ProductRow;
-    rows = [fantasma, validRow(1)];
+    seed(0, 1);
+    rows[0] = { ...validRow(0), slug: "producto-fantasma" } as ProductRow;
+    // Sin presentaciones para ese slug: la fila es inservible.
 
     const catalog = await getCatalog();
     expect(catalog).toEqual([fallbackCatalog[1]]);
@@ -178,12 +253,16 @@ describe("una fila mala no tumba el catálogo", () => {
 });
 
 describe("las alturas de imagen van y vuelven", () => {
-  it("imageHeightsOf recupera las alturas de los 14 productos", () => {
+  it("imageHeightsOf recupera las alturas de los 23 productos", () => {
     for (const product of fallbackCatalog) {
       const heights = imageHeightsOf(product.image);
-      expect(heights.length, product.slug).toBeGreaterThanOrEqual(2);
-      // El escalón de 800 es el `src` base, así que su altura es `image.height`.
-      expect(heights[1], product.slug).toBe(product.image.height);
+      expect(heights.length, product.slug).toBeGreaterThanOrEqual(1);
+      /**
+       * El `src` base es el escalón de 800 cuando existe, y el de 400 en las dos
+       * fotos que son miniaturas. En los dos casos su altura es `image.height`, que
+       * es lo que fija el `height` del `<img>` y evita CLS.
+       */
+      expect(heights[1] ?? heights[0], product.slug).toBe(product.image.height);
     }
   });
 
@@ -204,7 +283,9 @@ describe("las alturas de imagen van y vuelven", () => {
   it("toImageHeights rechaza lo que productImage no sabría usar", () => {
     expect(toImageHeights([400, 800])).toEqual([400, 800]);
     expect(toImageHeights([400, 800, 1200])).toEqual([400, 800, 1200]);
-    expect(toImageHeights([400])).toBeUndefined();
+    // Un solo escalón es válido: las dos fotos en miniatura del catálogo de Ale no
+    // dan más y el pipeline no hace upscale.
+    expect(toImageHeights([400])).toEqual([400]);
     expect(toImageHeights([])).toBeUndefined();
     expect(toImageHeights([400, 800, 1200, 1600])).toBeUndefined();
     expect(toImageHeights([400, 0])).toBeUndefined();
@@ -213,14 +294,10 @@ describe("las alturas de imagen van y vuelven", () => {
 
 describe("filas nuevas que no están en el fallback", () => {
   it("un producto que sólo existe en la base se sirve igual", async () => {
-    // El caso de un producto creado desde el panel de la fase 3: la base es la
-    // fuente, el fallback sólo cubre lo que falta.
-    const nuevo = {
-      ...validRow(0),
-      slug: "torta-de-limon",
-      name: "Torta de limón",
-    } as ProductRow;
-    rows = [nuevo];
+    // El caso de un producto creado desde el panel de administración: la base es
+    // la fuente, el fallback sólo cubre lo que falta.
+    rows = [{ ...validRow(0), slug: "torta-de-limon", name: "Torta de limón" } as ProductRow];
+    variantRows = variantsOf(0).map((variant) => ({ ...variant, slug: "torta-de-limon" }));
 
     const catalog = await getCatalog();
     expect(catalog).toHaveLength(1);

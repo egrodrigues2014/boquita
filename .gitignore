@@ -17,7 +17,15 @@ next-env.d.ts
 .env*.local
 
 # originales de imagen (fuente de verdad, fuera del repo)
-/assets/
+#
+# Es `/assets/*` y no `/assets/`, a propósito: excluir el DIRECTORIO impide que git
+# descienda en él, y entonces ningún `!` de abajo puede volver a incluir nada de
+# dentro. Excluyendo su contenido, la negación sí funciona.
+/assets/*
+# … EXCEPTO las fotos de producto de Ale. Las 37 del PDF de Instagram se regeneran
+# con scripts/extract-pdf-images.py; estas no: son fotos del negocio, tomadas una
+# vez, y si se pierden no hay de dónde sacarlas. 6,1 MB bien gastados.
+!/assets/products/
 
 # tests
 /coverage

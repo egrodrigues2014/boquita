@@ -95,7 +95,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
             <div className="cart-scroll">
               <ul className="cart-lines">
                 {lines.map((line) => (
-                  <li className="cart-line" key={line.slug}>
+                  // La clave lleva la presentación: dos tamaños del mismo queque
+                  // son dos líneas y con `key={line.slug}` React las confundiría.
+                  <li className="cart-line" key={`${line.slug}·${line.unit}`}>
                     {line.image && (
                       <img
                         className="cart-line-img"
@@ -120,8 +122,8 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         <button
                           type="button"
                           className="qty-button"
-                          aria-label={`Quitar una unidad de ${line.name}`}
-                          onClick={() => setQty(line.slug, line.qty - 1)}
+                          aria-label={`Quitar una unidad de ${line.name} (${line.unit})`}
+                          onClick={() => setQty(line.slug, line.unit, line.qty - 1)}
                         >
                           −
                         </button>
@@ -131,9 +133,9 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         <button
                           type="button"
                           className="qty-button"
-                          aria-label={`Añadir una unidad de ${line.name}`}
+                          aria-label={`Añadir una unidad de ${line.name} (${line.unit})`}
                           aria-disabled={line.qty >= MAX_QTY}
-                          onClick={() => setQty(line.slug, line.qty + 1)}
+                          onClick={() => setQty(line.slug, line.unit, line.qty + 1)}
                         >
                           +
                         </button>
@@ -147,8 +149,8 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                       <button
                         type="button"
                         className="cart-line-remove"
-                        aria-label={`Quitar ${line.name} del pedido`}
-                        onClick={() => remove(line.slug)}
+                        aria-label={`Quitar ${line.name} (${line.unit}) del pedido`}
+                        onClick={() => remove(line.slug, line.unit)}
                       >
                         Quitar
                       </button>

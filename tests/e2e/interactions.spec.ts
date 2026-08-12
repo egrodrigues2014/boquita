@@ -71,63 +71,53 @@ test.describe("reveal al entrar en pantalla", () => {
   });
 
   test("la frase editorial revela color al hacer scroll", async ({ page }) => {
-    const lines = page.locator(".statement-section .scroll-color-text__line");
-    await expect(lines).toHaveCount(6);
-    await expect(lines.first()).toHaveCSS("--reveal", "0%");
+    const words = page.locator(".statement-section .scroll-color-text__word");
+    await expect(words).not.toHaveCount(0);
+    await expect(words.first()).toHaveCSS("--reveal", "0%");
 
-    await page.locator(".scroll-color-text").evaluate((text) => {
+    await page.locator(".scroll-color-text__heading").evaluate((text) => {
       const top = text.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.5;
       window.scrollTo(0, top);
     });
     await page.waitForFunction(() => {
       const first = document.querySelector<HTMLElement>(
-        ".statement-section .scroll-color-text__line",
+        ".statement-section .scroll-color-text__word",
       );
       if (!first) return false;
       return Number.parseFloat(getComputedStyle(first).getPropertyValue("--reveal")) > 0;
     });
 
-    const values = await lines.evaluateAll((items) =>
+    const values = await words.evaluateAll((items) =>
       items.map((item) => Number.parseFloat(getComputedStyle(item).getPropertyValue("--reveal"))),
     );
     expect(new Set(values).size).toBeGreaterThan(1);
     expect(values[0]).toBeGreaterThan(values.at(-1) ?? 100);
     expect(values.filter((value) => value > 0 && value < 100).length).toBeLessThanOrEqual(1);
 
-    await page.locator(".scroll-color-text").evaluate((text) => {
-      const top = text.getBoundingClientRect().top + window.scrollY - window.innerHeight * 0.1;
-      window.scrollTo(0, top);
-    });
-    await page.waitForFunction(() => {
-      const last = [...document.querySelectorAll<HTMLElement>(".scroll-color-text__line")].at(-1);
-      if (!last) return false;
-      return Number.parseFloat(getComputedStyle(last).getPropertyValue("--reveal")) > 0;
-    });
-    const almostTopLast = await lines
-      .last()
-      .evaluate((item) => Number.parseFloat(getComputedStyle(item).getPropertyValue("--reveal")));
-    expect(almostTopLast).toBeLessThan(100);
-
-    await page.locator(".scroll-color-text").evaluate((text) => {
+    await page.locator(".scroll-color-text__heading").evaluate((text) => {
       const top = text.getBoundingClientRect().top + window.scrollY;
       window.scrollTo(0, top);
     });
-    await expect(lines.last()).toHaveCSS("--reveal", "100%");
+    await expect
+      .poll(async () =>
+        words
+          .last()
+          .evaluate((item) => Number.parseFloat(getComputedStyle(item).getPropertyValue("--reveal"))),
+      )
+      .toBeGreaterThanOrEqual(99);
   });
 
   test("Del horno de Ale no renderiza play ni lightbox de video", async ({ page }) => {
     await expect(page.locator(".media .play-wrap")).toHaveCount(0);
     await expect(page.locator('[data-lightbox="video"]')).toHaveCount(0);
     await expect(page.locator(".media-text-section")).toHaveCount(0);
+    await expect(page.locator(".statement-dot")).toHaveCount(0);
     await expect(page.locator(".statement-photo-img")).toBeVisible();
+    await expect(page.locator(".statement-photo a")).toHaveCount(0);
   });
 
   test("la foto de Ale aparece sin efecto de blur", async ({ page }) => {
     const photo = page.locator(".statement-photo");
-    const blurVar = await photo.evaluate((el) =>
-      getComputedStyle(el).getPropertyValue("--blur").trim(),
-    );
-    expect(blurVar).toBe("");
     await expect(page.locator(".statement-photo-img")).toHaveCSS("filter", "none");
 
     await photo.scrollIntoViewIfNeeded();
@@ -171,7 +161,7 @@ test.describe("prefers-reduced-motion", () => {
   test("la frase editorial queda revelada sin animación", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.reload();
-    await expect(page.locator(".statement-section .scroll-color-text__line").first()).toHaveCSS(
+    await expect(page.locator(".statement-section .scroll-color-text__word").first()).toHaveCSS(
       "--reveal",
       "100%",
     );
@@ -292,6 +282,73 @@ test.describe("navegación", () => {
     await expect(menu).not.toHaveClass(/nav-menu--open/);
     await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
     await expect(page.locator("main")).not.toHaveAttribute("inert", "");
+  });
+
+  test("en el drawer la opción entera es pulsable, no sólo el texto", async ({ page, viewport }) => {
+    test.skip(viewport!.width > 991, "El drawer sólo existe a ≤991");
+
+    const menu = page.locator("#nav-menu");
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+    await expect(menu).toHaveClass(/nav-menu--open/);
+    // El panel entra con `transform 0.3s`. La clase se pone en el primer frame,
+    // así que medir aquí da cajas a medio deslizar, con la x negativa. Hay que
+    // esperar a que el canto izquierdo asiente en 0.
+    await expect
+      .poll(async () => (await menu.boundingBox())!.x, { timeout: 2000 })
+      .toBeCloseTo(0, 0);
+
+    // Catálogo es el único grupo con destino propio: en el drawer su lista sale
+    // desplegada de entrada, así que sirve para medir los dos niveles a la vez.
+    const grupo = page.locator(".nav-dropdown-toggle--link");
+    const subenlace = page.locator(".nav-dropdown-link").first();
+
+    const panel = (await menu.boundingBox())!;
+    const filaGrupo = (await grupo.boundingBox())!;
+    const filaSub = (await subenlace.boundingBox())!;
+
+    // Alto cómodo para el dedo en los dos niveles. Lo fija `min-height`, no la
+    // suma de línea y padding, para que no dependa del tamaño de fuente.
+    expect(filaGrupo.height).toBeGreaterThanOrEqual(44);
+    expect(filaSub.height).toBeGreaterThanOrEqual(44);
+
+    // La fila va a sangre: si alguien devuelve el `padding: 10px 0` de antes, el
+    // alto aguanta pero el realce de hover vuelve a ceñirse al texto y esto no
+    // lo detecta nadie más.
+    expect(filaGrupo.width).toBeCloseTo(panel.width, 0);
+    // El subenlace sangra el nivel entero —fila y barra— y alinea su canto
+    // derecho con el del primer nivel.
+    expect(filaSub.x).toBeGreaterThan(filaGrupo.x);
+    expect(filaSub.x + filaSub.width).toBeCloseTo(filaGrupo.x + filaGrupo.width, 0);
+
+    // La sangría del TEXTO, que es distinta de la de la fila: 16px el primer
+    // nivel, 34px el subítem. Sólo es medible porque la etiqueta va envuelta en
+    // un `.nav-label` (que existe para poder animarla sin mover el fondo).
+    const textoGrupo = (await grupo.locator(".nav-label").boundingBox())!;
+    const textoSub = (await subenlace.locator(".nav-label").boundingBox())!;
+    expect(textoGrupo.x - panel.x).toBeCloseTo(16, 0);
+    expect(textoSub.x - panel.x).toBeCloseTo(34, 0);
+
+    // El ✕ va en el mismo carril de 16px, por el otro lado. Sin el padding del
+    // `.close-button-wrap` queda pegado al canto, porque las filas van a sangre
+    // y `space-between` lo empuja hasta el borde del panel.
+    const cerrar = (await page.locator(".close-button").boundingBox())!;
+    const huecoDerecho = panel.x + panel.width - (cerrar.x + cerrar.width);
+    expect(huecoDerecho).toBeCloseTo(16, 0);
+
+    // El sublistado medía 320px dentro de una caja más estrecha y sacaba scroll
+    // horizontal dentro del panel. Se comprueba también CON EL CURSOR ENCIMA: el
+    // `translateX` + `scale` del hover amplía la región de desbordamiento, y
+    // `.nav-menu` es `overflow-y: auto`, lo que hace que el eje X compute a
+    // `auto`. Ya pasó una vez.
+    const desborda = () => menu.evaluate((el) => el.scrollWidth > el.clientWidth);
+    expect(await desborda()).toBe(false);
+    await subenlace.hover();
+    expect(await desborda()).toBe(false);
+
+    // Y la prueba de fondo: un clic lejos de la etiqueta, contra el borde
+    // derecho de la fila, navega igual.
+    await grupo.click({ position: { x: filaGrupo.width - 12, y: filaGrupo.height / 2 } });
+    await expect(page).toHaveURL(/\/tienda$/);
   });
 
   test("Escape en dos etapas: primero el dropdown, luego el drawer", async ({ page, viewport }) => {

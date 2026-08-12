@@ -50,8 +50,17 @@ describe("cantidades que el spec exige (§8)", () => {
     const [row1, row2] = home.gallery.rows;
     expect(row1).toHaveLength(4);
     expect(row2).toHaveLength(4);
-    const srcs = [...row1, ...row2].map((i) => i.src);
+    expect(home.gallery.title).toBe("GALERÍA");
+
+    const srcs = [...row1, ...row2].map((i) => i.image.src);
     expect(new Set(srcs).size).toBe(8);
+
+    const catalogSlugs = new Set(products.map((product) => product.slug));
+    const hrefs = [...row1, ...row2].map((item) => item.href);
+    for (const href of hrefs) {
+      const slug = href.replace("/tienda/", "");
+      expect(catalogSlugs.has(slug), `${href} no apunta a una ficha del catálogo`).toBe(true);
+    }
   });
 
   it("statement usa el copy de Ale sin conservar la frase editorial anterior", () => {
@@ -73,11 +82,15 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(home.nav.link.href).toBeTruthy();
   });
 
-  it("Catálogo es enlace real a la tienda y no hay duplicado de Todo el catálogo", () => {
+  it("Catálogo es enlace real a la tienda y no se duplica como ítem del menú", () => {
     const [catalogo] = home.nav.dropdowns;
     expect(catalogo.label).toBe("Catálogo");
     expect(catalogo.href).toBe("/tienda");
-    expect(JSON.stringify(home.nav)).not.toContain("Todo el catálogo");
+    // El nav tuvo una vez un ítem que repetía el destino de la etiqueta. Se
+    // vigilan los dos nombres que ha tenido esa página, el viejo y el de ahora.
+    const nav = JSON.stringify(home.nav);
+    expect(nav).not.toContain("Todo el catálogo");
+    expect(nav).not.toContain("Catálogo de productos");
   });
 
   it("redes reales, 5 enlaces y 2 teléfonos en el pie (§6.8)", () => {
@@ -108,7 +121,7 @@ describe("las imágenes referenciadas existen en public/", () => {
 
   const images = collect(home);
 
-  it("encuentra las 15 imágenes del layout", () => {
+  it("encuentra las 13 imágenes del layout", () => {
     // hero, wide, service, media, cta, 8 de galería
     expect(images).toHaveLength(13);
   });
@@ -122,10 +135,14 @@ describe("las imágenes referenciadas existen en public/", () => {
 });
 
 describe("los TODO están marcados, no escondidos", () => {
-  it("los 8 precios siguen marcados como placeholder", () => {
-    // Cuando Ale confirme los precios reales, este test falla y hay que quitar
-    // los flags. Es intencionado: obliga a cerrar el TODO explícitamente.
-    expect(home.menu.products.every((p) => p.priceTodo)).toBe(true);
+  it("ningún precio de la rejilla queda marcado como placeholder", () => {
+    /**
+     * Este test decía lo contrario: exigía que los 8 precios inventados siguieran
+     * marcados para que quitar la marca fuese explícito. Ya se hizo —los precios
+     * salen del catálogo real de Ale— así que ahora vigila que no vuelva a
+     * aparecer un `priceTodo` sin que nadie lo note.
+     */
+    expect(home.menu.products.filter((p) => p.priceTodo).map((p) => p.slug)).toEqual([]);
   });
 
   it("no publica testimonios inventados", () => {
@@ -138,8 +155,10 @@ describe("los TODO están marcados, no escondidos", () => {
   });
 
   it("la métrica sin verificar está marcada y la verificable no", () => {
-    const [inventada, verificable] = home.service.metrics;
-    expect(inventada.todo).toBe(true);
+    const [pedidos, verificable] = home.service.metrics;
+    expect(pedidos.value).toBe("+500");
+    expect(pedidos.label).toBe("Pedidos horneados desde 2019");
+    expect(pedidos.todo).toBeUndefined();
     expect(verificable.todo).toBeUndefined();
     // "14 recetas" es comprobable contra el catálogo fuente.
     expect(products).toHaveLength(Number(verificable.value));
@@ -153,6 +172,7 @@ describe("enlaces", () => {
       home.nav.link.href,
       ...home.nav.dropdowns.flatMap((d) => d.items.map((i) => i.href)),
       ...home.hero.ctas.map((c) => c.href),
+      ...home.gallery.rows.flat().map((item) => item.href),
       ...home.footer.links.map((l) => l.href),
       ...home.footer.social.map((s) => s.href),
       ...home.footer.phones.map((p) => p.href),
@@ -164,11 +184,16 @@ describe("enlaces", () => {
     }
   });
 
-  it("el número de WhatsApp es el correcto en todos los enlaces wa.me", () => {
+  it("el número de WhatsApp es el correcto en todos los enlaces de chat", () => {
+    // Los enlaces van a `api.whatsapp.com/send` y no a `wa.me`: la redirección
+    // del atajo se come los emoji del mensaje. Ver `lib/contact.ts`.
     const json = JSON.stringify(home);
-    const waLinks = json.match(/wa\.me\/\d+/g) ?? [];
+    const waLinks = json.match(/api\.whatsapp\.com\/send\?phone=\d+/g) ?? [];
     expect(waLinks.length).toBeGreaterThan(0);
-    expect(new Set(waLinks)).toEqual(new Set(["wa.me/50671322355"]));
+    expect(new Set(waLinks)).toEqual(
+      new Set(["api.whatsapp.com/send?phone=50671322355"]),
+    );
+    expect(json).not.toContain("wa.me");
   });
 
   it("las anclas de la portada apuntan a secciones que existen", () => {

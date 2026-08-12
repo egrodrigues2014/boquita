@@ -44,6 +44,12 @@ const contentImage = imageRef.refine((img) => img.alt.trim().length >= 10, {
   message: "alt descriptivo obligatorio (checklist §9 punto 14)",
 });
 
+const galleryItem = z.object({
+  label: z.string().min(2).max(40),
+  href: z.string().startsWith("/tienda/"),
+  image: contentImage,
+});
+
 const navDropdown = z.object({
   label: z.string().min(1).max(30),
   href: z.string().min(1).optional(),
@@ -135,7 +141,7 @@ export const homeSchema = z.object({
   gallery: z.object({
     title: z.string().min(3).max(40),
     // 4 únicas por fila; el render las repite hasta 7.
-    rows: z.tuple([z.array(contentImage).length(4), z.array(contentImage).length(4)]),
+    rows: z.tuple([z.array(galleryItem).length(4), z.array(galleryItem).length(4)]),
   }),
 
   testimonials: z.object({

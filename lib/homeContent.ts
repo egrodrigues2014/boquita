@@ -1,6 +1,12 @@
-import { FEATURED_SLUGS, home as fallbackHome, toFeatured } from "@/content/home";
+import {
+  FEATURED_SLUGS,
+  GALLERY_SLUGS,
+  home as fallbackHome,
+  toFeatured,
+  toGalleryItem,
+} from "@/content/home";
 import { getCatalog } from "@/lib/db/catalog";
-import type { HomeContent, Product } from "@/types/content";
+import type { GalleryItem, HomeContent, Product } from "@/types/content";
 import type { ShopProduct } from "@/types/shop";
 
 /**
@@ -61,6 +67,34 @@ function featuredFrom(catalog: ShopProduct[]): Product[] {
   return chosen.map(toFeatured);
 }
 
+function galleryFrom(catalog: ShopProduct[]): [GalleryItem[], GalleryItem[]] {
+  const bySlug = new Map(catalog.map((product) => [product.slug, product]));
+  const chosen: ShopProduct[] = [];
+
+  for (const slug of GALLERY_SLUGS) {
+    const product = bySlug.get(slug);
+    if (product) chosen.push(product);
+  }
+
+  if (chosen.length < GALLERY_SLUGS.length) {
+    const taken = new Set(chosen.map((product) => product.slug));
+    for (const product of catalog) {
+      if (chosen.length === GALLERY_SLUGS.length) break;
+      if (!taken.has(product.slug)) chosen.push(product);
+    }
+  }
+
+  if (chosen.length < GALLERY_SLUGS.length) {
+    console.warn(
+      `[home] la galería de la portada se queda en ${chosen.length} de ${GALLERY_SLUGS.length}: ` +
+        `el catálogo servido sólo tiene ${catalog.length} productos`,
+    );
+  }
+
+  const items = chosen.map(toGalleryItem);
+  return [items.slice(0, 4), items.slice(4, 8)];
+}
+
 /**
  * Devuelve el contenido de la portada coherente con el catálogo recibido.
  *
@@ -94,6 +128,11 @@ export function buildHomeContent(catalog: ShopProduct[]): HomeContent {
       // mano aquí es una promesa que la tienda puede desmentir en la misma
       // pantalla, dos secciones más abajo.
       metrics: [metricTodo, { ...metricRecetas, value: String(catalog.length) }],
+    },
+
+    gallery: {
+      ...fallbackHome.gallery,
+      rows: galleryFrom(catalog),
     },
   };
 }

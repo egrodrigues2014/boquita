@@ -25,7 +25,7 @@ export function Footer({ footer }: { footer: HomeContent["footer"] }) {
                 <img
                   className="footer-logo"
                   src="/img/brand/logo-light-72x72.png"
-                  srcSet="/img/brand/logo-light-36x36.png 36w, /img/brand/logo-light-72x72.png 72w"
+                  srcSet="/img/brand/logo-light-36x36.png 36w, /img/brand/logo-light-72x72.png 72w, /img/brand/logo-light-144x144.png 144w"
                   sizes="72px"
                   width={72}
                   height={72}

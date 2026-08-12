@@ -17,38 +17,23 @@ Ordenado por urgencia real, no por sección.
 - Sigue siendo mejor recibir un SVG original de marca cuando exista, pero ya no bloquea publicar.
 - Medidas de uso: 43px de alto en la cabecera (≈99px de ancho), 36px en el pie.
 
-### 2. Los precios reales
+### 2. Los precios reales — ✅ **CERRADO**
 
-El menú fijado en Instagram (post del 31 ene 2024) tiene la lista de precios, pero **es una imagen**:
-su texto no se puede extraer. Hacen falta los precios y las unidades de venta de:
+Ale entregó el catálogo completo en `data/boquita_products_catalog.xlsx`: **23 productos con 60
+presentaciones**, cada una con su precio en colones. Está cargado en `content/products.ts` y sembrado
+en Postgres, y **ya no queda ningún `priceTodo`** en el repo — hay un test que falla si vuelve a
+aparecer uno (`tests/unit/shop.test.ts`).
 
-| Producto | Placeholder en uso | Unidad asumida |
-| --- | --- | --- |
-| Queque de zanahoria | ₡ 14.000 | molde de 8 porciones |
-| Queque personalizado | desde ₡ 22.000 | por encargo |
-| Galletas de granola | ₡ 5.500 | caja de 6 |
-| Galletas de chocolate y Nutella | ₡ 6.000 | caja de 6 |
-| Polvorones de almendra | ₡ 5.000 | caja de 8 |
-| Brigadeiros | ₡ 6.500 | docena |
-| Biscotti de almendra | ₡ 5.800 | bolsa de 10 |
-| Cachitos de jamón | ₡ 7.500 | media docena |
+El Excel queda como referencia de fondo. Lo único que se cambió al traerlo: tildes y erratas
+(«limon», «lacteos», «Coffe Cake», «chocolatre», «Polvorones Espanoles»), los nombres reordenados a
+español natural, y las etiquetas de presentación de los cupcakes —el Excel les da a las tres el mismo
+`sale_unit` («molde cupcake») y sólo se distinguen por `package_quantity`—.
 
-Y los 6 que van en `/tienda`: biscotti keto, key lime pie, barras de dátil, mini queques de manzana,
-coffee cake vegano, asado negro.
-
-De Instagram sí se pudieron leer estos, pero son de 2024 y hay que confirmarlos:
-galletas chocolate chip y Nutella 6 u = ₡2.800 · brigadeiros 6 u = ₡3.000 / 12 u = ₡5.500 ·
-galletas de granola light = ₡3.000 · miel y limón = ₡2.500 · asado negro = ₡16.000/kg.
-
-**Estado v1:** Eduardo confirma usar estos precios de momento. Siguen marcados `priceTodo` para que
-el futuro panel de administración los trate como provisionales y fáciles de corregir.
-
-**Cómo se aplican, ahora que el catálogo está en Postgres:** hay dos caminos y conviene el segundo.
-Un `UPDATE` en el SQL Editor de Neon corrige un precio y aparece solo en ≤1 h, pero deja el fallback
-de `content/products.ts` diciendo otra cosa. Editar `content/products.ts` y ejecutar
-`npm run db:seed` deja las dos fuentes de acuerdo — y `db:seed` **pisa** la tabla, así que si se usó
-el primer camino antes, ese cambio se revierte. Quitar los `priceTodo` sigue siendo un acto
-explícito: hay un test que falla mientras queden marcados.
+**Cómo se corrige un precio a partir de ahora:** hay dos caminos y conviene el segundo. Un `UPDATE`
+en el SQL Editor de Neon aparece solo en ≤1 h, pero deja el fallback de `content/products.ts`
+diciendo otra cosa. Editar `content/products.ts` y ejecutar `npm run db:seed` deja las dos fuentes de
+acuerdo — y `db:seed` **pisa** la tabla, así que si se usó el primer camino antes, ese cambio se
+revierte.
 
 ### 3. Los 6 testimonios
 
@@ -66,9 +51,27 @@ marcadas como `todo`.
 
 ### 4. La métrica nº 1
 
-El bloque de servicio muestra dos métricas. La segunda («14 recetas en el catálogo») es verificable.
-La primera es un placeholder: **«2.400+ pedidos horneados desde 2019»** necesita un número real y
-defendible, o se cambia por otra métrica que sí se pueda sostener.
+El bloque de servicio muestra dos métricas. La segunda («23 recetas en el catálogo») es verificable:
+la calcula `lib/homeContent.ts` contando el catálogo servido. La primera es un placeholder:
+**«2.400+ pedidos horneados desde 2019»** necesita un número real y defendible, o se cambia por otra
+métrica que sí se pueda sostener.
+
+### 4b. Dos fotos de producto en resolución original
+
+De las 23 fotos que mandó Ale, **dos son miniaturas** y sólo dan el escalón de 400px de la escalera,
+así que en la ficha —que renderiza a ~540px— se ven blandas. El pipeline no hace upscale nunca, y
+falsear el segundo escalón sería peor que la foto blanda. Los dos productos van marcados `photoTodo`:
+
+| SKU | Producto | Tamaño de la fuente |
+| --- | --- | --- |
+| `QUE-03` | Cupcakes de limón | 403 × 268 |
+| `QUE-010` | Queque de vainilla | 407 × 320 |
+
+Con originales de ≥1200px de ancho basta con reemplazar el fichero en `assets/products/`, correr
+`npm run images:build` y quitar el `photoTodo` con sus alturas nuevas.
+
+Aparte: la foto de los **cupcakes de banano** (`QUE-011.jpg`) venía de un blog de repostería ajeno con
+su marca de agua. La marca ya está recortada, pero conviene una foto propia de Ale.
 
 ---
 
@@ -117,8 +120,16 @@ costo modelado. Definir:
 
 ### 10. Precio de los queques personalizados
 
-Asumido: van **sin precio fijo** (`price_on_request`), y en el mensaje de WhatsApp aparecen como
-«precio a convenir». Si tienen una tarifa base, mejor ponerla.
+Van **sin precio fijo** (`price_on_request`) y en el mensaje de WhatsApp aparecen como «precio a
+convenir». El Excel da `price_min` = ₡22.000, que es el «desde» que se publica. Si hay una tarifa por
+piso o por porción, mejor ponerla.
+
+### 11. Dos ocasiones con un solo producto
+
+En la columna `occasions` del Excel, **`navidad` sólo la tienen los polvorones** y **`baby-shower`
+sólo el queque personalizado**. Los dos filtros del menú «Ocasiones» funcionan, pero muestran una sola
+tarjeta. No es un bug —es lo que dicen los datos— pero conviene revisar con Ale si hay más productos
+que encajan.
 
 ---
 

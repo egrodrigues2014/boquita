@@ -96,6 +96,14 @@ test.describe("404", () => {
     await expect(page.locator(".footer-dark")).toHaveCSS("background-color", "rgb(58, 42, 26)");
   });
 
+  test("las tarjetas de la 404 no llevan etiquetas pero sí el botón Pedir", async ({ page }) => {
+    await page.goto("/esta-no-existe");
+    // `showTag={false}`: aquí la tarjeta es una salida de emergencia, no una ficha
+    // que se compare con las de al lado. Es lo único que protege esa prop.
+    await expect(page.locator(".shop-card-tag")).toHaveCount(0);
+    await expect(page.locator(".shop-card .shop-card-cta")).toHaveCount(3);
+  });
+
   test("la 404 va con noindex", async ({ page }) => {
     await page.goto("/esta-no-existe");
 
@@ -154,7 +162,7 @@ test.describe("salud de la navegación", () => {
     expect(anchors).toEqual([]);
   });
 
-  test("el sitemap lista la portada, la tienda, las 14 fichas y sobre-nosotros", async ({
+  test("el sitemap lista la portada, la tienda, las 23 fichas y sobre-nosotros", async ({
     request,
   }) => {
     const xml = await (await request.get("/sitemap.xml")).text();
@@ -165,7 +173,7 @@ test.describe("salud de la navegación", () => {
     expect(xml).not.toContain("/aviso-legal");
 
     const urls = xml.match(/<loc>/g) ?? [];
-    // portada + tienda + sobre-nosotros + 14 fichas
-    expect(urls).toHaveLength(17);
+    // portada + tienda + sobre-nosotros + 23 fichas
+    expect(urls).toHaveLength(26);
   });
 });

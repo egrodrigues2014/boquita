@@ -1,0 +1,304 @@
+{
+  "id": "dc300426-0466-40d7-9837-0dd12a02b91b",
+  "prevId": "aaddf769-7719-432d-9dd9-0a9dd66579d2",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.product_variants": {
+      "name": "product_variants",
+      "schema": "",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "product_variants_slug_products_slug_fk": {
+          "name": "product_variants_slug_products_slug_fk",
+          "tableFrom": "product_variants",
+          "tableTo": "products",
+          "columnsFrom": [
+            "slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "product_variants_slug_unit_pk": {
+          "name": "product_variants_slug_unit_pk",
+          "columns": [
+            "slug",
+            "unit"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "product_variants_price_positive": {
+          "name": "product_variants_price_positive",
+          "value": "\"product_variants\".\"price\" > 0"
+        },
+        "product_variants_unit_length": {
+          "name": "product_variants_unit_length",
+          "value": "char_length(\"product_variants\".\"unit\") BETWEEN 3 AND 60"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.products": {
+      "name": "products",
+      "schema": "",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_from": {
+          "name": "price_from",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "price_on_request": {
+          "name": "price_on_request",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "price_todo": {
+          "name": "price_todo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "categoria",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subcategoria": {
+          "name": "subcategoria",
+          "type": "subcategoria",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ocasiones": {
+          "name": "ocasiones",
+          "type": "ocasion[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredients": {
+          "name": "ingredients",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "allergens": {
+          "name": "allergens",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "lead_time_hours": {
+          "name": "lead_time_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_heights": {
+          "name": "image_heights",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_alt": {
+          "name": "image_alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_b_heights": {
+          "name": "image_b_heights",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_b_alt": {
+          "name": "image_b_alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "photo_todo": {
+          "name": "photo_todo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "products_slug_kebab": {
+          "name": "products_slug_kebab",
+          "value": "\"products\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "products_price_positive": {
+          "name": "products_price_positive",
+          "value": "\"products\".\"price\" > 0"
+        },
+        "products_lead_time_range": {
+          "name": "products_lead_time_range",
+          "value": "\"products\".\"lead_time_hours\" BETWEEN 24 AND 336"
+        },
+        "products_description_size": {
+          "name": "products_description_size",
+          "value": "array_length(\"products\".\"description\", 1) BETWEEN 1 AND 4"
+        },
+        "products_ocasiones_not_empty": {
+          "name": "products_ocasiones_not_empty",
+          "value": "array_length(\"products\".\"ocasiones\", 1) >= 1"
+        },
+        "products_ingredients_not_empty": {
+          "name": "products_ingredients_not_empty",
+          "value": "array_length(\"products\".\"ingredients\", 1) >= 1"
+        },
+        "products_image_heights_size": {
+          "name": "products_image_heights_size",
+          "value": "array_length(\"products\".\"image_heights\", 1) BETWEEN 1 AND 3"
+        },
+        "products_image_b_complete": {
+          "name": "products_image_b_complete",
+          "value": "(\"products\".\"image_b_heights\" IS NULL) = (\"products\".\"image_b_alt\" IS NULL)"
+        },
+        "products_on_request_is_from": {
+          "name": "products_on_request_is_from",
+          "value": "NOT (\"products\".\"price_on_request\" AND NOT \"products\".\"price_from\")"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.categoria": {
+      "name": "categoria",
+      "schema": "public",
+      "values": [
+        "queques",
+        "galletas",
+        "dulces"
+      ]
+    },
+    "public.ocasion": {
+      "name": "ocasion",
+      "schema": "public",
+      "values": [
+        "cumpleanos",
+        "bodas-bautizos",
+        "baby-shower",
+        "oficinas",
+        "regalos",
+        "navidad"
+      ]
+    },
+    "public.subcategoria": {
+      "name": "subcategoria",
+      "schema": "public",
+      "values": [
+        "cupcake",
+        "personalizado"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

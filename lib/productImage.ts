@@ -25,22 +25,36 @@ import type { ImageRef } from "@/types/content";
 export const CARD_SIZES =
   "(min-width: 1200px) 360px, (min-width: 992px) 30vw, (min-width: 640px) 45vw, calc(100vw - 30px)";
 
-/** Alturas de los derivados de 400, 800 y (opcionalmente) 1200px de ancho. */
-export type ImageHeights = readonly [number, number, number?];
+/**
+ * Alturas de los derivados de 400, 800 y 1200px de ancho.
+ *
+ * Sólo la primera es obligatoria. Dos fotos del catálogo de Ale son miniaturas de
+ * ~400px de ancho (`QUE-03`, 403×268; `QUE-010`, 407×320) y el pipeline no hace
+ * upscale nunca, así que emiten un único escalón. Es una verdad del material, no
+ * un caso que convenga esconder: los dos productos van marcados `photoTodo`.
+ */
+export type ImageHeights = readonly [number, number?, number?];
 
 export function productImage(slug: string, heights: ImageHeights, alt: string): ImageRef {
   const [h400, h800, h1200] = heights;
   const srcSet = [
     { src: `/img/producto/${slug}-400x${h400}.webp`, width: 400 },
-    { src: `/img/producto/${slug}-800x${h800}.webp`, width: 800 },
+    ...(h800 ? [{ src: `/img/producto/${slug}-800x${h800}.webp`, width: 800 }] : []),
     ...(h1200 ? [{ src: `/img/producto/${slug}-1200x${h1200}.webp`, width: 1200 }] : []),
   ];
+
+  // El `src` de respaldo es el escalón mayor que exista: con una sola miniatura,
+  // apuntar a un `-800x…` que nadie generó daría un 404 en los navegadores que
+  // ignoran `srcset`.
+  const fallbackWidth = h800 ? 800 : 400;
+  const fallbackHeight = h800 ?? h400;
+
   return {
-    src: `/img/producto/${slug}-800x${h800}.webp`,
+    src: `/img/producto/${slug}-${fallbackWidth}x${fallbackHeight}.webp`,
     srcSet,
     sizes: CARD_SIZES,
-    width: 800,
-    height: h800,
+    width: fallbackWidth,
+    height: fallbackHeight,
     alt,
   };
 }
@@ -78,10 +92,14 @@ export function imageHeightsOf(image: ImageRef): number[] {
 }
 
 export function toImageHeights(values: readonly number[]): ImageHeights | undefined {
-  if (values.length < 2 || values.length > 3) return undefined;
+  if (values.length < 1 || values.length > 3) return undefined;
   const [h400, h800, h1200] = values;
-  if (h400 === undefined || h800 === undefined) return undefined;
-  if (h400 <= 0 || h800 <= 0) return undefined;
+  if (h400 === undefined || h400 <= 0) return undefined;
+  if (h800 !== undefined && h800 <= 0) return undefined;
   if (h1200 !== undefined && h1200 <= 0) return undefined;
+  // Un 1200 sin 800 sería una escalera con un hueco: el navegador elegiría el de
+  // 400 en pantalla normal y el de 1200 en retina, saltándose el tamaño útil.
+  if (h1200 !== undefined && h800 === undefined) return undefined;
+  if (h800 === undefined) return [h400];
   return h1200 === undefined ? [h400, h800] : [h400, h800, h1200];
 }

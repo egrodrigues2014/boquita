@@ -227,6 +227,7 @@ const LOGO_VARIANT_SIZES = {
   light: [
     [36, 36],
     [72, 72],
+    [144, 144],
   ],
 };
 
@@ -240,34 +241,50 @@ const LOGO_VARIANT_SIZES = {
  */
 const APP_ICON_PX = 180;
 
+/**
+ * Las fotos de producto NO vienen del PDF de Instagram: las manda Ale nombradas
+ * por SKU del catálogo (`data/boquita_products_catalog.xlsx`), así que viven en
+ * su propia carpeta y no en `assets/raw`.
+ */
+const PRODUCTS_SRC = path.join(ROOT, "assets", "products");
+
+/**
+ * Un job por producto, en el orden del catálogo. El `name` es el slug —de ahí
+ * salen las rutas que reconstruye `lib/productImage.ts`— y el `src` es el SKU.
+ *
+ * Dos fuentes son miniaturas y sólo emiten el escalón de 400 (`QUE-03`, 403×268;
+ * `QUE-010`, 407×320): el filtro `w <= width` las recorta sola y el esquema
+ * admite un solo escalón por eso. Van marcadas `photoTodo` en el catálogo.
+ */
 const PRODUCTS = [
-  { name: "queque-de-zanahoria", src: "ig-24-obj61.jpg" },
-  { name: "queque-personalizado", src: "ig-10-obj29.jpg" },
-  { name: "galletas-de-granola", src: "ig-34-obj89.jpg" },
-  { name: "galletas-con-nutella", src: "ig-13-obj38.jpg" },
-  { name: "polvorones-de-almendra", src: "ig-09-obj28.jpg" },
-  {
-    name: "brigadeiros",
-    src: "ig-05-obj18.jpg",
-    // Recorte obligatorio: la exportación de Canva lleva el logo incrustado
-    // arriba a la derecha (y < 140) y un texto cortado abajo.
-    crop: { left: 0, top: 180, width: 1252, height: 1120 },
-  },
-  { name: "biscotti-de-almendra", src: "ig-31-obj80.jpg" },
-  { name: "biscotti-keto", src: "ig-30-obj79.jpg" },
-  { name: "key-lime-pie", src: "ig-32-obj81.jpg" },
-  { name: "barras-de-datil", src: "ig-15-obj40.jpg" },
-  { name: "mini-queques-de-manzana", src: "ig-27-obj70.jpg" },
-  { name: "coffee-cake-vegano", src: "ig-28-obj71.jpg" },
-  {
-    name: "cachitos-de-jamon",
-    src: "ig-03-obj10.jpg",
-    // El rótulo «Cachitos de jamón» está incrustado a y≈740-830. La única zona
-    // limpia es la inferior, con el cachito del frente.
-    crop: { left: 100, top: 1150, width: 1150, height: 650 },
-  },
-  { name: "asado-negro", src: "ig-21-obj58.jpg" },
+  { name: "queque-de-zanahoria", src: "QUE-01.jpg" },
+  { name: "cupcakes-de-zanahoria", src: "QUE-02.jpeg" },
+  { name: "cupcakes-de-limon", src: "QUE-03.jpg" },
+  { name: "queque-de-limon", src: "QUE-04.jpeg" },
+  { name: "cupcakes-devils-food", src: "QUE-05.jpg" },
+  { name: "queque-devils-food", src: "QUE-06.jpg" },
+  { name: "coffee-cake", src: "QUE-07.jpeg" },
+  { name: "queque-chocolate-chip-cookie", src: "QUE-08.jpg" },
+  { name: "cupcakes-de-vainilla", src: "QUE-09.jpg" },
+  { name: "queque-de-vainilla", src: "QUE-010.jpg" },
+  { name: "cupcakes-de-banano", src: "QUE-011.jpg" },
+  { name: "banana-bread", src: "QUE-012.jpeg" },
+  { name: "queque-personalizado", src: "QUE-013.jpeg" },
+  // Segunda foto del personalizado: es el único producto donde ver dos encargos
+  // distintos explica lo que se compra. La ficha la muestra bajo la principal.
+  { name: "queque-personalizado-b", src: "QUE-013-B.jpeg" },
+  { name: "polvorones-espanoles", src: "GAL-014.jpeg" },
+  { name: "galletas-de-granola", src: "GAL-015.jpg" },
+  { name: "galletas-de-miel-y-limon", src: "GAL-016.jpg" },
+  { name: "barra-de-datiles", src: "DUL-017.jpg" },
+  { name: "brigadeiros", src: "DUL-018.jpeg" },
+  { name: "mousse-de-chocolate", src: "DUL-019.jpeg" },
+  { name: "pie-de-brigadeiro", src: "DUL-020.jpeg" },
+  { name: "key-lime-pie", src: "DUL-021.jpeg" },
+  { name: "cheesecake", src: "DUL-022.jpeg" },
+  { name: "quesillo", src: "DUL-023.jpeg" },
 ].map((product) => ({
+  dir: PRODUCTS_SRC,
   ...product,
   slot: "producto",
   widths: PRODUCT_WIDTHS,

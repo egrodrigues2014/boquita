@@ -19,17 +19,17 @@ export function Statement({ mediaText }: { mediaText: HomeContent["mediaText"] }
   return (
     <section className="section statement-section" aria-labelledby="statement-title">
       <div className="container">
-        <div className="statement-grid">
+        <div className="statement-media-layout">
+          <Reveal className="statement-photo" delay={100}>
+            <Picture image={mediaText.poster} className="statement-photo-img" />
+          </Reveal>
+
           <ScrollColorText
             id="statement-title"
             title={`${mediaText.titleTop} ${mediaText.titleBottom}`}
             body={mediaText.body}
             className="statement-story"
           />
-
-          <Reveal className="statement-photo" delay={200}>
-            <Picture image={mediaText.poster} className="statement-photo-img" />
-          </Reveal>
         </div>
       </div>
     </section>

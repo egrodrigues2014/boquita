@@ -356,6 +356,11 @@
     background: #fff;
     display: flex;
     flex-direction: column;
+    /* La base es `align-items: center`, pensada para la fila de escritorio. Al
+       girar a columna pasa a gobernar el eje horizontal: sin esto
+       `.nav-overlay-mobile` se dimensiona al contenido y queda centrado en el
+       panel, con las filas flotando a ~213px de ancho dentro de los 320. */
+    align-items: stretch;
     /* Añadido nuestro: sin esto el panel es visible en reposo. La apertura la
        gobierna .nav-menu--open desde el componente cliente. */
     transform: translateX(-100%);
@@ -379,45 +384,141 @@
       visibility 0s linear 0s;
   }
 
+  /* Las filas van a sangre: sin padding horizontal aquí, el realce de hover y
+     su barra de 3px se apoyan en el canto del panel. El aire lateral lo pone
+     cada fila. */
   .nav-overlay-mobile {
     background: #fff;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    padding: 13px 15px 0;
+    padding: 13px 0 24px;
   }
 
-  .nav-link {
+  /* Texto a 16px del canto del panel. `min-height` fija el área táctil por
+     contrato y no por la suma de línea y padding, que depende del tamaño de
+     fuente. `border-radius: 0` porque contra el canto un radio se ve torcido. */
+  .nav-link,
+  .nav-dropdown-toggle {
     display: flex;
+    align-items: center;
     width: 100%;
-    padding: 10px 0;
+    min-height: 44px;
+    padding: 12px 16px;
     border-radius: 0;
+    font-weight: 600;
+  }
+
+  /* La base transiciona sólo fondo y color, y sin easing declarado. Aquí entra
+     además la barra, a 0.18s ease-out. */
+  .nav-link,
+  .nav-dropdown-toggle,
+  .nav-dropdown-link {
+    transition:
+      background-color 0.18s ease-out,
+      color 0.18s ease-out,
+      box-shadow 0.18s ease-out;
   }
 
   .nav-dropdown-toggle {
-    display: flex;
-    width: 100%;
-    padding: 10px 0;
-    padding-inline: 0;
     justify-content: space-between;
-    border-radius: 0;
   }
 
+  /* `width: 320px` desbordaba la caja del contenedor y sacaba scroll horizontal
+     dentro del panel. Los 16px sangran el nivel entero —fila y barra, no sólo
+     el texto—, así la jerarquía también se lee en la barra. El canto derecho
+     queda alineado con el del primer nivel. */
   .nav-dropdown-list {
     position: static;
-    width: 320px;
+    width: 100%;
     border: 0;
     box-shadow: none;
-    padding: 0 40px 0 20px;
+    padding: 0 0 6px 16px;
     display: flex;
     flex-direction: column;
   }
 
+  /* 16 del contenedor + 18 = texto a 34px. Un escalón de 18px sobre el primer
+     nivel: lo que antes daba la sangría ahora lo dan el peso y el tamaño. */
+  .nav-dropdown-link {
+    align-items: center;
+    min-height: 44px;
+    padding: 12px 16px 12px 18px;
+    border-radius: 0;
+    font-size: 16px;
+  }
+
+  /* El hover de la base no está envuelto en ninguna media query, así que en
+     táctil se dispara con el toque y se queda pegado. Dentro del drawer se
+     anula aquí y se vuelve a aplicar más abajo sólo con puntero fino. El foco
+     no pasa por esta anulación: el teclado tiene que funcionar en todas partes. */
+  .nav-link:hover,
+  .nav-dropdown-toggle:hover,
+  .nav-dropdown-link:hover {
+    background: none;
+    color: var(--link);
+  }
+
+  .nav-link:focus-visible,
+  .nav-dropdown-toggle:focus-visible,
+  .nav-dropdown-link:focus-visible {
+    background: var(--primary-light);
+    color: var(--gold-ink);
+    box-shadow: inset 3px 0 0 var(--gold-line);
+  }
+
+  .nav-link:focus-visible .nav-label,
+  .nav-dropdown-toggle:focus-visible .nav-label,
+  .nav-dropdown-link:focus-visible .nav-label {
+    transform: translateX(5px) scale(1.04);
+  }
+
+  /* El transform va en el <span> y no en la fila: si fuera en la fila se
+     moverían con él el fondo y la barra. Y al ser transform y no padding ni
+     font-size, no hay reflow: los ítems vecinos no se mueven. */
+  .nav-label {
+    display: inline-block;
+    transform-origin: left center;
+    transition: transform 0.18s ease-out;
+  }
+
+  /* En táctil no hay hover: la pulsación es el único momento en que el usuario
+     puede confirmar que ha dado en la opción. Un paso por encima del crema. */
+  .nav-link:active,
+  .nav-dropdown-toggle:active,
+  .nav-dropdown-link:active {
+    background: var(--gray);
+    color: var(--gold-ink);
+  }
+
+  /* Sólo ratón o lápiz. Va después de la anulación de arriba, así que gana por
+     orden de aparición con la misma especificidad. Ojo al revisar: el modo
+     dispositivo de DevTools declara `hover: none`, y ahí esto no se ve. */
+  @media (hover: hover) and (pointer: fine) {
+    .nav-link:hover,
+    .nav-dropdown-toggle:hover,
+    .nav-dropdown-link:hover {
+      background: var(--primary-light);
+      color: var(--gold-ink);
+      box-shadow: inset 3px 0 0 var(--gold-line);
+    }
+
+    .nav-link:hover .nav-label,
+    .nav-dropdown-toggle:hover .nav-label,
+    .nav-dropdown-link:hover .nav-label {
+      transform: translateX(5px) scale(1.04);
+    }
+  }
+
+  /* Las filas van a sangre, pero la cabecera no: sin este carril el ✕ queda
+     pegado al canto del panel. Los 16px son los mismos a los que arranca el
+     texto del primer nivel, así el ojo lee un margen y no dos. */
   .close-button-wrap {
     display: flex;
     justify-content: space-between;
     align-items: center;
     height: 60px;
+    padding: 0 16px;
     margin-bottom: 10px;
     flex: none;
   }

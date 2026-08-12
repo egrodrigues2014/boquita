@@ -1,4 +1,11 @@
-import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion, type ShopProduct } from "@/types/shop";
+import {
+  CATEGORIAS,
+  OCASIONES,
+  SUBCATEGORIAS,
+  type Categoria,
+  type Ocasion,
+  type ShopProduct,
+} from "@/types/shop";
 
 export interface ShopSearchFilters {
   categoria?: Categoria;
@@ -28,12 +35,19 @@ export function filterShopProducts(
     if (!matchesFilters) return false;
     if (!normalizedQuery) return true;
 
+    /**
+     * Se busca también en los INGREDIENTES y en las presentaciones: «monk fruit»,
+     * «dátiles» o «24 unidades» son búsquedas que alguien va a escribir, y el
+     * nombre del producto no las contiene.
+     */
     const searchable = normalizeSearch(
       [
         product.name,
-        product.summary,
-        product.unit,
+        ...product.description,
+        ...product.variants.map((variant) => variant.unit),
+        ...product.ingredients,
         CATEGORIAS[product.categoria],
+        product.subcategoria ? SUBCATEGORIAS[product.subcategoria] : "",
         ...product.ocasiones.map((key) => OCASIONES[key]),
       ].join(" "),
     );

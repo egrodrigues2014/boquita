@@ -17,19 +17,29 @@ async function openCart(page: Page) {
 }
 
 test.describe("catálogo", () => {
-  test("lista los 14 productos", async ({ page }) => {
+  test("lista los 23 productos", async ({ page }) => {
     await page.goto("/tienda");
-    await expect(page.locator(".shop-card")).toHaveCount(14);
-    await expect(page.locator("h1")).toHaveText("Todo el catálogo");
+    await expect(page.locator(".shop-card")).toHaveCount(23);
+    await expect(page.locator("h1")).toHaveText("Catálogo de productos");
+  });
+
+  test("hay exactamente 4 filtros de categoría: Todo y las 3 del catálogo", async ({ page }) => {
+    // Las categorías salen de `CATEGORIAS`, así que una de más significa que el
+    // tipo y el catálogo de Ale se han separado.
+    await page.goto("/tienda");
+    const filtros = page.locator('nav[aria-label="Filtrar por categoría"] .shop-filter');
+    await expect(filtros).toHaveCount(4);
+    await expect(filtros).toHaveText(["Todo", "Queques", "Galletas", "Dulces"]);
   });
 
   test("el filtro por categoría reduce la lista y marca el activo", async ({ page }) => {
-    await page.goto("/tienda?categoria=salado");
+    await page.goto("/tienda?categoria=galletas");
 
     const cards = page.locator(".shop-card");
-    await expect(cards).toHaveCount(2); // cachitos de jamón y asado negro
-    await expect(page.locator("h1")).toHaveText("Salado");
-    await expect(page.getByRole("link", { name: "Salado", exact: true })).toHaveAttribute(
+    // Polvorones, galletas de granola y galletas de miel y limón.
+    await expect(cards).toHaveCount(3);
+    await expect(page.locator("h1")).toHaveText("Galletas");
+    await expect(page.getByRole("link", { name: "Galletas", exact: true })).toHaveAttribute(
       "aria-current",
       "true",
     );
@@ -41,21 +51,175 @@ test.describe("catálogo", () => {
     expect(combinado).toBeGreaterThan(0);
 
     // Al cambiar de categoría se conserva la ocasión: son combinables.
-    await page.getByRole("link", { name: "Bocaditos dulces" }).click();
-    await expect(page).toHaveURL(/categoria=bocaditos/);
+    await page.getByRole("link", { name: "Dulces", exact: true }).click();
+    await expect(page).toHaveURL(/categoria=dulces/);
     await expect(page).toHaveURL(/ocasion=cumpleanos/);
 
     // Y se puede quitar sólo la ocasión.
     await page.getByRole("link", { name: /Quitar el filtro/ }).click();
     await expect(page).not.toHaveURL(/ocasion=/);
-    await expect(page).toHaveURL(/categoria=bocaditos/);
+    await expect(page).toHaveURL(/categoria=dulces/);
   });
 
   test("un parámetro inválido se ignora en vez de dar error", async ({ page }) => {
-    // Alguien puede editar el enlace a mano o venir de un share viejo.
-    const response = await page.goto("/tienda?categoria=inventada");
+    // Alguien puede editar el enlace a mano o venir de un share viejo. También
+    // llegan enlaces con las categorías que existían antes del catálogo de Ale.
+    const response = await page.goto("/tienda?categoria=bocaditos");
     expect(response?.status()).toBe(200);
-    await expect(page.locator(".shop-card")).toHaveCount(14);
+    await expect(page.locator(".shop-card")).toHaveCount(23);
+  });
+
+  test("la tarjeta muestra categoría, subcategoría y todas las presentaciones", async ({
+    page,
+  }) => {
+    await page.goto("/tienda?q=cupcakes de zanahoria");
+    const tag = page.locator(".shop-card").first().locator(".shop-card-tag");
+    await expect(tag).toHaveText("Queques · Cupcakes · 6, 12 o 24 unidades");
+    // Con varias presentaciones el precio es un «desde», no el de una cualquiera.
+    await expect(page.locator(".shop-card-price").first()).toContainText("desde");
+  });
+
+  /**
+   * Las tarjetas de una misma fila tienen que cuadrar de altura fila a fila, y no
+   * es cosmético: con descripciones de 2, 3 y 4 líneas la rejilla se veía
+   * escalonada y la línea de etiquetas de una tarjeta quedaba a media altura de la
+   * descripción de su vecina.
+   *
+   * Lo sostienen `min-height: 2lh` en el nombre y `flex: 1` en la descripción, así
+   * que este test es lo que avisa si alguien los quita. Se comprueban las tarjetas
+   * de la PRIMERA fila, resueltas por la `y` de su foto, para que valga igual con 3
+   * columnas (≥992) que con 2 (768-991).
+   *
+   * Se mide la DESCRIPCIÓN además de las etiquetas y el precio, y esa es la parte
+   * que protege el `min-height`: desde que la fila de precio vive al fondo de la
+   * tarjeta, su altura la fija el `flex: 1` del resumen y ya no depende del nombre.
+   * Lo único que el nombre sigue cuadrando es el arranque de las descripciones —la
+   * línea que sigue el ojo con la tarjeta alineada a la izquierda—, así que sin
+   * esta tercera aserción el `min-height` se quedaría sin guardián.
+   */
+  test("las tarjetas de una fila alinean descripción, etiquetas y fila de precio", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(viewport!.width < 768, "A una columna no hay nada que alinear");
+    await page.goto("/tienda");
+
+    const filas = await page.locator(".shop-card").evaluateAll((cards) => {
+      const y = (el: Element | null) => (el ? Math.round(el.getBoundingClientRect().top) : null);
+      const primera = y(cards[0]?.querySelector(".shop-card-img") ?? null);
+      return cards
+        .filter((card) => y(card.querySelector(".shop-card-img")) === primera)
+        .map((card) => ({
+          resumen: y(card.querySelector(".shop-card-summary")),
+          etiqueta: y(card.querySelector(".shop-card-tag")),
+          precio: y(card.querySelector(".shop-card-price")),
+        }));
+    });
+
+    expect(filas.length).toBeGreaterThan(1);
+    const [referencia] = filas;
+    for (const [i, tarjeta] of filas.entries()) {
+      expect(tarjeta.resumen, `la descripción de la tarjeta ${i} no arranca a la misma altura`).toBe(
+        referencia!.resumen,
+      );
+      expect(tarjeta.etiqueta, `las etiquetas de la tarjeta ${i} no cuadran`).toBe(
+        referencia!.etiqueta,
+      );
+      expect(tarjeta.precio, `el precio de la tarjeta ${i} no cuadra con el de la primera`).toBe(
+        referencia!.precio,
+      );
+    }
+  });
+
+  test("el botón Pedir lleva a la ficha y se anuncia con el nombre del producto", async ({
+    page,
+  }) => {
+    await page.goto("/tienda?q=brigadeiros");
+    const cta = page.locator(".shop-card .shop-card-cta");
+    await expect(cta).toHaveCount(1);
+    await expect(cta).toHaveText("Pedir");
+    await expect(cta).toHaveAttribute("href", "/tienda/brigadeiros");
+    // Criterio 2.5.3: la etiqueta visible va contenida en el nombre accesible, y
+    // va DELANTE — quien navega por voz tiene que poder decir «pulsá Pedir».
+    await expect(page.getByRole("link", { name: "Pedir Brigadeiros" })).toBeVisible();
+  });
+
+  test("la fila de precio queda pegada al fondo de todas las tarjetas por igual", async ({
+    page,
+  }) => {
+    await page.goto("/tienda");
+    // Es lo que compra el `flex: 1` de `.shop-card-summary`: con descripciones de
+    // 2, 3 y 4 líneas la fila tiene que ser el suelo de la tarjeta y no un renglón
+    // a media altura. Se miden LAS 23, no una fila.
+    const holguras = await page.locator(".shop-card").evaluateAll((cards) =>
+      cards.map((card) => {
+        const caja = card.getBoundingClientRect();
+        const fila = card.querySelector(".shop-card-foot")!.getBoundingClientRect();
+        return Math.round(caja.bottom - fila.bottom);
+      }),
+    );
+
+    expect(holguras).toHaveLength(23);
+    expect(new Set(holguras), `holguras distintas: ${[...new Set(holguras)]}`).toEqual(new Set([20]));
+  });
+
+  test("el precio y el botón no se desbordan de la tarjeta", async ({ page }) => {
+    await page.goto("/tienda");
+    // El peor caso NO es el móvil: es 1100px de ventana, donde la tarjeta mide
+    // 337px contra los 360 de 390px de ventana. Corre a los 8 anchos, así que ese
+    // caso está cubierto. Por eso `.shop-card-foot` no lleva `flex-wrap`.
+    const rotas = await page.locator(".shop-card").evaluateAll((cards) =>
+      cards
+        .map((card) => {
+          const fila = card.querySelector(".shop-card-foot")!.getBoundingClientRect();
+          const precio = card.querySelector(".shop-card-price")!.getBoundingClientRect();
+          const boton = card.querySelector(".shop-card-cta")!.getBoundingClientRect();
+          return {
+            slug: card.querySelector("a")!.getAttribute("href"),
+            // Si envolviera, la fila mediría más que el botón.
+            envuelve: Math.round(fila.height) > Math.round(boton.height) + 1,
+            desordenada: precio.x >= boton.x,
+            desbordada: precio.left < fila.left - 1 || boton.right > fila.right + 1,
+          };
+        })
+        .filter((r) => r.envuelve || r.desordenada || r.desbordada),
+    );
+
+    expect(rotas, `tarjetas con la fila de precio mal: ${JSON.stringify(rotas)}`).toEqual([]);
+  });
+
+  test("la tarjeta no reintroduce el bullet ni la sangría del li global", async ({ page }) => {
+    await page.goto("/tienda");
+    const card = page.locator(".shop-card").first();
+    // El fondo crema se declara con el ATAJO `background`, que devuelve
+    // `background-image` a none. Con `background-color` el list-bullet.svg del `li`
+    // de `03-base.css` vuelve encima del crema, y nada más lo detecta.
+    await expect(card).toHaveCSS("background-image", "none");
+    await expect(card).toHaveCSS("background-color", "rgb(250, 245, 236)");
+    // Y el `0` izquierdo del atajo de padding anula el `padding-left: 22px` del `li`.
+    await expect(card).toHaveCSS("padding-left", "0px");
+  });
+
+  test("la foto se acerca al pasar el ratón por la zona de texto, no sólo por la foto", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(viewport!.width <= 479, "A ≤479 el proyecto emula táctil: no hay puntero fino");
+    await page.goto("/tienda");
+    const card = page.locator(".shop-card").first();
+    const img = card.locator(".shop-card-img");
+
+    await expect(img).toHaveCSS("transform", "none");
+    // Se pasa el ratón por las ETIQUETAS: dentro de la tarjeta, fuera de la foto y
+    // fuera del botón. Es lo que afirma que el realce es de la tarjeta entera.
+    await card.locator(".shop-card-tag").hover();
+    await expect(img).not.toHaveCSS("transform", "none");
+
+    // El recorte no se puede ver con `boundingBox` —un `transform` no cambia la
+    // caja de layout—, así que se afirma dónde vive el `overflow`. Si subiera a la
+    // tarjeta se comería los anillos de foco de sus dos enlaces.
+    await expect(card.locator(".shop-card-media")).toHaveCSS("overflow", "hidden");
+    await expect(card).not.toHaveCSS("overflow", "hidden");
   });
 
   test("las tarjetas sirven el derivado de 400px en pantalla normal", async ({ page, viewport }) => {
@@ -83,9 +247,30 @@ test.describe("ficha de producto", () => {
     expect(product["@type"]).toBe("Product");
     expect(product.name).toBe("Queque de zanahoria");
     expect(product.offers.priceCurrency).toBe("CRC");
-    expect(product.offers.price).toBeGreaterThan(0);
     // Se hornea por encargo: PreOrder, no InStock.
     expect(product.offers.availability).toContain("PreOrder");
+
+    /**
+     * Con tres tamaños la oferta es un `AggregateOffer` con su horquilla, no un
+     * `Offer` con el precio más bajo: publicar 2.500 a secas cuando el mismo queque
+     * llega a 24.000 sería anunciar un precio que no existe para el tamaño que la
+     * mayoría pide.
+     */
+    expect(product.offers["@type"]).toBe("AggregateOffer");
+    expect(product.offers.lowPrice).toBe(2500);
+    expect(product.offers.highPrice).toBe(24000);
+    expect(product.offers.offerCount).toBe(3);
+  });
+
+  test("con una sola presentación sigue siendo un Offer simple", async ({ page }) => {
+    await page.goto("/tienda/pie-de-brigadeiro");
+    const product = await page
+      .locator('script[type="application/ld+json"]')
+      .first()
+      .evaluate((el) => JSON.parse(el.textContent ?? "{}"));
+
+    expect(product.offers["@type"]).toBe("Offer");
+    expect(product.offers.price).toBe(17350);
   });
 
   test("tiene la tarjeta de Open Graph que WhatsApp necesita", async ({ page }) => {
@@ -100,10 +285,35 @@ test.describe("ficha de producto", () => {
     );
   });
 
-  test("muestra alérgenos y anticipación", async ({ page }) => {
+  test("muestra ingredientes, alérgenos y anticipación", async ({ page }) => {
     await page.goto("/tienda/galletas-de-granola");
-    await expect(page.locator(".product-meta")).toContainText("almendra");
-    await expect(page.locator(".product-meta")).toContainText("48 horas");
+    const meta = page.locator(".product-meta");
+    // Los ingredientes son datos del Excel de Ale, no una lista escrita a mano.
+    await expect(meta).toContainText("mantequilla de maní");
+    await expect(meta).toContainText("nueces");
+    await expect(meta).toContainText("48 horas");
+  });
+
+  test("el selector cambia el precio de la ficha antes de añadir al carrito", async ({ page }) => {
+    await page.goto("/tienda/queque-de-zanahoria");
+
+    // Arranca en la presentación de entrada, que es la más barata.
+    await expect(page.locator(".product-price")).toHaveText("₡ 2.500");
+
+    const opciones = page.locator(".variant-option");
+    await expect(opciones).toHaveCount(3);
+    await expect(opciones.first()).toContainText("pequeño (2 personas)");
+
+    await page.getByRole("radio", { name: /grande \(20 personas\)/ }).check();
+    await expect(page.locator(".product-price")).toHaveText("₡ 24.000");
+    // Con presentación elegida el precio es exacto: el «desde» sería mentira.
+    await expect(page.locator(".product-price")).not.toContainText("desde");
+  });
+
+  test("con una sola presentación no se dibuja el selector", async ({ page }) => {
+    await page.goto("/tienda/pie-de-brigadeiro");
+    await expect(page.locator(".variant-picker")).toHaveCount(0);
+    await expect(page.locator(".product-unit")).toHaveText("grande (15 personas)");
   });
 
   test("un slug inexistente da 404", async ({ page }) => {
@@ -118,7 +328,7 @@ test.describe("ficha de producto", () => {
     // sumarlo daría un total que no es el que se va a pagar.
     await expect(page.getByRole("button", { name: "Añadir al carrito" })).toHaveCount(0);
     const link = page.getByRole("link", { name: /Pedir cotización por WhatsApp/ });
-    await expect(link).toHaveAttribute("href", /wa\.me\/50671322355/);
+    await expect(link).toHaveAttribute("href", /api\.whatsapp\.com\/send\?phone=50671322355/);
     await expect(page.locator(".product-price")).toContainText("desde");
   });
 });
@@ -136,20 +346,54 @@ test.describe("carrito", () => {
 
     await openCart(page);
     await expect(page.locator(".cart-line")).toHaveCount(1);
-    await expect(page.locator(".cart-total strong")).toHaveText("₡ 28.000");
+    // 2 × el pequeño, que es la presentación de entrada.
+    await expect(page.locator(".cart-total strong")).toHaveText("₡ 5.000");
 
     // Subir la cantidad DESDE EL DRAWER. Hay que acotar el localizador al panel:
     // el mismo aria-label existe en la ficha de producto, que queda detrás del
-    // scrim y por tanto no es pulsable.
+    // scrim y por tanto no es pulsable. En el drawer el label lleva además la
+    // presentación, porque es lo que identifica la línea.
     const drawer = page.locator(".cart-drawer");
     await drawer
-      .getByRole("button", { name: "Añadir una unidad de Queque de zanahoria" })
+      .getByRole("button", { name: "Añadir una unidad de Queque de zanahoria (pequeño" })
       .click();
-    await expect(page.locator(".cart-total strong")).toHaveText("₡ 42.000");
+    await expect(page.locator(".cart-total strong")).toHaveText("₡ 7.500");
 
-    await drawer.getByRole("button", { name: "Quitar Queque de zanahoria del pedido" }).click();
+    await drawer
+      .getByRole("button", { name: /^Quitar Queque de zanahoria \(pequeño.*del pedido$/ })
+      .click();
     await expect(page.locator(".cart-line")).toHaveCount(0);
     await expect(page.locator(".cart-empty")).toBeVisible();
+  });
+
+  /**
+   * El caso que justifica que la línea del carrito se identifique por
+   * `(slug, unit)` y no por el slug: con la identidad en el slug estos dos tamaños
+   * se habrían fundido en una línea, con el precio del primero que se añadió, y el
+   * pedido habría salido mal sin que nada lo avisara.
+   */
+  test("dos presentaciones del mismo producto son dos líneas", async ({ page }) => {
+    await page.goto("/tienda/queque-de-zanahoria");
+
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("radio", { name: /grande \(20 personas\)/ }).check();
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+
+    await openCart(page);
+    await expect(page.locator(".cart-line")).toHaveCount(2);
+    await expect(page.locator(".cart-line-unit").first()).toHaveText("pequeño (2 personas)");
+    await expect(page.locator(".cart-line-unit").last()).toHaveText("grande (20 personas)");
+    await expect(page.locator(".cart-total strong")).toHaveText("₡ 26.500");
+  });
+
+  test("volver a añadir la MISMA presentación suma en la línea que ya existe", async ({ page }) => {
+    await page.goto("/tienda/queque-de-zanahoria");
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+
+    await openCart(page);
+    await expect(page.locator(".cart-line")).toHaveCount(1);
+    await expect(page.locator(".cart-total strong")).toHaveText("₡ 5.000");
   });
 
   test("el carrito sobrevive a la navegación", async ({ page }) => {
@@ -161,7 +405,7 @@ test.describe("carrito", () => {
     await page.goto("/");
     await expect(page.getByRole("button", { name: "Carrito, 1 producto" })).toBeVisible();
 
-    const stored = await page.evaluate(() => localStorage.getItem("boquita.cart.v1"));
+    const stored = await page.evaluate(() => localStorage.getItem("boquita.cart.v2"));
     expect(stored).toContain("brigadeiros");
   });
 
@@ -186,7 +430,7 @@ test.describe("carrito", () => {
 
     // Sólo el de precio fijo entra en el total.
     await expect(page.locator(".cart-total")).toContainText("Total");
-    await expect(page.locator(".cart-total strong")).toHaveText("₡ 14.000");
+    await expect(page.locator(".cart-total strong")).toHaveText("₡ 2.500");
   });
 
   test("al abrirlo, el foco entra en el panel", async ({ page }) => {
@@ -220,7 +464,7 @@ test.describe("carrito", () => {
 
 test.describe("checkout por WhatsApp", () => {
   test("el enlace lleva el pedido completo codificado", async ({ page }) => {
-    await page.goto("/tienda/polvorones-de-almendra");
+    await page.goto("/tienda/polvorones-espanoles");
     await page.getByRole("button", { name: "Añadir al carrito" }).click();
     await openCart(page);
 
@@ -231,12 +475,29 @@ test.describe("checkout por WhatsApp", () => {
       .getByRole("link", { name: /Finalizar por WhatsApp/ })
       .getAttribute("href");
 
-    expect(href).toContain("wa.me/50671322355");
-    const message = decodeURIComponent(href!.split("?text=")[1]!);
-    expect(message).toContain("Polvorones de almendra");
-    expect(message).toContain("₡ 5.000");
-    expect(message).toContain("Nombre: María Rodríguez");
-    expect(message).toContain("Zona de entrega: Santa Ana centro");
+    expect(href).toContain("api.whatsapp.com/send?phone=50671322355");
+    /**
+     * No pasa por `wa.me` a propósito: su redirección descodifica la query y la
+     * recodifica sin manejar pares surrogados, así que cada emoji llegaba como
+     * `U+FFFD`. Ver el comentario de `whatsappBaseUrl` en `lib/contact.ts`.
+     */
+    expect(href).not.toContain("wa.me");
+    expect(href).toContain("%F0%9F%91%8B"); // el 👋, en sus cuatro bytes
+    expect(href).not.toContain("%EF%BF%BD"); // ningún carácter de reemplazo
+
+    const message = decodeURIComponent(href!.split("&text=")[1]!);
+
+    expect(message).toContain("Hola, Ale 👋");
+    // La presentación elegida viaja en su propia línea: es lo que Ale tiene que
+    // hornear, y el `└` es el prefijo que un bot usará para leerla.
+    expect(message).toContain("• 1 × Polvorones españoles\n└ 6 unidades — ₡ 3.000");
+    expect(message).toContain("💰 *Total:* ₡ 3.000");
+    expect(message).toContain("👤 *Cliente:* María Rodríguez");
+    expect(message).toContain("📍 *Zona:* Santa Ana centro");
+    expect(message).toContain("📌 *Solicitud:*");
+
+    // La negrita de WhatsApp es de UN asterisco; con dos se ven literales.
+    expect(message).not.toContain("**");
     // Saltos de línea reales, no literales.
     expect(message).toContain("\n");
     expect(message).not.toContain("\\n");
@@ -262,7 +523,7 @@ test.describe("checkout por WhatsApp", () => {
     await openCart(page);
 
     // Se intercepta la apertura de la pestaña para no salir a WhatsApp.
-    await context.route("**wa.me**", (route) => route.abort());
+    await context.route("**api.whatsapp.com**", (route) => route.abort());
     await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
 
     await expect(page.locator(".cart-line")).toHaveCount(1);
@@ -275,7 +536,7 @@ test.describe("checkout por WhatsApp", () => {
     await page.getByRole("button", { name: "Añadir al carrito" }).click();
     await openCart(page);
 
-    await context.route("**wa.me**", (route) => route.abort());
+    await context.route("**api.whatsapp.com**", (route) => route.abort());
     await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
     await page.getByRole("button", { name: "Sí, vaciar el carrito" }).click();
 
@@ -310,14 +571,16 @@ test.describe("la portada enlaza bien con la tienda", () => {
     const nav = page.getByLabel("Principal");
     const catalogo = nav.getByRole("link", { name: "Catálogo", exact: true });
     await catalogo.hover();
+    // Las 3 categorías del catálogo de Ale, en el mismo orden que los chips.
     const links = nav.locator(".nav-dropdown").first().locator(".nav-dropdown-link");
-    await expect(links).toHaveCount(5);
+    await expect(links).toHaveCount(3);
+    await expect(links).toHaveText(["Queques", "Galletas", "Dulces"]);
     await expect(links.first()).toHaveAttribute("href", "/tienda?categoria=queques");
     await expect(links.first()).not.toContainText("—");
 
     await catalogo.click();
     await expect(page).toHaveURL(/\/tienda$/);
-    await expect(page.locator("h1")).toHaveText("Todo el catálogo");
+    await expect(page.locator("h1")).toHaveText("Catálogo de productos");
   });
 
   test("la búsqueda del header filtra productos en /tienda", async ({ page, viewport }) => {
@@ -350,17 +613,17 @@ test.describe("metadatos por vista de catálogo", () => {
   });
 
   test("la categoría cambia título, descripción y canonical", async ({ page }) => {
-    await page.goto("/tienda?categoria=salado");
+    await page.goto("/tienda?categoria=dulces");
 
-    expect(await titulo(page)).toContain("Salado");
+    expect(await titulo(page)).toContain("Dulces");
     expect(await titulo(page)).not.toContain("Catálogo");
 
     const desc = await page.locator('meta[name="description"]').getAttribute("content");
-    expect(desc).toContain("salado");
+    expect(desc).toContain("dulces");
 
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      /categoria=salado/,
+      /categoria=dulces/,
     );
   });
 
@@ -434,5 +697,25 @@ test.describe("los controles aria-disabled no hacen nada al pulsarlos", () => {
     // Con `disabled` real el navegador habría mandado el foco al <body>: eso es
     // exactamente lo que la decisión documentada evita.
     await expect(menos, "el control perdió el foco al pulsarlo en el extremo").toBeFocused();
+  });
+});
+
+/**
+ * El hueco del kill-switch de `styles/99-a11y.css`: ese bloque enumera selectores
+ * uno a uno y su `*` final sólo apaga `animation-*`, no `transition`. Un
+ * `transform` nuevo que se olvide de apuntarse ahí sigue moviéndose con
+ * `prefers-reduced-motion` y no lo dice nadie.
+ */
+test.describe("la tarjeta del catálogo con prefers-reduced-motion", () => {
+  test("la foto no se acerca al pasar el ratón", async ({ page, viewport }) => {
+    test.skip(viewport!.width <= 479, "A ≤479 el proyecto emula táctil: no hay puntero fino");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/tienda");
+
+    const img = page.locator(".shop-card").first().locator(".shop-card-img");
+    await page.locator(".shop-card").first().locator(".shop-card-tag").hover();
+
+    await expect(img).toHaveCSS("transform", "none");
+    await expect(img).toHaveCSS("transition-duration", "0s");
   });
 });

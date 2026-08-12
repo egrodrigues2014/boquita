@@ -79,10 +79,30 @@
     transition: none !important;
   }
 
-  /* En los enlaces del dropdown se conserva el cambio de color (es feedback
-     útil) y se elimina sólo el deslizamiento de margin-left. */
+  /* Los enlaces del nav conservan el cambio de fondo, color y barra al pasar
+     por encima —es feedback, no decoración—, pero aparece de golpe en vez de
+     fundido. Antes esta regla dejaba pasar `color` y recortaba
+     `background-color`, con lo que el realce entraba a medias. */
+  .nav-link,
+  .nav-dropdown-toggle,
   .nav-dropdown-link {
-    transition: color 0.3s !important;
+    transition: none !important;
+  }
+
+  /* Del realce del drawer se cae lo que es movimiento —el desplazamiento y la
+     escala del texto— y se queda lo que es información. */
+  .nav-label {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* El acercamiento de la foto de la tarjeta del catálogo es decoración pura: se
+     cae entero. El realce sigue existiendo por el color del nombre y por el
+     anillo de foco, que son información. Hay que enumerarlo a mano — el `*` de
+     abajo sólo apaga `animation-*`, no `transition`. */
+  .shop-card-img {
+    transform: none !important;
+    transition: none !important;
   }
 
   *,

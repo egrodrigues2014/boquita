@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { Picture } from "@/components/ui/Picture";
+import { ProductCard } from "@/components/shop/ProductCard";
 import { getCatalog } from "@/lib/db/catalog";
-import { formatCRCShort } from "@/lib/format";
 import { getHomeContent } from "@/lib/homeContent";
 
 /**
@@ -57,15 +56,10 @@ export default async function NotFound() {
 
             <h2 className="mt-40">Quizá buscabas alguno de estos</h2>
             <ul className="shop-grid">
+              {/* Sin la línea de etiquetas: aquí la tarjeta es una salida de
+                  emergencia, no una ficha que se compare con las de al lado. */}
               {sugerencias.map((product) => (
-                <li className="shop-card" key={product.slug}>
-                  <Link className="shop-card-link" href={`/tienda/${product.slug}`}>
-                    <Picture image={product.image} className="shop-card-img" />
-                    <span className="shop-card-name">{product.name}</span>
-                  </Link>
-                  <p className="shop-card-price">{formatCRCShort(product.price)}</p>
-                  <p className="shop-card-summary">{product.summary}</p>
-                </li>
+                <ProductCard key={product.slug} product={product} showTag={false} />
               ))}
             </ul>
           </div>

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FEATURED_SLUGS, home } from "@/content/home";
+import { FEATURED_SLUGS, GALLERY_SLUGS, home } from "@/content/home";
 import { products as fallbackCatalog } from "@/content/products";
 import { buildHomeContent } from "@/lib/homeContent";
 import { homeSchema } from "@/content/schema";
@@ -50,7 +50,7 @@ describe("los números de la portada son el catálogo, no texto escrito a mano",
     const recortado = fallbackCatalog.slice(0, 9);
     const content = buildHomeContent(recortado);
 
-    const metric = content.service.metrics.find((m) => !m.todo);
+    const metric = content.service.metrics.find((m) => m.label === "Recetas en el catálogo");
     expect(Number(metric?.value)).toBe(9);
   });
 
@@ -59,9 +59,15 @@ describe("los números de la portada son el catálogo, no texto escrito a mano",
     expect(content.menu.more?.label).toBe("Ver los 9 productos");
   });
 
-  it("con el catálogo completo dice 14, que es lo que dice el objeto estático", () => {
+  it("con el catálogo completo coincide con el objeto estático", () => {
+    // Sin cifra escrita a mano: la propiedad que importa es que derivar del
+    // catálogo completo produzca EXACTAMENTE lo que dice `content/home.ts`, que es
+    // lo que se sirve sin `DATABASE_URL`.
     const content = buildHomeContent(fallbackCatalog);
-    expect(Number(content.service.metrics.find((m) => !m.todo)?.value)).toBe(14);
+    expect(Number(content.service.metrics.find((m) => m.label === "Recetas en el catálogo")?.value)).toBe(
+      fallbackCatalog.length,
+    );
+    expect(content.service.metrics).toEqual(home.service.metrics);
     expect(content.menu.more?.label).toBe(home.menu.more?.label);
   });
 });
@@ -103,6 +109,33 @@ describe("ninguna tarjeta de la portada lleva a un 404", () => {
     expect(console.warn).toHaveBeenCalledWith(expect.stringContaining("se queda en 5"));
   });
 
+});
+
+describe("ninguna foto de la galería lleva a un 404", () => {
+  it("todas las fotos curadas están en el catálogo servido", () => {
+    const content = buildHomeContent(fallbackCatalog);
+    const hrefs = content.gallery.rows.flat().map((item) => item.href);
+
+    expect(hrefs).toEqual(GALLERY_SLUGS.map((slug) => `/tienda/${slug}`));
+  });
+
+  it("si falta una foto curada, se rellena con otro producto SERVIDO", () => {
+    const ausente = GALLERY_SLUGS[0];
+    const recortado = fallbackCatalog.filter((product) => product.slug !== ausente);
+
+    const content = buildHomeContent(recortado);
+    const hrefs = content.gallery.rows.flat().map((item) => item.href);
+    expect(hrefs).toHaveLength(8);
+    expect(hrefs).not.toContain(`/tienda/${ausente}`);
+
+    for (const href of hrefs) {
+      const slug = href.replace("/tienda/", "");
+      expect(
+        recortado.some((product) => product.slug === slug),
+        `${href} no está en el catálogo servido: su enlace daría 404`,
+      ).toBe(true);
+    }
+  });
 });
 
 describe("coherencia de precios entre portada y catálogo", () => {

@@ -7,7 +7,7 @@ import { home } from "@/content/home";
 import { CATEGORIAS, OCASIONES } from "@/types/shop";
 
 describe("el catálogo cumple su esquema", () => {
-  it("valida las 14 fichas", () => {
+  it("valida las 23 fichas", () => {
     const result = catalogSchema.safeParse(products);
     if (!result.success) {
       const issues = result.error.issues
@@ -15,7 +15,14 @@ describe("el catálogo cumple su esquema", () => {
         .join("\n");
       throw new Error(`El catálogo no cumple el esquema:\n${issues}`);
     }
-    expect(products).toHaveLength(14);
+    expect(products).toHaveLength(23);
+  });
+
+  it("tiene las 60 presentaciones del Excel de Ale", () => {
+    // El recuento es la comprobación de que no se perdió una fila al cargarlo:
+    // 60 filas para 23 productos, de 1 a 3 presentaciones cada uno.
+    const total = products.reduce((sum, product) => sum + product.variants.length, 0);
+    expect(total).toBe(60);
   });
 
   it("todos los slugs son únicos", () => {
@@ -62,8 +69,8 @@ describe("coherencia con la portada", () => {
     );
   });
 
-  it('la métrica "14 recetas" de la portada coincide con el catálogo', () => {
-    const metric = home.service.metrics.find((m) => !m.todo)!;
+  it("la métrica de recetas de la portada coincide con el catálogo", () => {
+    const metric = home.service.metrics.find((m) => m.label.includes("Recetas"))!;
     expect(Number(metric.value)).toBe(products.length);
   });
 });
@@ -112,21 +119,32 @@ describe("las imágenes del catálogo existen en public/", () => {
 });
 
 describe("los TODO siguen marcados, no escondidos", () => {
-  it("los 14 precios son placeholders", () => {
-    // Cuando Ale confirme los precios reales este test falla y hay que quitar
-    // los flags: cerrar el TODO debe ser un acto explícito.
-    const sinMarcar = products.filter((p) => !p.priceTodo).map((p) => p.slug);
-    expect(sinMarcar, "estos precios ya no están marcados como placeholder").toEqual([]);
+  it("ningún precio queda marcado como placeholder", () => {
+    /**
+     * El sentido de este test se invirtió al cargar el catálogo real: antes exigía
+     * que los 14 precios inventados siguieran marcados, para que quitar la marca
+     * fuese un acto explícito. Ya se hizo — los 60 precios son los del Excel de
+     * Ale— así que ahora vigila lo contrario: que no vuelva a colarse un
+     * `priceTodo` sin que nadie lo note.
+     */
+    const marcados = products.filter((p) => p.priceTodo).map((p) => p.slug);
+    expect(marcados, "hay precios marcados como placeholder otra vez").toEqual([]);
   });
 
-  it("las 4 fotos flojas están marcadas para rehacer", () => {
+  it("las 2 fotos en miniatura están marcadas para rehacer", () => {
     const marcadas = products.filter((p) => p.photoTodo).map((p) => p.slug).sort();
-    expect(marcadas).toEqual([
-      "asado-negro",
-      "barras-de-datil",
-      "cachitos-de-jamon",
-      "key-lime-pie",
-    ]);
+    expect(marcadas).toEqual(["cupcakes-de-limon", "queque-de-vainilla"]);
+  });
+
+  it("y son exactamente las que no llegan al escalón de 800", () => {
+    // Las dos cosas van juntas: una fuente que no da 800px es una foto que hay
+    // que rehacer. Si alguien sube una foto buena y olvida quitar el flag —o al
+    // revés—, esto lo dice.
+    const sinOchocientos = products
+      .filter((p) => !p.image.srcSet?.some((s) => s.width === 800))
+      .map((p) => p.slug)
+      .sort();
+    expect(sinOchocientos).toEqual(products.filter((p) => p.photoTodo).map((p) => p.slug).sort());
   });
 });
 
@@ -144,12 +162,35 @@ describe("reglas de negocio", () => {
     expect(custom.leadTimeHours).toBe(168);
   });
 
-  it("los productos sin gluten no declaran gluten entre sus alérgenos", () => {
-    // Una contradicción aquí es un problema de salud, no de maquetación.
-    for (const product of products.filter((p) => p.categoria === "sin-gluten-keto")) {
-      expect(product.allergens, `${product.slug} dice sin gluten pero lo declara`).not.toContain(
-        "gluten",
-      );
+  /**
+   * Ya no hay categoría «sin gluten», así que la contradicción se busca donde de
+   * verdad puede aparecer: en el texto. Si una descripción dice que sirve para
+   * intolerantes, sus alérgenos no pueden desmentirlo — es un problema de salud,
+   * no de maquetación, y con el copy saliendo del Excel es fácil que se cuele.
+   */
+  it("lo que la descripción promete a intolerantes lo respetan los alérgenos", () => {
+    for (const product of products) {
+      const texto = product.description.join(" ").toLowerCase();
+
+      if (texto.includes("intolerantes al gluten")) {
+        expect(product.allergens, `${product.slug} se ofrece sin gluten pero lo declara`).not.toContain(
+          "gluten",
+        );
+      }
+      if (texto.includes("lácteos") && texto.includes("intolerantes")) {
+        expect(product.allergens, `${product.slug} se ofrece sin lácteos pero los declara`).not.toContain(
+          "lácteos",
+        );
+      }
+    }
+  });
+
+  it("cada presentación tiene un precio positivo y etiqueta legible", () => {
+    for (const product of products) {
+      for (const variant of product.variants) {
+        expect(variant.price, `${product.slug} · ${variant.unit}`).toBeGreaterThan(0);
+        expect(variant.unit.length, `${product.slug} · ${variant.unit}`).toBeGreaterThanOrEqual(3);
+      }
     }
   });
 });

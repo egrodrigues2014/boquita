@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef } from "react";
+import { observeOnce } from "@/lib/revealObserver";
 
 /**
  * Texto que el scroll va tiñendo de izquierda a derecha, palabra a palabra.
@@ -77,6 +78,26 @@ export function ScrollColorText({
     const heading = element.querySelector<HTMLElement>(".scroll-color-text__heading");
     if (!heading) return;
 
+    /**
+     * Entrada del cuerpo: sube 100px con fundido al asomar, el mismo gesto y el
+     * mismo tiempo que la foto de al lado. Toda la mecánica está ya en CSS bajo
+     * la clase `reveal` (05-components.css) — aquí sólo hace falta añadir `is-in`
+     * cuando entra, que es exactamente lo que hace <Reveal>.
+     *
+     * No se envuelve el <p> en <Reveal> porque la raíz de este componente es
+     * `display: contents` para que el <h2> y el <p> sean celdas directas de
+     * `.statement-grid`: un envoltorio ocuparía la celda en lugar del párrafo.
+     *
+     * Es independiente del revelado de color, y además no se pisan: esto dispara
+     * al 15% de visibilidad (progreso ~0.1-0.2) y el cuerpo no empieza a teñirse
+     * hasta 0.4. Tampoco falsea la medida, porque `update()` lee el rect del
+     * titular y no el del cuerpo.
+     */
+    const body = element.querySelector<HTMLElement>(".scroll-color-text__body");
+    const stopObserving = body
+      ? observeOnce(body, (node) => node.classList.add("is-in"))
+      : () => {};
+
     // El DOM de este componente no cambia nunca, así que se recorre una vez y no
     // en cada frame de scroll.
     const titleWords = [...heading.querySelectorAll<HTMLElement>(".scroll-color-text__word")];
@@ -129,6 +150,7 @@ export function ScrollColorText({
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
       reduceMotion.removeEventListener("change", schedule);
+      stopObserving();
     };
   }, []);
 
@@ -137,7 +159,8 @@ export function ScrollColorText({
       <h2 id={id} className="scroll-color-text__heading">
         <Words text={title} />
       </h2>
-      <p className="scroll-color-text__body">
+      {/* `reveal`: entrada ascendente, la misma que la foto. Ver el useEffect. */}
+      <p className="scroll-color-text__body reveal">
         <Words text={body} />
       </p>
     </div>

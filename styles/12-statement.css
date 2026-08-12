@@ -1,70 +1,68 @@
 /*
-   12-statement.css - Historia de Ale: revelado secuencial, palabra a palabra.
+   12-statement.css - Foto izquierda + texto editorial con revelado.
 
-   ⚠ ORDEN DE MEDIA QUERIES: base → min-width ascendente → max-width descendente.
+   ORDEN DE MEDIA QUERIES: base -> min-width ascendente -> max-width descendente.
    Ver la cabecera de 03-base.css.
 */
 
 .statement-section {
-  background: var(--primary-light);
-  padding-block: clamp(78px, 9vw, 122px) clamp(96px, 12vw, 168px);
+  --home-section-gap: clamp(76px, 7vw, 104px);
+
+  background: var(--white);
+  padding-block: var(--home-section-gap);
 }
 
-.statement-section .container {
-  align-items: stretch;
-}
-
-/* El titular ocupa la fila entera para poder centrarse respecto al CONTENEDOR y
-   no respecto a su columna. Debajo sigue la pareja texto | foto. */
-.statement-grid {
+.statement-media-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.88fr);
-  grid-template-areas:
-    "titulo titulo"
-    "texto  foto";
-  column-gap: clamp(44px, 7vw, 112px);
-  row-gap: clamp(30px, 3.8vw, 52px);
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
+  column-gap: var(--home-section-gap);
   width: 100%;
-  align-items: start;
+  align-items: center;
 }
 
-/* La raíz de ScrollColorText no pinta nada: se disuelve para que el <h2> y el
-   <p> sean celdas directas de la rejilla de arriba.
-   ⚠ Por esto mismo el componente mide el <h2> y no su raíz — un elemento sin
-   caja devuelve un rect a cero y el progreso saldría siempre a 1. */
-.scroll-color-text {
-  display: contents;
+.statement-photo {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 493 / 300;
+  background: var(--gray);
 }
 
-/* Titular: misma familia y misma escala que el h2 de «Lo que sale del horno»
-   (03-base.css). No se reutiliza el elemento `h2` a secas porque aquí el color
-   lo pone el revelado, no el token de titular. */
+.statement-photo-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.statement-story {
+  display: block;
+}
+
 .scroll-color-text__heading {
-  grid-area: titulo;
-  margin: 0 0 clamp(8px, 1.4vw, 22px);
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin: 0;
   font-family: var(--ff-display);
   font-weight: 400;
   font-size: 50px;
   line-height: 1em;
-  text-align: center;
+  text-align: left;
   text-transform: uppercase;
   color: var(--text-ghost);
 }
 
-/* Cuerpo: calcado de `p.lead` (03-base.css) — misma familia, peso, tamaño e
-   interlineado que el lead del hero, a todos los anchos. */
 .scroll-color-text__body {
-  grid-area: texto;
-  /* Centrado vertical contra la foto: al bajar el cuerpo de 34px a 20px pasó a
-     ocupar tres líneas frente a los ~300px de la foto, y alineado arriba dejaba
-     un agujero de media banda debajo. */
-  align-self: center;
-  max-width: 690px;
-  margin: 0;
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  margin: 20px 0 0;
   font-family: var(--ff-sans);
   font-weight: 400;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.5em;
+  text-align: left;
   text-transform: none;
   color: var(--text-ghost);
 }
@@ -75,7 +73,6 @@
   display: inline-block;
 }
 
-/* Con JS el revelado arranca a cero; sin JS el texto nace legible. */
 .js .scroll-color-text__word {
   --reveal: 0%;
 }
@@ -83,8 +80,6 @@
 .scroll-color-text__fill {
   position: absolute;
   inset: 0;
-  /* `pre` para que el clon nunca envuelva por un redondeo de ancho: si lo
-     hiciera, se despegaría del texto de debajo. */
   white-space: pre;
   clip-path: inset(0 calc(100% - var(--reveal)) 0 0);
 }
@@ -97,61 +92,46 @@
   color: var(--body-text);
 }
 
-.statement-photo {
-  grid-area: foto;
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  max-width: 560px;
-  justify-self: end;
-  margin-top: clamp(24px, 3vw, 56px);
-  aspect-ratio: 493 / 300;
-  border-radius: 8px;
-  background: var(--gray);
-}
-
-.statement-photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .js .scroll-color-text__word,
-  .scroll-color-text__word {
-    --reveal: 100%;
+@media (min-width: 1280px) {
+  .statement-section {
+    --home-section-gap: clamp(88px, 7vw, 120px);
   }
 }
 
 @media (max-width: 991px) {
-  .statement-grid {
+  .statement-media-layout {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "titulo"
-      "texto"
-      "foto";
-    gap: 36px;
+    row-gap: 44px;
+  }
+
+  .statement-photo {
+    width: min(100%, 720px);
+    justify-self: center;
+  }
+
+  .statement-story {
+    justify-self: center;
+    text-align: center;
+  }
+
+  .scroll-color-text__heading,
+  .scroll-color-text__body {
+    max-width: 760px;
+    text-align: center;
   }
 
   .scroll-color-text__heading {
     font-size: 42px;
   }
-
-  .scroll-color-text__body {
-    max-width: none;
-    text-align: center;
-  }
-
-  .statement-photo {
-    max-width: 720px;
-    justify-self: center;
-    margin-top: 0;
-  }
 }
 
 @media (max-width: 767px) {
   .statement-section {
-    padding-block: 68px 82px;
+    --home-section-gap: 60px;
+  }
+
+  .statement-media-layout {
+    row-gap: 36px;
   }
 
   .scroll-color-text__heading {

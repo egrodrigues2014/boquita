@@ -269,7 +269,7 @@ test.describe("presupuestos de rendimiento", () => {
   test("las 14 celdas de galería sólo generan 8 descargas", async ({ page }) => {
     const requested = new Set<string>();
     page.on("request", (request) => {
-      if (request.resourceType() === "image" && request.url().includes("/img/gallery/")) {
+      if (request.resourceType() === "image" && request.url().includes("/img/producto/")) {
         requested.add(request.url());
       }
     });

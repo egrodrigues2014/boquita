@@ -95,17 +95,20 @@ export const about = {
     },
     {
       question: "¿Tienen opciones sin gluten?",
+      // Se dice UNA cosa porque es la única que hay: en el catálogo real sólo el
+      // mousse de chocolate no lleva harina. Prometer más era lo que hacía esta
+      // respuesta con el catálogo anterior.
       answer:
-        "Sí. Las galletas de granola, los biscotti keto y las barras de dátil se hacen con " +
-        "harina de almendra o avena, sin trigo. Están agrupadas en la categoría «Sin gluten " +
-        "y keto» del catálogo.",
+        "El mousse de chocolate se hace sólo con chocolate y huevo, sin harina y sin lácteos. " +
+        "El resto del catálogo lleva harina de trigo: cada ficha lista lo que contiene, así " +
+        "que se puede comprobar antes de pedir.",
     },
     {
-      question: "¿Y sin azúcar o veganos?",
+      question: "¿Y sin azúcar?",
       answer:
-        "Los biscotti keto llevan endulzante apto para dieta keto, y las barras de dátil no " +
-        "tienen azúcar añadida: el dulzor sale del dátil. El coffee cake es vegano, sin huevo " +
-        "ni lácteos.",
+        "El mousse de chocolate tiene una versión endulzada con monk fruit, sin azúcar añadida, " +
+        "que se elige como presentación en su propia ficha. Es la opción para quien no puede " +
+        "tomar azúcar.",
     },
     {
       question: "¿Puedo pedir un queque con un diseño concreto?",
@@ -118,8 +121,8 @@ export const about = {
       question: "¿Cuánto me dura?",
       answer:
         "Los queques con frosting de queso crema aguantan tres o cuatro días en refrigeración. " +
-        "Las galletas, los polvorones y los biscotti, una o dos semanas en un recipiente " +
-        "cerrado. Los brigadeiros, mejor comerlos en los primeros días.",
+        "Las galletas y los polvorones, una o dos semanas en un recipiente cerrado. Los " +
+        "brigadeiros y los pies, mejor comerlos en los primeros días.",
     },
     {
       question: "¿Puedo avisar de una alergia?",

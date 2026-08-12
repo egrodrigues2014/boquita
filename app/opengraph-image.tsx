@@ -63,7 +63,7 @@ export default function OpengraphImage() {
         </div>
 
         <div style={{ marginTop: 36, fontSize: 30, color: "#6B5B4D", maxWidth: 820 }}>
-          Queques, galletas y bocaditos horneados por encargo en Santa Ana.
+          Queques, cupcakes, galletas y dulces horneados por encargo en Santa Ana.
         </div>
 
         <div

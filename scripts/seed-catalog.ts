@@ -1,11 +1,11 @@
-import { getTableColumns, sql } from "drizzle-orm";
+import { getTableColumns, inArray, sql } from "drizzle-orm";
 import { products as fallbackCatalog } from "@/content/products";
 import { getDb } from "@/lib/db";
-import { productToRow } from "@/lib/db/rows";
-import { products } from "@/lib/db/schema";
+import { productToRow, productToVariantRows } from "@/lib/db/rows";
+import { productVariants, products } from "@/lib/db/schema";
 
 /**
- * Siembra la tabla `products` desde `content/products.ts`.
+ * Siembra `products` y `product_variants` desde `content/products.ts`.
  *
  * IDEMPOTENTE: `ON CONFLICT (slug) DO UPDATE`. Se puede ejecutar tantas veces
  * como se quiera y el resultado es el mismo, así que también sirve para
@@ -41,6 +41,16 @@ function updateSet() {
     ...Object.fromEntries(entries),
     updatedAt: sql`now()`,
   };
+}
+
+/** El mismo `SET` para `product_variants`, cuya clave de conflicto es `(slug, unit)`. */
+function variantUpdateSet() {
+  const columns = getTableColumns(productVariants);
+  const entries = Object.entries(columns)
+    .filter(([key]) => key !== "slug" && key !== "unit")
+    .map(([key, column]) => [key, sql.raw(`excluded."${column.name}"`)] as const);
+
+  return Object.fromEntries(entries);
 }
 
 /**
@@ -85,10 +95,31 @@ async function main() {
   const before = await db.select({ slug: products.slug }).from(products);
   // El orden del array ES el orden del catálogo: se guarda como `sort_order`.
   const rows = fallbackCatalog.map(productToRow);
+  const variantRows = fallbackCatalog.flatMap(productToVariantRows);
 
   await db.insert(products).values(rows).onConflictDoUpdate({
     target: products.slug,
     set: updateSet(),
+  });
+
+  /**
+   * Las presentaciones se BORRAN y se reinsertan, no sólo se upsertan.
+   *
+   * Un upsert deja vivas las variantes que el catálogo ya no tiene: si un tamaño
+   * se retira, la ficha seguiría ofreciéndolo con su precio viejo. Borrar por
+   * producto y reinsertar es lo único que hace que la tabla sea un espejo del
+   * catálogo. El `onConflictDoUpdate` se queda igualmente para el caso de que dos
+   * ejecuciones se pisen.
+   */
+  await db.delete(productVariants).where(
+    inArray(
+      productVariants.slug,
+      rows.map((row) => row.slug),
+    ),
+  );
+  await db.insert(productVariants).values(variantRows).onConflictDoUpdate({
+    target: [productVariants.slug, productVariants.unit],
+    set: variantUpdateSet(),
   });
 
   const after = await db.select({ slug: products.slug, price: products.price }).from(products);
@@ -100,8 +131,8 @@ async function main() {
   const huerfanas = after.filter((row) => !seeded.has(row.slug)).map((row) => row.slug);
 
   console.log(
-    `Semilla lista: ${rows.length} productos procesados ` +
-      `(${inserted} nuevos, ${rows.length - inserted} actualizados). ` +
+    `Semilla lista: ${rows.length} productos y ${variantRows.length} presentaciones procesadas ` +
+      `(${inserted} productos nuevos, ${rows.length - inserted} actualizados). ` +
       `La tabla tiene ahora ${after.length} filas.`,
   );
 

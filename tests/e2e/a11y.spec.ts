@@ -8,9 +8,9 @@ import { expect, test, type Page } from "@playwright/test";
  * orden de encabezados, foco visible). Eso comprueba lo que uno se acuerda de
  * comprobar. axe comprueba lo que uno NO se acordó.
  *
- * Se audita en los cinco estados que pide el plan, porque un panel abierto es un
- * árbol de accesibilidad distinto: en reposo, con el drawer del nav abierto, con
- * un dropdown desplegado, con el carrito abierto y con el lightbox abierto.
+ * Se audita en los estados interactivos principales, porque un panel abierto es
+ * un árbol de accesibilidad distinto: en reposo, con el drawer del nav abierto,
+ * con un dropdown desplegado y con el carrito abierto.
  */
 
 const TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
@@ -32,8 +32,7 @@ async function waitForReveals(page: Page) {
 
   // Sólo se espera a los que YA se están revelando (los que tienen `is-in`). Los
   // que aún no han entrado en pantalla se quedan a opacidad 0 y axe los descarta
-  // como invisibles; exigirlos colgaba la auditoría con el lightbox abierto,
-  // donde el scroll está bloqueado y nunca llegan a revelarse.
+  // como invisibles; exigirlos antes colgaba auditorías de estados bloqueantes.
   await page.waitForFunction(() =>
     [...document.querySelectorAll<HTMLElement>(".reveal.is-in")].every(
       (el) => Number.parseFloat(getComputedStyle(el).opacity) > 0.99,
@@ -67,14 +66,6 @@ test.describe("accesibilidad", () => {
   test("portada en reposo", async ({ page }) => {
     await page.goto("/");
     await audit(page, "portada en reposo");
-  });
-
-  test("portada con el lightbox de galería abierto", async ({ page }) => {
-    await page.goto("/");
-    await page.locator(".gallery").scrollIntoViewIfNeeded();
-    await page.locator("[data-lightbox=gallery]").first().click();
-    await expect(page.locator("dialog.lightbox")).toBeVisible();
-    await audit(page, "lightbox abierto");
   });
 
   test("portada con un dropdown del nav desplegado", async ({ page, viewport }) => {

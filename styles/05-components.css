@@ -48,6 +48,21 @@
   color: var(--on-gold);
 }
 
+/* ── 3.1b Botón pequeño ────────────────────────────────────────────────────
+   El `.btn` mide ≈60px (20px de texto y `padding: 14px 30px`): demasiado para la
+   fila del fondo de una tarjeta del catálogo, donde comparte línea con el precio
+   en 297px de ancho útil. Esta variante da 24 + 20 + 2 = 46px, por encima de los
+   44px de área pulsable que el proyecto se exige. Nomenclatura de
+   `.qty-stepper--sm` (30-cart.css).
+
+   NO toca el relleno ni la etiqueta: sigue siendo `--gold` con `--on-gold`
+   (6.58:1). El desvío D-0 se aplica igual a la variante pequeña.
+   ────────────────────────────────────────────────────────────────────────── */
+.btn--sm {
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
 .btn.mt-40 {
   margin-top: 30px;
 }

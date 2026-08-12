@@ -1,5 +1,5 @@
 import { formatCRCShort } from "@/lib/format";
-import { CONTACT, whatsappBaseUrl, whatsappUrl } from "@/lib/contact";
+import { CONTACT, whatsappTextUrl, whatsappUrl } from "@/lib/contact";
 import type { CartLine, CheckoutFields } from "@/types/shop";
 
 /**
@@ -16,26 +16,103 @@ export const WA_NUMBER = CONTACT.whatsappDigits;
  * WhatsApp Desktop trunca y algunos manejadores de intents de Android fallan
  * pasados ~2000 caracteres CODIFICADOS. Las tildes y los emoji ocupan 3-9 bytes
  * al codificar, así que un carrito con nombres acentuados llega al límite antes
- * de lo que parece. 1400 deja margen.
+ * de lo que parece.
+ *
+ * **1600 y no 1400, y el número sale de medirlo.** Al pasar el mensaje al formato
+ * con emoji cada producto ocupa dos líneas y unos 110 caracteres codificados, y
+ * la cabecera fija se lleva ~585 de entrada. Medido con un carrito real y los
+ * cuatro campos rellenos: 2 productos → 805, 4 → 1023, 6 → 1249, 8 → ~1470. Con
+ * el techo anterior **un pedido de 8 productos perdía el detalle** y caía al
+ * mensaje compacto. Con 1600 caben 9 y quedan 400 de margen sobre el punto en que
+ * wa.me empieza a fallar.
+ *
+ * Lo fija `tests/unit/whatsapp.test.ts`, que mide un carrito de 8 y exige que NO
+ * se trunque: si alguien alarga la cabecera, ahí se entera.
  */
-export const MAX_ENCODED_LENGTH = 1400;
+export const MAX_ENCODED_LENGTH = 1600;
 
 /** Cuántas líneas se detallan antes de resumir el resto. */
 const MAX_DETAILED_LINES = 20;
+
+/**
+ * Las etiquetas del mensaje son un CONTRATO, no decoración.
+ *
+ * Hoy lo lee Ale, pero está pensado para que mañana lo parsee un chatbot: un dato
+ * por línea, etiqueta fija delante y `└` para la presentación de cada producto.
+ * Añadir un campo es seguro; **renombrar uno de estos rótulos rompe al
+ * consumidor**, así que no se tocan por gusto estético.
+ *
+ * La negrita va con UN asterisco porque es lo que entiende WhatsApp. Con dos
+ * —sintaxis de Markdown— los asteriscos se ven literales en el chat.
+ */
+const LABEL = {
+  greeting: "Hola, Ale 👋",
+  detail: "📋 *Detalle del pedido*",
+  total: "💰 *Total:*",
+  totalPartial: "💰 *Total (productos con precio fijo):*",
+  quoted: "⚠️ Hay productos que se cotizan aparte.",
+  client: "👤 *Cliente:*",
+  date: "📅 *Fecha deseada:*",
+  zone: "📍 *Zona:*",
+  notes: "📝 *Notas:*",
+  request: "📌 *Solicitud:*",
+} as const;
+
+/**
+ * La cabecera y el pie llevan el dominio dentro, así que son funciones y no
+ * cadenas: guardar `"🛍️ *Nuevo pedido desde"` con el asterisco a medio cerrar y
+ * completarlo en el sitio de la llamada deja una constante que se rompe sola en
+ * cuanto alguien la reutiliza. Aquí la negrita abre y cierra en la misma línea.
+ */
+function header(kind: string): string {
+  return `🛍️ *${kind} desde ${CONTACT.siteDomain}*`;
+}
+
+function footer(): string {
+  return `🌐 Generado desde ${CONTACT.siteDomain}`;
+}
+
+/**
+ * `2026-08-28` → `28/08/2026`, partiendo la cadena a mano.
+ *
+ * **Nada de `Intl.DateTimeFormat`**, por el mismo motivo por el que `lib/format.ts`
+ * prohíbe `Intl` para la moneda: sus resultados varían entre builds de ICU y este
+ * mensaje se arma en el navegador. Un valor con otra forma se devuelve tal cual —
+ * mejor que inventar una fecha en el pedido de alguien.
+ */
+function formatDateCR(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!match) return iso;
+  const [, year, month, day] = match;
+  return `${day}/${month}/${year}`;
+}
+
+/**
+ * `pequeño (2 personas)` → `Pequeño (2 personas)`.
+ *
+ * Las etiquetas de presentación van en minúscula en el catálogo porque ahí viven
+ * dentro de una frase; en el mensaje encabezan su propia línea. Sólo la primera
+ * letra, así que `12 unidades` y `120 g` se quedan como están.
+ */
+function capitalizeFirst(value: string): string {
+  return value.charAt(0).toLocaleUpperCase("es-CR") + value.slice(1);
+}
 
 export function buildOrderMessage(lines: CartLine[], fields: CheckoutFields = {}): string {
   const detailed = lines.slice(0, MAX_DETAILED_LINES);
   const rest = lines.slice(MAX_DETAILED_LINES);
 
-  const items = detailed.map((line) => {
+  /** Dos líneas por producto: qué es, y en qué presentación y por cuánto. */
+  const items = detailed.flatMap((line) => {
     const price = line.priceOnRequest
       ? "precio a convenir"
       : formatCRCShort(line.price * line.qty);
-    return `• ${line.qty} × ${line.name} (${line.unit}) — ${price}`;
+    return [`• ${line.qty} × ${line.name}`, `└ ${capitalizeFirst(line.unit)} — ${price}`];
   });
 
   if (rest.length > 0) {
     const restUnits = rest.reduce((total, line) => total + line.qty, 0);
+    // El resumen es una viñeta suelta: no tiene presentación que colgar debajo.
     items.push(`• …y ${restUnits} unidades más de ${rest.length} productos`);
   }
 
@@ -45,21 +122,36 @@ export function buildOrderMessage(lines: CartLine[], fields: CheckoutFields = {}
   const hasQuoted = lines.some((line) => line.priceOnRequest);
 
   const parts = [
-    "¡Hola Boquita! Quiero hacer este pedido:",
+    LABEL.greeting,
     "",
+    header("Nuevo pedido"),
+    "",
+    LABEL.detail,
     ...items,
     "",
-    `Total${hasQuoted ? " de los productos con precio" : ""}: ${formatCRCShort(subtotal)}`,
+    `${hasQuoted ? LABEL.totalPartial : LABEL.total} ${formatCRCShort(subtotal)}`,
   ];
 
-  if (hasQuoted) parts.push("(hay productos que se cotizan aparte)");
+  if (hasQuoted) parts.push(LABEL.quoted);
 
-  if (fields.name) parts.push("", `Nombre: ${fields.name}`);
-  if (fields.date) parts.push(`Fecha deseada: ${fields.date}`);
-  if (fields.zone) parts.push(`Zona de entrega: ${fields.zone}`);
-  if (fields.notes) parts.push(`Notas: ${fields.notes}`);
+  /**
+   * El bloque del cliente sólo existe si hay algo que poner: un rótulo con el
+   * hueco vacío detrás es ruido para quien lee y basura para quien parsea.
+   *
+   * Spread condicional y no `.filter(Boolean)`: el filtro no estrecha el tipo en
+   * TypeScript —seguiría siendo `(string | undefined)[]`— y aquí `parts` es
+   * `string[]`.
+   */
+  const client = [
+    ...(fields.name ? [`${LABEL.client} ${fields.name}`] : []),
+    ...(fields.date ? [`${LABEL.date} ${formatDateCR(fields.date)}`] : []),
+    ...(fields.zone ? [`${LABEL.zone} ${fields.zone}`] : []),
+    ...(fields.notes ? [`${LABEL.notes} ${fields.notes}`] : []),
+  ];
 
-  parts.push("", "Enviado desde boquita.cr");
+  if (client.length > 0) parts.push("", ...client);
+
+  parts.push("", `${LABEL.request} Confirmar disponibilidad y detalles del pedido.`, "", footer());
 
   return parts.join("\n");
 }
@@ -75,25 +167,34 @@ export function buildCompactMessage(lines: CartLine[], fields: CheckoutFields = 
     .reduce((total, line) => total + line.price * line.qty, 0);
 
   const parts = [
-    "¡Hola Boquita! Quiero hacer un pedido grande:",
+    LABEL.greeting,
     "",
-    `${units} unidades de ${lines.length} productos`,
-    `Total aproximado: ${formatCRCShort(subtotal)}`,
+    header("Nuevo pedido grande"),
+    "",
+    `📦 *Resumen:* ${units} unidades de ${lines.length} productos`,
+    `💰 *Total aproximado:* ${formatCRCShort(subtotal)}`,
   ];
 
-  if (fields.name) parts.push(`Nombre: ${fields.name}`);
-  if (fields.date) parts.push(`Fecha deseada: ${fields.date}`);
+  const client = [
+    ...(fields.name ? [`${LABEL.client} ${fields.name}`] : []),
+    ...(fields.date ? [`${LABEL.date} ${formatDateCR(fields.date)}`] : []),
+  ];
 
-  parts.push("", "Te paso el detalle en el siguiente mensaje.");
+  if (client.length > 0) parts.push("", ...client);
+
+  parts.push("", `${LABEL.request} Te paso el detalle en el siguiente mensaje.`, "", footer());
 
   return parts.join("\n");
 }
 
 /**
- * URL de wa.me con el mensaje ya codificado.
+ * URL de WhatsApp con el mensaje ya codificado.
  *
  * Los saltos de línea van como `\n` y se codifican DESPUÉS (a `%0A`). Escribir
  * `%0A` a mano y volver a codificar daría `%250A` literal en el chat.
+ *
+ * El endpoint lo decide `lib/contact.ts`, que explica por qué no es `wa.me`: su
+ * redirección se come los emoji.
  */
 export function buildWhatsAppUrl(
   lines: CartLine[],
@@ -109,7 +210,7 @@ export function buildWhatsAppUrl(
   }
 
   return {
-    url: `${whatsappBaseUrl()}?text=${encoded}`,
+    url: whatsappTextUrl(encoded),
     encodedLength: encoded.length,
     truncated,
   };

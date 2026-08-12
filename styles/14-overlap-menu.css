@@ -17,11 +17,20 @@
 
 .wide-img-block {
   background: var(--white);
-  padding-block: clamp(58px, 7vw, 104px) clamp(34px, 4vw, 58px);
+  /* Padding SIMÉTRICO: la foto tiene que quedar centrada en la franja blanca.
+     Estaba en `clamp(58px,7vw,104px) clamp(34px,4vw,58px)` — arriba ~1.8× lo de
+     abajo, y se notaba a simple vista.
+
+     El valor es la media exacta de los dos, no uno de ellos, para que la ALTURA
+     TOTAL del bloque no cambie y no se desplace el ritmo vertical del resto de
+     la página: 46×2 = 92 (el mínimo de antes), 5.5vw×2 = 11vw (el tramo fluido),
+     81×2 = 162 (el máximo). */
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .wide-img {
-  width: min(100%, 940px);
+  width: min(100%, 1170px);
   height: auto;
   display: block;
   margin-inline: auto;
@@ -33,8 +42,8 @@
 
 .cream-block {
   background: var(--primary-light);
-  margin-top: 0;
-  padding-top: clamp(64px, 7vw, 96px);
+  margin-top: clamp(-170px, -12vw, -116px);
+  padding-top: clamp(210px, 18vw, 270px);
   padding-bottom: 130px;
 }
 
@@ -125,6 +134,8 @@
 
 @media (min-width: 1280px) {
   .cream-block {
+    margin-top: -190px;
+    padding-top: 290px;
     padding-bottom: 170px;
   }
   .menu-layout {
@@ -155,8 +166,8 @@
 
 @media (max-width: 991px) {
   .cream-block {
-    margin-top: 0;
-    padding-top: 64px;
+    margin-top: -86px;
+    padding-top: 134px;
   }
   .menu-layout {
     flex-direction: column;
@@ -172,8 +183,8 @@
 
 @media (max-width: 767px) {
   .cream-block {
-    margin-top: 0;
-    padding-top: 52px;
+    margin-top: -54px;
+    padding-top: 96px;
   }
   .menu-grid {
     display: flex;

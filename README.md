@@ -1,8 +1,8 @@
 # Boquita — Sweet & Salty
 
 Sitio web de **Boquita**, repostería artesanal casera en Santa Ana, San José, Costa Rica.
-Queques de zanahoria, galletas de granola sin gluten, polvorones españoles, brigadeiros, biscotti y
-bocaditos salados. Horneado por encargo, en tandas pequeñas.
+Queques de zanahoria, limón y chocolate, cupcakes, polvorones españoles, galletas de granola,
+brigadeiros, pies y quesillo. Horneado por encargo, en tandas pequeñas.
 
 Instagram [@boquita_cr](https://instagram.com/boquita_cr) · WhatsApp +506 7132 2355
 
@@ -49,7 +49,7 @@ breakpoints del checklist.
 
 ```text
 app/            rutas (App Router). layout.tsx hace el ÚNICO import de CSS
-components/     sections/ (una por sección del spec) · layout/ · ui/ · cart/
+components/     sections/ (una por sección del spec) · layout/ · ui/ · cart/ · shop/
 lib/            format.ts (moneda) · color.ts (contraste) · tokens.ts (lee el CSS)
 lib/db/         TODO el acceso a Postgres: schema.ts · catalog.ts (lectura + fallback)
 styles/         index.css encadena los parciales numerados. Ver más abajo
@@ -84,12 +84,12 @@ reglas base → min-width ascendente (1280, 1440, 1920) → max-width descendent
 `max-width:991` y `max-width:767` se solapan. Si 991 se escribe después de 767, gana silenciosamente
 a 500px de ancho. Es el punto de mayor riesgo del proyecto.
 
-### 3. Nada de Tailwind, ni CSS Modules para el CSS del spec
+### 3. Nada de Tailwind, ni CSS Modules
 
 El spec estiliza elementos desnudos (`h1`–`h6`, `p`, `a`, `ul`, `li`), sus valores no están en
 ninguna escala (`margin-top:-198px`, `right:218px`, `width:43.5%`), y sus **nombres de clase son el
-contrato** de la checklist de aceptación. CSS Modules sí se usan, pero sólo en los tres componentes
-que no están en el spec: `CartDrawer`, `Lightbox`, `NavScrim`.
+contrato** de la checklist de aceptación. No hay ni un `*.module.css` en el repo: los componentes que
+tampoco están en el spec van igualmente por `styles/` (`30-cart.css`, `22-lightbox.css`).
 
 ## Color: el ámbar tiene tres roles
 
@@ -108,8 +108,8 @@ blanco** (`#E8A81B` sobre blanco = 2.09:1). Así que `--primary` del spec se div
 marrón**, no blanca como pedía el spec (desvío D-0).
 
 `.footer-dark` re-declara los tokens de tinta, así que toda regla que use `var(--gold-ink)` se
-invierte sola y sigue cumpliendo AA. **La tarjeta CTA crema debe ser hermana de `.footer-dark`, no
-hija** — si se anida, hereda los tokens invertidos y el solape se rompe.
+invierte sola y sigue cumpliendo AA. **Cuidado con lo que se anida dentro:** todo lo que caiga bajo
+`.footer-dark` hereda los tokens invertidos, y sobre un fondo claro dejaría de cumplir AA.
 
 `tests/unit/contrast.test.ts` lee `styles/01-tokens.css` y recalcula los ~25 pares en cada `npm test`.
 Si alguien cambia un color y rompe un ratio, el build falla ahí.
@@ -128,8 +128,25 @@ formatFrom(22000)     // "desde ₡ 22.000 CRC"
 
 ## El catálogo y su fallback
 
-El catálogo vive en la tabla `products` de Neon, y `content/products.ts` es su **fallback**. No es
-contenido muerto: es lo que se sirve en tres situaciones que van a pasar de verdad.
+Son **23 productos con 60 presentaciones**, cargados del catálogo que entregó Ale
+(`data/boquita_products_catalog.xlsx`). Viven en dos tablas de Neon: `products` y
+`product_variants` —una fila por presentación, que es una fila del Excel—, con `content/products.ts`
+como **fallback**. No es contenido muerto: es lo que se sirve en las situaciones de abajo.
+
+**Un producto tiene varias presentaciones y cada una su precio.** El queque de zanahoria va a ₡2.500
+pequeño, ₡12.000 mediano y ₡24.000 grande. De ahí tres cosas que conviene saber antes de tocar el
+catálogo:
+
+- **`price` es el precio de ENTRADA**, el de la presentación más barata, y es un espejo de
+  `variants`: la tarjeta, el JSON-LD y la búsqueda necesitan un número sin recorrer la lista. Hay dos
+  `.refine()` en `content/shopSchema.ts` que comprueban que sigue siendo el mínimo y que con varias
+  presentaciones el precio se muestra «desde». Sin ellos, la tarjeta podría anunciar un importe que el
+  selector de la ficha no ofrece — y eso no se ve hasta que alguien reclama.
+- **La ficha lleva un selector de presentación** (`components/cart/ProductPurchase.tsx`), y el precio
+  se recalcula con la selección. Desvíos D-30 y D-31.
+- **Una línea del carrito se identifica por `(slug, unit)`**, no por el slug: dos tamaños del mismo
+  queque son dos líneas con dos precios. Con la identidad en el slug se habrían fundido en una, con el
+  precio del primero que se añadió.
 
 | Situación | Qué se sirve |
 | --- | --- |
@@ -142,9 +159,12 @@ contenido muerto: es lo que se sirve en tres situaciones que van a pasar de verd
 La regla que gobierna las cinco: **la tienda nunca se sirve vacía.** Un catálogo en blanco por un
 fallo de infraestructura le cuesta pedidos a Ale.
 
+Un producto **sin presentaciones** también cae al fallback: no habría nada que añadir al carrito, así
+que una ficha con un botón que no sabe qué hacer es peor que la versión de `content/products.ts`.
+
 La validación de lectura reutiliza el MISMO Zod que valida el catálogo estático
-(`content/shopSchema.ts`). Los mismos invariantes están además como `CHECK` en la tabla, para
-proteger el borde de escritura cuando exista el panel: un `summary` de 400 caracteres desmaqueta la
+(`content/shopSchema.ts`). Los mismos invariantes están además como `CHECK` en las dos tablas, para
+proteger el borde de escritura cuando exista el panel: una descripción de 400 caracteres desmaqueta la
 tarjeta, y un precio a convenir sin «desde» engaña con el importe.
 
 **La portada se deriva del catálogo, no lo copia.** `lib/homeContent.ts` recalcula las dos cosas
@@ -156,6 +176,11 @@ otro producto **del propio catálogo**, nunca con uno del fallback que daría 40
 **Imágenes: la base guarda alturas, no rutas.** `image_heights` + `image_alt`, y el `srcSet` se
 reconstruye con `lib/productImage.ts` —el mismo código que usa el catálogo estático—. Guardar las
 rutas en Postgres sería garantizar que algún día no coincidan con lo que hay en `public/img/`.
+
+Las fuentes van nombradas por SKU en `assets/products/` y la escalera es `[400, 800, 1200]`, con
+proporción natural. **Dos fotos son miniaturas de ~400px y sólo emiten el primer escalón**: el script
+no hace upscale nunca, así que el `srcSet` admite un solo elemento y los dos productos van marcados
+`photoTodo`. Ver `docs/CONTENT_TODO.md §4b`.
 
 **ISR de una hora, declarado en `app/layout.tsx`.** Va en el layout y no en cada página porque el
 nav y varias páginas comparten contenido derivado del catálogo, así que hasta `/aviso-legal` y la 404
@@ -174,41 +199,31 @@ npm run db:seed
 ```
 
 `db:seed` hace `ON CONFLICT (slug) DO UPDATE`, así que **pisa** lo que haya en la tabla: si alguien
-corrigió un precio por SQL y el fallback sigue con el placeholder, sembrar lo revierte. El script lo
-avisa al terminar. Los 14 precios siguen marcados `priceTodo` y hay un test que lo afirma
-(`docs/CONTENT_TODO.md §2`).
+corrigió un precio por SQL y el fallback sigue con el valor viejo, sembrar lo revierte. El script lo
+avisa al terminar.
+
+Las **presentaciones** no se upsertan: se borran por producto y se reinsertan. Un upsert dejaría vivas
+las que el catálogo ya no tiene, y la ficha seguiría ofreciendo un tamaño retirado con su precio
+viejo. Los precios ya son los reales de Ale y **no queda ningún `priceTodo`**; hay un test que falla
+si vuelve a aparecer uno.
 
 ## Documentación
 
 | Archivo | Contenido |
 | --- | --- |
+| `docs/ESTADO.md` | **qué está hecho y qué falta.** La única fuente de estado del proyecto |
 | `docs/frontend_spec.md` | la especificación normativa de layout |
 | `docs/DEVIATIONS.md` | **todo** lo que se aparta del spec, con su motivo. Si no está ahí, es un bug |
 | `docs/CONTENT_TODO.md` | lo que falta de Ale antes de poder lanzar |
+| `docs/implementation_tasks.md` | backlog UI/UX, con el estado verificado de cada tarea |
+| `docs/HOME_CINEMATIC.md` | los cambios vigentes del bloque de portada cinemática |
+| `docs/IMAGE_MAP.md` | qué foto va en cada slot, y por qué |
 
 ## Estado
 
-- ✅ **Fase 0 — cimientos.** Tokens, escala tipográfica, componentes base, moneda, tests de
-  contraste, extracción de imágenes.
-- ✅ **Fase 1 — la portada completa.** Las 9 secciones del spec, reveal, parallax de galería,
-  slider, nav móvil, lightbox y SEO local.
-- ✅ **Tienda y carrito.** `/tienda` con filtros combinables, las 14 fichas prerenderizadas con
-  JSON-LD `Product`, carrito persistido y checkout por WhatsApp. Sin pasarela de pago.
-- ✅ **Páginas de texto.** `/sobre-nosotros` con historia, zonas de entrega y 8 preguntas
-  frecuentes (con JSON-LD `FAQPage`), `/aviso-legal`, y una 404 propia que ofrece salidas —
-  los enlaces viejos de Instagram van a aterrizar ahí.
-- ✅ **Accesibilidad auditada.** Cero violaciones de axe en 9 estados, sobre `wcag2a`, `wcag2aa`,
-  `wcag21a`, `wcag21aa` y `wcag22aa`.
-- ✅ **Catálogo en base de datos.** [Neon](https://neon.tech) Postgres en AWS `us-east-1` (la misma
-  región que `iad1` de Vercel, y no se puede cambiar después) + Drizzle. Una tabla, dos enums, ocho
-  `CHECK`. Todo el acceso detrás de `lib/db`, y `content/products.ts` como fallback con contrato
-  propio y tests. ISR de una hora.
-- ⏳ **Panel de administración** (fase 3). Mientras no exista, los precios se corrigen por SQL o
-  re-sembrando. Falta también `revalidatePath` para que un cambio se vea al instante en vez de en
-  ≤1 h.
-- ⏳ Newsletter funcional (el formulario está maquetado pero no envía) y despliegue.
-  **Ojo:** activar la newsletter guardaría un correo en servidor propio, y `/aviso-legal` promete
-  hoy lo contrario. Esa página se reescribe ANTES de insertar la primera fila.
+**El estado vivo está en [`docs/ESTADO.md`](docs/ESTADO.md)**: qué está hecho, qué falta, qué bloquea
+el lanzamiento y qué ha quedado sin cobertura de tests. Es la única lista que se mantiene al día —
+esta sección no la duplica a propósito, porque dos listas de estado divergen siempre.
 
 **No hay blog, y es deliberado.** Nada lo enlaza, el contenido lo escribiría quien programa y no
 Ale, y un blog con dos entradas que nunca crece señala abandono más que actividad.
@@ -217,8 +232,9 @@ Ale, y un blog con dos entradas que nunca crece señala abandono más que activi
 
 No hay pago online, a propósito: se pide por WhatsApp, que es el canal que la tienda ya usa.
 
-1. El cliente añade productos en `/tienda` o desde una ficha. El carrito vive en `localStorage`
-   con clave versionada (`boquita.cart.v1`).
+1. El cliente elige una **presentación** en la ficha y la añade. El carrito vive en `localStorage`
+   con clave versionada (`boquita.cart.v2`; subió a v2 porque al cargar el catálogo real cambiaron
+   todos los slugs y un carrito de fantasmas es un pedido mal enviado).
 2. El drawer del carrito recoge nombre, fecha, zona y notas. La fecha mínima se calcula desde el
    **lead time más largo del carrito**: si hay un queque personalizado, no se ofrece pasado mañana.
 3. «Finalizar por WhatsApp» es un `<a href>` real a `wa.me` con el pedido ya escrito — sobrevive
@@ -230,13 +246,60 @@ No hay pago online, a propósito: se pide por WhatsApp, que es el canal que la t
 Los productos con precio a convenir (el queque personalizado) **no entran al carrito**: su CTA va
 directo a WhatsApp. Sumar un «desde» daría un total que no es el que se va a pagar.
 
-Cada línea guarda su precio **y su anticipación** en el momento de añadirse, no una referencia al
-catálogo: el carrito vive en `localStorage` y el catálogo ya no vive en el cliente. Las líneas de
-carritos anteriores a ese campo se resuelven contra `content/products.ts`.
+Cada línea guarda su presentación, su precio **y su anticipación** en el momento de añadirse, no una
+referencia al catálogo: el carrito vive en `localStorage` y el catálogo ya no vive en el cliente. Las
+líneas de carritos anteriores al campo de anticipación se resuelven contra `content/products.ts`.
+
+### El mensaje que recibe Ale
+
+`lib/whatsapp.ts` lo arma con emoji y bloques titulados, y la presentación elegida viaja en su propia
+línea porque es lo que hay que hornear:
+
+```text
+Hola, Ale 👋
+
+🛍️ *Nuevo pedido desde boquita.cr*
+
+📋 *Detalle del pedido*
+• 1 × Queque de limón
+└ Pequeño (2 personas) — ₡ 2.250
+• 1 × Brigadeiros
+└ 12 unidades — ₡ 5.000
+
+💰 *Total:* ₡ 7.250
+
+👤 *Cliente:* Elton Rodrigues
+📅 *Fecha deseada:* 28/08/2026
+
+📌 *Solicitud:* Confirmar disponibilidad y detalles del pedido.
+
+🌐 Generado desde boquita.cr
+```
+
+**Las etiquetas son un contrato.** Hoy contesta Ale, pero el mensaje está pensado para que más adelante
+lo parsee un chatbot: un dato por línea, rótulo fijo delante y `└` para la presentación. Añadir un campo
+es seguro; **renombrar `*Cliente:*` rompe al consumidor.** Viven agrupadas en la constante `LABEL` del
+módulo, con ese aviso escrito al lado.
+
+Tres detalles que no son de gusto:
+
+- **La negrita es de un asterisco**, que es lo que entiende WhatsApp. Con dos —sintaxis de Markdown— se
+  ven literales en el chat, y hay un test que lo impide.
+- **El enlace apunta a `api.whatsapp.com/send`, no a `wa.me`.** El atajo redirige a ese mismo endpoint,
+  y en el salto WhatsApp recodifica la query con un codificador que no maneja pares surrogados: **cada
+  emoji llegaba al chat como `�`**. Sobrevivía todo lo de 1-3 bytes y se perdía todo lo de 4, que son
+  exactamente los emoji. Está explicado con las URLs medidas en `lib/contact.ts`, y hay tests que
+  impiden volver a `wa.me` sin darse cuenta.
+- **La fecha se convierte a `DD/MM/YYYY` partiendo la cadena, sin `Intl`**, por el mismo motivo que la
+  moneda. `earliestDate` sigue devolviendo ISO: alimenta el `min` del `<input type="date">`.
+- **El techo de 1600 caracteres codificados está medido**, no estimado: cada producto cuesta ~110 y la
+  cabecera ~585, así que con el 1400 anterior un pedido de 8 productos caía al mensaje compacto y
+  perdía el detalle. Lo fija un test con un carrito de 8.
 
 ### Medido, no estimado
 
-171 tests unitarios y 688 e2e a los 8 anchos del checklist. En el build de producción:
+Tests unitarios (vitest) y e2e a los 8 anchos del checklist; el recuento vigente y el resultado de la
+última corrida están en [`docs/ESTADO.md`](docs/ESTADO.md). En el build de producción:
 
 | | 1440px | 390px |
 | --- | --- | --- |

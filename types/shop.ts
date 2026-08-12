@@ -9,16 +9,33 @@ import type { Colones, ImageRef } from "@/types/content";
  * restricción — puede crecer a 20 productos sin romper nada.
  */
 
-/** Categorías del primer dropdown del nav. Debe coincidir con content/nav. */
+/**
+ * Categorías del primer dropdown del nav. Debe coincidir con content/nav.
+ *
+ * Son las tres de la columna `category` del catálogo de Ale
+ * (`data/boquita_products_catalog.xlsx`), en singular y minúscula allí. Las
+ * cinco anteriores —`bocaditos`, `salado`, `sin-gluten-keto`— eran del catálogo
+ * de andamio y no existen en el real: no hay nada salado ni una línea keto.
+ */
 export const CATEGORIAS = {
   queques: "Queques",
-  galletas: "Galletas y biscotti",
-  bocaditos: "Bocaditos dulces",
-  salado: "Salado",
-  "sin-gluten-keto": "Sin gluten y keto",
+  galletas: "Galletas",
+  dulces: "Dulces",
 } as const;
 
 export type Categoria = keyof typeof CATEGORIAS;
+
+/**
+ * Segundo nivel, de la columna `subcategory`. Sólo lo tienen 6 de los 23
+ * productos, así que es opcional en la ficha y se omite de la línea de la
+ * tarjeta cuando falta.
+ */
+export const SUBCATEGORIAS = {
+  cupcake: "Cupcakes",
+  personalizado: "Personalizado",
+} as const;
+
+export type Subcategoria = keyof typeof SUBCATEGORIAS;
 
 /** Ocasiones del segundo dropdown. Un producto puede servir para varias. */
 export const OCASIONES = {
@@ -32,12 +49,39 @@ export const OCASIONES = {
 
 export type Ocasion = keyof typeof OCASIONES;
 
+/**
+ * Una presentación comprable. Es lo que ofrece el selector de la ficha, y es una
+ * fila del Excel de Ale: el catálogo trae 60 filas para 23 productos.
+ *
+ * `unit` es a la vez la etiqueta visible y la CLAVE de la variante — el carrito
+ * identifica una línea por `(slug, unit)`, así que dos presentaciones del mismo
+ * producto no pueden compartir etiqueta. Lo afirma `shopProductSchema`.
+ *
+ * Los cupcakes son el caso que obliga a mirar esto: sus tres filas traen el mismo
+ * `sale_unit` («molde cupcake») y sólo se distinguen por `package_quantity`, así
+ * que aquí se etiquetan «6 unidades», «12 unidades» y «24 unidades».
+ */
+export interface ProductVariant {
+  /** Etiqueta visible y clave: «mediano (8-10 personas)», «12 unidades», «250 g». */
+  unit: string;
+  price: Colones;
+}
+
 export interface ShopProduct {
   slug: string;
   /** Capitalización normal; los títulos se ponen en mayúsculas por CSS. */
   name: string;
+  /**
+   * Precio de ENTRADA: el de la variante más baja.
+   *
+   * Es un espejo de `variants`, no un dato independiente — `shopProductSchema`
+   * comprueba que coincida con el mínimo. Existe porque la tarjeta del catálogo,
+   * el JSON-LD, el Open Graph y la búsqueda necesitan UN número, y recalcular el
+   * mínimo en cada uno de esos sitios es la clase de duplicación que ya derivó
+   * una vez en este proyecto (ver `FEATURED_SLUGS` en `content/home.ts`).
+   */
   price: Colones;
-  /** true → se muestra «desde ₡ …» */
+  /** true → se muestra «desde ₡ …». Obligatorio si hay más de una variante. */
   priceFrom?: boolean;
   /**
    * true → no hay precio fijo: se cotiza. No se puede añadir al carrito con un
@@ -46,27 +90,42 @@ export interface ShopProduct {
   priceOnRequest?: boolean;
   /** ⚠ El precio es un placeholder pendiente de confirmar con Ale. */
   priceTodo?: boolean;
-  /** Unidad de venta: «molde de 8 porciones», «caja de 6». */
-  unit: string;
-  /** Una frase para la tarjeta del catálogo. */
-  summary: string;
-  /** Párrafos para la ficha. */
+  /** Las presentaciones disponibles, de la más barata a la más cara. */
+  variants: ProductVariant[];
+  /**
+   * Párrafos para la ficha. El primero es también la descripción de la tarjeta
+   * del catálogo y la del Open Graph: el Excel trae una descripción por producto
+   * y tener un `summary` aparte con el mismo texto sería duplicarla.
+   */
   description: string[];
   categoria: Categoria;
+  subcategoria?: Subcategoria;
   ocasiones: Ocasion[];
+  /** De la columna `ingredients`, en minúscula y en lenguaje llano. */
+  ingredients: string[];
   /** En lenguaje llano, no códigos de alérgeno. */
   allergens: string[];
   /** Horas de anticipación que necesita el pedido. */
   leadTimeHours: number;
   image: ImageRef;
+  /** Segunda foto, sólo donde ver dos ejemplos vende: el queque personalizado. */
+  imageB?: ImageRef;
   /** ⚠ La foto disponible es floja y conviene rehacerla. */
   photoTodo?: boolean;
 }
 
-/** Una línea del carrito. Guarda el precio para no depender del catálogo. */
+/**
+ * Una línea del carrito. Guarda el precio para no depender del catálogo.
+ *
+ * La identifica el par **`(slug, unit)`**, no el slug: desde que un producto
+ * tiene presentaciones, un queque mediano y el mismo queque grande son dos
+ * líneas con dos precios. Con la identidad en el slug se habrían sumado en una y
+ * el pedido habría salido mal.
+ */
 export interface CartLine {
   slug: string;
   name: string;
+  /** La presentación elegida. Segunda mitad de la clave de la línea. */
   unit: string;
   /** Precio unitario en el momento de añadir. */
   price: Colones;

@@ -6,7 +6,12 @@ import { shopProductSchema } from "@/content/shopSchema";
 import { productImage, toImageHeights } from "@/lib/productImage";
 import type { ShopProduct } from "@/types/shop";
 import { getDb } from "./index";
-import { products as productsTable, type ProductRow } from "./schema";
+import {
+  productVariants as variantsTable,
+  products as productsTable,
+  type ProductRow,
+  type ProductVariantRow,
+} from "./schema";
 
 /**
  * Lectura del catálogo, con `content/products.ts` como fallback.
@@ -35,9 +40,18 @@ import { products as productsTable, type ProductRow } from "./schema";
  * fallback. Así el test que compara las dos fuentes compara de verdad, y no
  * pasa por un `{priceFrom: false}` contra un `{}`.
  */
-export function rowToProduct(row: ProductRow): ShopProduct | undefined {
+export function rowToProduct(
+  row: ProductRow,
+  variantRows: readonly ProductVariantRow[] = [],
+): ShopProduct | undefined {
   const heights = toImageHeights(row.imageHeights);
   if (!heights) return undefined;
+
+  // Sin presentaciones no hay nada que comprar: el producto se descarta y cae al
+  // fallback, en vez de renderizar una ficha con un botón que no sabe qué añadir.
+  if (variantRows.length === 0) return undefined;
+
+  const bHeights = row.imageBHeights ? toImageHeights(row.imageBHeights) : undefined;
 
   const product: ShopProduct = {
     slug: row.slug,
@@ -46,14 +60,20 @@ export function rowToProduct(row: ProductRow): ShopProduct | undefined {
     ...(row.priceFrom ? { priceFrom: true } : {}),
     ...(row.priceOnRequest ? { priceOnRequest: true } : {}),
     ...(row.priceTodo ? { priceTodo: true } : {}),
-    unit: row.unit,
-    summary: row.summary,
+    variants: [...variantRows]
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((variant) => ({ unit: variant.unit, price: variant.price })),
     description: row.description,
     categoria: row.categoria,
+    ...(row.subcategoria ? { subcategoria: row.subcategoria } : {}),
     ocasiones: row.ocasiones,
+    ingredients: row.ingredients,
     allergens: row.allergens,
     leadTimeHours: row.leadTimeHours,
     image: productImage(row.slug, heights, row.imageAlt),
+    ...(bHeights && row.imageBAlt
+      ? { imageB: productImage(`${row.slug}-b`, bHeights, row.imageBAlt) }
+      : {}),
     ...(row.photoTodo ? { photoTodo: true } : {}),
   };
 
@@ -85,18 +105,32 @@ async function loadFromDb(): Promise<ShopProduct[]> {
   const db = getDb();
   if (!db) return fallbackCatalog;
 
-  const rows: ProductRow[] = await db
-    .select()
-    .from(productsTable)
-    .orderBy(asc(productsTable.sortOrder));
+  /**
+   * Dos consultas, no un JOIN: el JOIN devolvería el producto repetido una vez
+   * por presentación —60 filas con la descripción entera en cada una— y habría
+   * que deshacerlo en memoria igual. Dos `SELECT` completos y un `Map` es menos
+   * tráfico y menos código. Van en paralelo, y la caché de una hora las cubre
+   * las dos.
+   */
+  const [rows, variantRows] = await Promise.all([
+    db.select().from(productsTable).orderBy(asc(productsTable.sortOrder)),
+    db.select().from(variantsTable),
+  ]);
 
   if (rows.length === 0) {
     console.warn("[catalog] la tabla products está vacía; se sirve content/products.ts");
     return fallbackCatalog;
   }
 
+  const variantsBySlug = new Map<string, ProductVariantRow[]>();
+  for (const variant of variantRows) {
+    const list = variantsBySlug.get(variant.slug);
+    if (list) list.push(variant);
+    else variantsBySlug.set(variant.slug, [variant]);
+  }
+
   const catalog = rows
-    .map((row) => rowToProduct(row) ?? repair(row))
+    .map((row) => rowToProduct(row, variantsBySlug.get(row.slug) ?? []) ?? repair(row))
     .filter((product): product is ShopProduct => product !== undefined);
 
   // Todas las filas eran irrecuperables. Con la base contestando, esto sólo pasa

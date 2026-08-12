@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { ProductPurchase } from "@/components/cart/ProductPurchase";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { JsonLd } from "@/components/ui/JsonLd";
@@ -10,7 +10,8 @@ import { getCatalog, getProduct } from "@/lib/db/catalog";
 import { formatCRCShort } from "@/lib/format";
 import { getHomeContent } from "@/lib/homeContent";
 import { SITE_URL } from "@/lib/seo";
-import { CATEGORIAS, OCASIONES } from "@/types/shop";
+import { variantsLabel } from "@/lib/variants";
+import { CATEGORIAS, OCASIONES, SUBCATEGORIAS } from "@/types/shop";
 
 /**
  * Ficha de producto.
@@ -41,15 +42,18 @@ export async function generateMetadata({
   if (!product) return { title: "Producto no encontrado" };
 
   const price = `${product.priceFrom ? "desde " : ""}${formatCRCShort(product.price)}`;
+  // El primer párrafo hace de resumen: es el que va en la tarjeta del catálogo y
+  // el que WhatsApp muestra al pegar el enlace en un chat.
+  const [summary = product.name] = product.description;
 
   return {
     title: product.name,
-    description: `${product.summary} ${price} · ${product.unit}.`,
+    description: `${summary} ${price} · ${variantsLabel(product.variants)}.`,
     alternates: { canonical: `/tienda/${product.slug}` },
     openGraph: {
       type: "website",
       title: `${product.name} · Boquita`,
-      description: product.summary,
+      description: summary,
       url: `${SITE_URL}/tienda/${product.slug}`,
       images: [
         {
@@ -66,24 +70,46 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const [product, home] = await Promise.all([getProduct(slug), getHomeContent()]);
   if (!product) notFound();
 
+  const prices = product.variants.map((variant) => variant.price);
+
+  /**
+   * Con varias presentaciones la oferta es un `AggregateOffer` con su horquilla,
+   * no un `Offer` con el precio más bajo: declarar 2.500 a secas cuando el mismo
+   * queque llega a 24.000 hace que Google publique un precio que no existe para
+   * el tamaño que la mayoría pide.
+   */
+  const offers =
+    product.variants.length > 1
+      ? {
+          "@type": "AggregateOffer",
+          lowPrice: Math.min(...prices),
+          highPrice: Math.max(...prices),
+          offerCount: product.variants.length,
+          priceCurrency: "CRC",
+          availability: "https://schema.org/PreOrder",
+          url: `${SITE_URL}/tienda/${product.slug}`,
+          seller: { "@id": `${SITE_URL}#negocio` },
+        }
+      : {
+          "@type": "Offer",
+          price: product.price,
+          priceCurrency: "CRC",
+          // Se hornea por encargo: no hay stock, hay pre-pedido. Declarar InStock
+          // haría que Google prometiera disponibilidad inmediata.
+          availability: "https://schema.org/PreOrder",
+          url: `${SITE_URL}/tienda/${product.slug}`,
+          seller: { "@id": `${SITE_URL}#negocio` },
+        };
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.summary,
+    description: product.description.join(" "),
     image: `${SITE_URL}${product.image.srcSet?.at(-1)?.src ?? product.image.src}`,
     category: CATEGORIAS[product.categoria],
     brand: { "@type": "Brand", name: "Boquita — Sweet & Salty" },
-    offers: {
-      "@type": "Offer",
-      price: product.price,
-      priceCurrency: "CRC",
-      // Se hornea por encargo: no hay stock, hay pre-pedido. Declarar InStock
-      // haría que Google prometiera disponibilidad inmediata.
-      availability: "https://schema.org/PreOrder",
-      url: `${SITE_URL}/tienda/${product.slug}`,
-      seller: { "@id": `${SITE_URL}#negocio` },
-    },
+    offers,
   };
 
   const leadTimeLabel =
@@ -100,33 +126,41 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         <section className="section">
           <div className="container container--start">
             <Link className="product-back" href="/tienda">
-              ← Todo el catálogo
+              ← Catálogo de productos
             </Link>
 
             <div className="product-layout">
-              <Picture image={product.image} className="product-img" />
+              <div className="product-gallery">
+                <Picture image={product.image} className="product-img" />
+                {/* Segunda foto sólo donde ver otro encargo explica el producto:
+                    hoy, el queque personalizado. */}
+                {product.imageB && <Picture image={product.imageB} className="product-img" />}
+              </div>
 
               <div>
-                <p className="h6-sans primary">{CATEGORIAS[product.categoria]}</p>
+                <p className="h6-sans primary">
+                  {CATEGORIAS[product.categoria]}
+                  {product.subcategoria ? ` · ${SUBCATEGORIAS[product.subcategoria]}` : ""}
+                </p>
                 <h1>{product.name}</h1>
 
-                <p className="product-price">
-                  {product.priceFrom ? "desde " : ""}
-                  {formatCRCShort(product.price)}
-                </p>
-                <p className="product-unit">{product.unit}</p>
-
-                {product.description.map((paragraph) => (
-                  <p className="mt-20" key={paragraph.slice(0, 30)}>
-                    {paragraph}
-                  </p>
-                ))}
-
-                <AddToCartButton product={product} />
+                {/* El precio y la presentación los pinta `ProductPurchase`, que es
+                    quien conoce la variante elegida. La descripción se le pasa como
+                    hijo para que siga siendo del servidor y no cambie de sitio. */}
+                <ProductPurchase product={product}>
+                  {product.description.map((paragraph) => (
+                    <p className="mt-20" key={paragraph.slice(0, 30)}>
+                      {paragraph}
+                    </p>
+                  ))}
+                </ProductPurchase>
 
                 <dl className="product-meta">
                   <dt>Anticipación</dt>
                   <dd>Se hornea por encargo, con {leadTimeLabel} de anticipación.</dd>
+
+                  <dt>Ingredientes</dt>
+                  <dd>{product.ingredients.join(", ")}.</dd>
 
                   {product.allergens.length > 0 && (
                     <>

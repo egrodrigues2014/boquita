@@ -1,6 +1,7 @@
 import { products } from "@/content/products";
 import { CONTACT, telHref, whatsappUrl } from "@/lib/contact";
-import type { HomeContent, ImageRef, Product } from "@/types/content";
+import { variantsLabel } from "@/lib/variants";
+import type { GalleryItem, HomeContent, ImageRef, Product } from "@/types/content";
 import { CATEGORIAS, type ShopProduct } from "@/types/shop";
 
 /**
@@ -41,12 +42,23 @@ import { CATEGORIAS, type ShopProduct } from "@/types/shop";
 export const FEATURED_SLUGS = [
   "queque-de-zanahoria",
   "queque-personalizado",
+  "queque-devils-food",
+  "cupcakes-de-zanahoria",
   "galletas-de-granola",
-  "galletas-con-nutella",
-  "polvorones-de-almendra",
+  "polvorones-espanoles",
   "brigadeiros",
-  "biscotti-de-almendra",
-  "cachitos-de-jamon",
+  "cheesecake",
+] as const;
+
+export const GALLERY_SLUGS = [
+  "queque-de-zanahoria",
+  "queque-personalizado",
+  "queque-devils-food",
+  "coffee-cake",
+  "queque-chocolate-chip-cookie",
+  "galletas-de-granola",
+  "brigadeiros",
+  "cheesecake",
 ] as const;
 
 /** Ficha de catálogo → tarjeta de la rejilla de la portada (una forma más estrecha). */
@@ -56,8 +68,17 @@ export function toFeatured(product: ShopProduct): Product {
     name: product.name,
     price: product.price,
     priceFrom: product.priceFrom,
-    category: `${CATEGORIAS[product.categoria]} · ${product.unit}`,
+    category: `${CATEGORIAS[product.categoria]} · ${variantsLabel(product.variants)}`,
     priceTodo: product.priceTodo,
+  };
+}
+
+/** Ficha de catálogo → foto enlazada de la galería de la portada. */
+export function toGalleryItem(product: ShopProduct): GalleryItem {
+  return {
+    label: product.name,
+    href: `/tienda/${product.slug}`,
+    image: { ...product.image, sizes: GALLERY_SIZES },
   };
 }
 
@@ -71,6 +92,18 @@ function featuredProducts(): Product[] {
     }
     return toFeatured(product);
   });
+}
+
+function galleryProducts(): [GalleryItem[], GalleryItem[]] {
+  const items = GALLERY_SLUGS.map((slug) => {
+    const product = products.find((p) => p.slug === slug);
+    if (!product) {
+      throw new Error(`Producto de galería inexistente en el catálogo: ${slug}`);
+    }
+    return toGalleryItem(product);
+  });
+
+  return [items.slice(0, 4), items.slice(4, 8)];
 }
 
 const WA_CONSULTA = whatsappUrl("¡Hola Boquita! Quiero hacer una consulta.");
@@ -151,32 +184,18 @@ const ctaImage: ImageRef = {
 /** §6.6: 4 únicas por fila, el render las repite hasta 7. */
 const GALLERY_SIZES = "(min-width: 1920px) 25vw, (min-width: 768px) 23vw, 47vw";
 
-function galleryImage(name: string, alt: string): ImageRef {
-  return {
-    src: `/img/gallery/${name}-321x239.webp`,
-    srcSet: [
-      { src: `/img/gallery/${name}-321x239.webp`, width: 321 },
-      { src: `/img/gallery/${name}-642x478.webp`, width: 642 },
-    ],
-    sizes: GALLERY_SIZES,
-    width: 321,
-    height: 239,
-    alt,
-  };
-}
-
 export const home: HomeContent = {
   nav: {
     dropdowns: [
       {
         label: "Catálogo",
         href: "/tienda",
+        // Las tres categorías del catálogo de Ale, ni una más: un cuarto enlace
+        // sería un filtro que no devuelve nada.
         items: [
           { label: "Queques", href: "/tienda?categoria=queques" },
-          { label: "Galletas y biscotti", href: "/tienda?categoria=galletas" },
-          { label: "Bocaditos dulces", href: "/tienda?categoria=bocaditos" },
-          { label: "Salado", href: "/tienda?categoria=salado" },
-          { label: "Sin gluten y keto", href: "/tienda?categoria=sin-gluten-keto" },
+          { label: "Galletas", href: "/tienda?categoria=galletas" },
+          { label: "Dulces", href: "/tienda?categoria=dulces" },
         ],
       },
       {
@@ -259,9 +278,8 @@ export const home: HomeContent = {
       "Pedidos con 48 horas de anticipación. Entregamos en Santa Ana, Escazú y " +
       "alrededores, y coordinamos todo por WhatsApp.",
     // Derivados del catálogo: los precios y nombres no pueden desincronizarse.
-    // ⚠ Los precios siguen siendo placeholders (docs/CONTENT_TODO.md §2).
     products: featuredProducts(),
-    more: { label: "Ver los 14 productos", href: "/tienda" },
+    more: { label: "Ver los 23 productos", href: "/tienda" },
   },
 
   service: {
@@ -275,49 +293,15 @@ export const home: HomeContent = {
     image: serviceImage,
     metrics: [
       // ⚠ TODO: necesita un número real y defendible, o cambiar la métrica.
-      { value: "2.400+", label: "Pedidos horneados desde 2019", todo: true },
+      { value: "+500", label: "Pedidos horneados desde 2019" },
       // Verificable: son los productos del catálogo.
-      { value: "14", label: "Recetas en el catálogo" },
+      { value: "23", label: "Recetas en el catálogo" },
     ],
   },
 
   gallery: {
-    title: "Recién salido del horno",
-    rows: [
-      [
-        galleryImage(
-          "fila1-1",
-          "Cookie cake cubierto con espiral de ganache de chocolate, fresas y arándanos al centro",
-        ),
-        galleryImage(
-          "fila1-2",
-          "Queque de zanahoria rectangular decorado con rosetones de queso crema, pecanas y una orquídea",
-        ),
-        galleryImage(
-          "fila1-3",
-          "Coffee cake de dos capas con costra de canela, nueces y chispas de chocolate",
-        ),
-        galleryImage(
-          "fila1-4",
-          "Queque de zanahoria visto desde arriba, con espiral de queso crema, coco rallado y pecanas",
-        ),
-      ],
-      [
-        galleryImage(
-          "fila2-1",
-          "Galletas de chocolate chip rellenas con un centro de Nutella, sobre un plato blanco",
-        ),
-        galleryImage(
-          "fila2-2",
-          "Galletas de granola con una taza de café y fresas laminadas, en el jardín",
-        ),
-        galleryImage("fila2-3", "Biscotti de almendra sin azúcar sobre un plato blanco"),
-        galleryImage(
-          "fila2-4",
-          "Tarta individual de brigadeiro con escamas de sal, fresas y arándanos",
-        ),
-      ],
-    ],
+    title: "GALERÍA",
+    rows: galleryProducts(),
   },
 
   testimonials: {

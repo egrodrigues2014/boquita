@@ -64,6 +64,12 @@ export interface Product {
   priceTodo?: boolean;
 }
 
+export interface GalleryItem {
+  label: string;
+  href: string;
+  image: ImageRef;
+}
+
 export interface Metric {
   /** Máx. 8 caracteres: `.stat-num` va a 50px y desbordaría. */
   value: string;
@@ -142,7 +148,7 @@ export interface HomeContent {
   gallery: {
     title: string;
     /** 4 únicas por fila; el render las repite hasta 7. */
-    rows: [ImageRef[], ImageRef[]];
+    rows: [GalleryItem[], GalleryItem[]];
   };
 
   testimonials: {

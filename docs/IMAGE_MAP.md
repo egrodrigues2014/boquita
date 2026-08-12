@@ -196,23 +196,61 @@ Todas las fuentes vienen ya recomprimidas por Instagram y ninguna supera 1440px 
 
 Por eso `docs/CONTENT_TODO.md` abre pidiendo **una panorámica del mostrador a resolución original**.
 
-## Fichas de producto — Fase 4
+## Fichas de producto
 
-Con la procedencia arreglada, la asignación por producto ya es fiable:
+**Las fotos de producto ya NO salen del PDF de Instagram.** Ale las entregó nombradas por SKU del
+catálogo (`data/boquita_products_catalog.xlsx`) y viven en `assets/products/`, no en `assets/raw/`. La
+tabla de arriba y el techo de 1440px siguen aplicando sólo a los 15 slots del layout.
 
-| Producto | Foto | Nota |
-| --- | --- | --- |
-| Queque de zanahoria | `ig-24` | suplentes `ig-26`, `ig-36` |
-| Queque personalizado | `ig-10` | dos pisos con velas = claramente por encargo |
-| Galletas de granola | `ig-34` | `ig-04` recortada si se quiere el plato lleno |
-| Galletas de chocolate y Nutella | `ig-13` | única y excelente |
-| Polvorones de almendra | `ig-09` | única limpia |
-| Brigadeiros | `ig-05` recortada | `ig-14` tiene más volumen pero sale una mano |
-| Biscotti de almendra | `ig-31` o `ig-33` | |
-| Biscotti keto | `ig-30` | confirmado por permalink |
-| Key lime pie | `ig-32` | apagada · vale la pena refotografiar |
-| Barras de dátil | `ig-15` | reflejos de la tapa · vale la pena refotografiar |
-| Mini queques de manzana | `ig-27` | la misma del hero |
-| Coffee cake vegano | `ig-28` | no se puede confirmar «vegano» visualmente |
-| Cachitos de jamón | `ig-03` recortada | única, y con texto incrustado · **refotografiar** |
-| Asado negro | `ig-21` | sol duro · **refotografiar** |
+**Y son la única excepción a «los originales van fuera del repo».** El `.gitignore` excluye
+`/assets/*` y vuelve a incluir `!/assets/products/`: las 37 de Instagram se regeneran del PDF con
+`scripts/extract-pdf-images.py`, pero estas 24 se tomaron una vez y no hay de dónde sacarlas otra vez.
+Son 6,1 MB. Ojo con el detalle de sintaxis, que es lo que hace que funcione: excluir el
+**directorio** (`/assets/`) impide que git descienda en él y ninguna negación posterior surte efecto;
+hay que excluir su **contenido** (`/assets/*`).
+
+Un job por producto en `PRODUCTS` de `scripts/build-images.mjs`, con el **slug** como `name` y el
+**SKU** como `src`. Proporción natural y escalera `[400, 800, 1200]`: el filtro `w <= width` recorta
+la escalera sola en las fuentes pequeñas y el script **aborta antes que hacer upscale**.
+
+| SKU | Slug del producto | Fuente | Escalones | Nota |
+| --- | --- | --- | --- | --- |
+| `QUE-01` | `queque-de-zanahoria` | 1600×1200 | 400·800·1200 | |
+| `QUE-02` | `cupcakes-de-zanahoria` | 1200×1600 | 400·800·1200 | |
+| `QUE-03` | `cupcakes-de-limon` | 403×268 | **400** | ⚠ miniatura · `photoTodo` |
+| `QUE-04` | `queque-de-limon` | 1186×1099 | 400·800 | |
+| `QUE-05` | `cupcakes-devils-food` | 841×861 | 400·800 | |
+| `QUE-06` | `queque-devils-food` | 1074×1032 | 400·800 | |
+| `QUE-07` | `coffee-cake` | 1600×900 | 400·800·1200 | |
+| `QUE-08` | `queque-chocolate-chip-cookie` | 1200×1200 | 400·800·1200 | |
+| `QUE-09` | `cupcakes-de-vainilla` | 1200×799 | 400·800·1200 | |
+| `QUE-010` | `queque-de-vainilla` | 407×320 | **400** | ⚠ miniatura · `photoTodo` |
+| `QUE-011` | `cupcakes-de-banano` | 1200×1719 | 400·800·1200 | marca de agua ajena ya recortada |
+| `QUE-012` | `banana-bread` | 1079×948 | 400·800 | |
+| `QUE-013` | `queque-personalizado` | 1200×1600 | 400·800·1200 | |
+| `QUE-013-B` | `queque-personalizado-b` | 900×1360 | 400·800 | segunda foto de la ficha |
+| `GAL-014` | `polvorones-espanoles` | 1002×923 | 400·800 | |
+| `GAL-015` | `galletas-de-granola` | 1160×1057 | 400·800 | |
+| `GAL-016` | `galletas-de-miel-y-limon` | 1158×1287 | 400·800 | |
+| `DUL-017` | `barra-de-datiles` | 1095×1435 | 400·800 | la etiqueta de Boquita tapa el centro |
+| `DUL-018` | `brigadeiros` | 1200×1600 | 400·800·1200 | |
+| `DUL-019` | `mousse-de-chocolate` | 1286×857 | 400·800·1200 | vasitos individuales; las variantes son medianas y grandes |
+| `DUL-020` | `pie-de-brigadeiro` | 1600×1200 | 400·800·1200 | |
+| `DUL-021` | `key-lime-pie` | 1142×960 | 400·800 | |
+| `DUL-022` | `cheesecake` | 1079×919 | 400·800 | |
+| `DUL-023` | `quesillo` | 900×722 | 400·800 | |
+
+**El personalizado es el único con dos fotos.** `QUE-013` es un queque de zanahoria de dos pisos de
+cumpleaños y `QUE-013-B` un queque de chocolate de graduación: son dos encargos distintos, y ver los
+dos explica mejor qué se compra que cualquier párrafo. Se emite como `queque-personalizado-b-*` y la
+ficha lo pinta bajo el principal (`imageB` en `ShopProduct`).
+
+**Los `alt` se escribieron mirando cada foto**, uno a uno. Describen lo que hay en la imagen, no el
+nombre del producto: `content/shopSchema.ts` pide 25 caracteres mínimo justamente para que no valga
+repetir el título.
+
+### El logo de 150px que llegó con las fotos
+
+`assets/logo-boquita-150.jpg` viene del mismo envío y **no se usa**: mide 150×150, mientras
+`assets/logo-boquita.jpg` —el que alimenta el pipeline— mide 816×816 y de ahí salen el icono de 512
+del manifest PWA y el `apple-icon` de 180. Sustituirlo sería perder resolución en los iconos.

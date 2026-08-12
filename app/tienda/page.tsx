@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
-import { Picture } from "@/components/ui/Picture";
+import { ProductCard } from "@/components/shop/ProductCard";
 import { getCatalog } from "@/lib/db/catalog";
-import { formatCRCShort } from "@/lib/format";
 import { getHomeContent } from "@/lib/homeContent";
 import { filterShopProducts } from "@/lib/shopSearch";
 import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion } from "@/types/shop";
@@ -66,8 +65,8 @@ export async function generateMetadata({
     return {
       title: "Catálogo",
       description:
-        `Los ${catalog.length} productos de Boquita: queques de zanahoria, galletas de granola ` +
-        "sin gluten, polvorones españoles, brigadeiros, biscotti y bocaditos salados. " +
+        `Los ${catalog.length} productos de Boquita: queques de zanahoria, limón y chocolate, ` +
+        "cupcakes, polvorones españoles, galletas de granola, brigadeiros, pies y quesillo. " +
         "Horneado por encargo en Santa Ana.",
       alternates: { canonical: "/tienda" },
     };
@@ -149,7 +148,8 @@ export default async function TiendaPage({
           <div className="container container--start">
             <div className="shop-header">
               <p className="h6-sans primary">Horneado por encargo</p>
-              <h1>{activeLabel ?? "Todo el catálogo"}</h1>
+              {/* Capitalización normal: el `h1` lo pone en mayúsculas por CSS. */}
+              <h1>{activeLabel ?? "Catálogo de productos"}</h1>
               <p className="lead mt-20">
                 {query
                   ? `${filtered.length} ${filtered.length === 1 ? "producto" : "productos"} para “${query}”.`
@@ -206,20 +206,7 @@ export default async function TiendaPage({
             ) : (
               <ul className="shop-grid">
                 {filtered.map((product) => (
-                  <li className="shop-card" key={product.slug}>
-                    <Link className="shop-card-link" href={`/tienda/${product.slug}`}>
-                      <Picture image={product.image} className="shop-card-img" />
-                      <span className="shop-card-name">{product.name}</span>
-                    </Link>
-                    <p className="shop-card-price">
-                      {product.priceFrom ? "desde " : ""}
-                      {formatCRCShort(product.price)}
-                    </p>
-                    <p className="shop-card-summary">{product.summary}</p>
-                    <p className="shop-card-tag">
-                      {CATEGORIAS[product.categoria]} · {product.unit}
-                    </p>
-                  </li>
+                  <ProductCard key={product.slug} product={product} />
                 ))}
               </ul>
             )}
