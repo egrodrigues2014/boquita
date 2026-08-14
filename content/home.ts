@@ -254,28 +254,15 @@ export const home: HomeContent = {
   },
 
   hero: {
-    eyebrow: "Repostería artesanal en Santa Ana",
-    // El titular son 2 líneas cortas a propósito, no por gusto estético.
-    //
-    // Medido: «Dulce y salado» necesita 580px a 70px, pero `.hero-content` es el
-    // 53% del contenedor en el rango 992–1279px — 567px a 1100px y sólo 510px a
-    // 992px. Con esa frase el h1 se iba a 3 o 4 líneas y rompía el punto 2 del
-    // checklist. El diseño de referencia usaba un titular igual de corto
-    // («ORIGINAL / ITALIAN FOOD»), y el spec §8 dice que el contenido se
-    // sustituye mientras la estructura se conserva: así que se acorta el texto,
-    // no la escala tipográfica.
-    //
-    // «Dulce y salado» sigue siendo el eslogan real de la tienda («Sweet &
-    // Salty»); aquí se parte en las dos líneas que el layout pide.
-    titleTop: "Dulce",
-    titleBottom: "y salado",
+    eyebrow: "Repostería artesanal · Santa Ana",
+    brand: "Boquita",
+    tagline: "Pequeños bocados. Grandes momentos.",
     lead:
-      "Horneamos por encargo en Santa Ana con ingredientes de verdad: " +
-      "mantequilla, zanahoria fresca, chocolate y almendra. Cada pedido sale del " +
-      "horno el día que lo recibís.",
+      "Dulce o salado, preparamos cada encargo con ingredientes de verdad y lo " +
+      "horneamos para que lo recibás recién hecho.",
     ctas: [
-      { label: "Ver el catálogo", href: "/tienda" },
       { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
+      { label: "Ver el catálogo", href: "/tienda" },
     ],
     image: hero,
   },

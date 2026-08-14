@@ -78,9 +78,21 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(JSON.stringify(home.statement)).not.toContain("inline");
   });
 
-  it("exactamente 2 botones en el hero (§8)", () => {
+  it("Boquita protagoniza el hero con una promesa separada del h1", () => {
+    expect(home.hero.eyebrow).toBe("Repostería artesanal · Santa Ana");
+    expect(home.hero.brand).toBe("Boquita");
+    expect(home.hero.tagline).toBe("Pequeños bocados. Grandes momentos.");
+    expect(home.hero.lead).toBe(
+      "Dulce o salado, preparamos cada encargo con ingredientes de verdad y lo " +
+        "horneamos para que lo recibás recién hecho.",
+    );
+  });
+
+  it("exactamente 2 botones en el hero, con WhatsApp primero (§8)", () => {
     expect(home.hero.ctas).toHaveLength(2);
-    expect(home.hero.ctas[0].href).toBe("/tienda");
+    expect(home.hero.ctas[0].label).toBe("Pedir por WhatsApp");
+    expect(home.hero.ctas[0].external).toBe(true);
+    expect(home.hero.ctas[1]).toEqual({ label: "Ver el catálogo", href: "/tienda" });
   });
 
   it("3 dropdowns + 1 enlace simple en el navbar (§5)", () => {

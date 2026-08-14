@@ -7,11 +7,9 @@ import type { HomeContent } from "@/types/content";
  * Hero: 100vh con la imagen a sangre en el borde derecho (spec §6.1).
  * Puntos 1 y 2 del checklist.
  *
- * El `h1` va en DOS líneas con un `<br>` duro, y la segunda en ámbar. El `<br>`
- * es intencionado y no debe sustituirse por `text-wrap:balance`: Cormorant
- * Infant es mucho más estrecha que su fallback Georgia, así que con el `<br>` el
- * swap de fuente cambia anchos pero nunca el número de líneas — sin él,
- * reintroduce reflujo.
+ * La marca es el único `h1`. La frase de impacto queda fuera del encabezado
+ * para que la jerarquía semántica y la visual coincidan: primero Boquita,
+ * después su promesa.
  *
  * El eyebrow se renderiza como `<p class="h6-sans primary">` y no como `h6`,
  * porque un h6 antes de un h2 rompe el orden de encabezados (desvío D-6).
@@ -36,15 +34,16 @@ export function Hero({ hero }: { hero: HomeContent["hero"] }) {
           <Reveal as="p" className="h6-sans primary" index={0}>
             {hero.eyebrow}
           </Reveal>
-          <Reveal as="h1" className="h1-hero" index={1}>
-            {hero.titleTop}
-            <br />
-            <span className="text-primary">{hero.titleBottom}</span>
+          <Reveal as="h1" className="h1-hero hero-brand" index={1}>
+            {hero.brand}
           </Reveal>
-          <Reveal as="p" className="lead mt-20" index={2}>
+          <Reveal as="p" className="hero-tagline" index={2}>
+            {hero.tagline}
+          </Reveal>
+          <Reveal as="p" className="lead" index={3}>
             {hero.lead}
           </Reveal>
-          <Reveal className="btn-group" index={2}>
+          <Reveal className="btn-group" index={3}>
             <Btn link={hero.ctas[0]} />
             <Btn link={hero.ctas[1]} variant="ghost" />
           </Reveal>

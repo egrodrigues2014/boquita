@@ -70,6 +70,16 @@ test.describe("reveal al entrar en pantalla", () => {
     await expect(page).toHaveURL(/\/tienda$/);
   });
 
+  test("el CTA principal abre el pedido directo en WhatsApp", async ({ page }) => {
+    const cta = page.locator(".hero").getByRole("link", { name: "Pedir por WhatsApp" });
+    await expect(cta).toHaveAttribute(
+      "href",
+      /^https:\/\/api\.whatsapp\.com\/send\?phone=50671322355&text=/,
+    );
+    await expect(cta).toHaveAttribute("target", "_blank");
+    await expect(cta).toHaveAttribute("rel", "noopener noreferrer");
+  });
+
   test("la frase editorial revela color al hacer scroll", async ({ page }) => {
     const words = page.locator(".statement-section .scroll-color-text__word");
     await expect(words).not.toHaveCount(0);

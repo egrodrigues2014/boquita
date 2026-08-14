@@ -124,9 +124,10 @@ export interface HomeContent {
 
   hero: {
     eyebrow: string;
-    /** El h1 son EXACTAMENTE 2 líneas, con <br> duro. Máx ~24 caracteres cada una. */
-    titleTop: string;
-    titleBottom: string;
+    /** Nombre de marca: es el único h1 de la portada. */
+    brand: string;
+    /** Promesa editorial independiente del h1. */
+    tagline: string;
     lead: string;
     /** El spec exige exactamente 2 botones. */
     ctas: [Link, Link];

@@ -78,6 +78,26 @@ test("hero ocupa la primera pantalla con imagen full-bleed", async ({ page, view
   expect(image.x + image.width).toBeGreaterThanOrEqual(viewport!.width);
 });
 
+test("marca, promesa y CTA permanecen dentro del primer viewport", async ({ page }) => {
+  const heading = page.getByRole("heading", { level: 1 });
+  const tagline = page.locator(".hero-tagline");
+  const actions = page.locator(".hero .btn-group");
+
+  await expect(heading).toHaveCount(1);
+  await expect(heading).toHaveText("Boquita");
+  await expect(tagline).toHaveText("Pequeños bocados. Grandes momentos.");
+  await expect(actions).toHaveCSS("transform", "none");
+
+  const hero = await box(page, ".hero");
+  const content = await box(page, ".hero-content");
+  expect(content.y).toBeGreaterThanOrEqual(hero.y);
+  expect(content.y + content.height).toBeLessThanOrEqual(hero.y + hero.height + 1);
+
+  const heroRegion = page.locator(".hero");
+  await expect(heroRegion.getByRole("link", { name: "Pedir por WhatsApp" })).toBeInViewport();
+  await expect(heroRegion.getByRole("link", { name: "Ver el catálogo" })).toBeInViewport();
+});
+
 test("statement usa foto izquierda y texto con revelado", async ({ page, viewport }) => {
   await page.locator(".statement-photo").scrollIntoViewIfNeeded();
   await expect(page.locator(".statement-photo")).toHaveClass(/is-in/);

@@ -105,9 +105,8 @@ export const homeSchema = z.object({
 
   hero: z.object({
     eyebrow: z.string().min(3).max(40),
-    // 28 caracteres por línea: a 86px en 1920px de viewport, más ya envuelve.
-    titleTop: z.string().min(2).max(28),
-    titleBottom: z.string().min(2).max(28),
+    brand: z.string().min(2).max(20),
+    tagline: z.string().min(10).max(50),
     // "2-3 líneas" del spec §8.
     lead: z.string().min(60).max(260),
     ctas: z.tuple([link, link]),
