@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { CONTACT, whatsappBaseUrl } from "@/lib/contact";
+import { CONTACT } from "@/lib/contact";
+import { buildDirectWhatsAppUrl } from "@/lib/whatsapp";
 
 /**
  * Último recinto: sólo se usa si falla el propio `layout.tsx`.
@@ -45,7 +46,7 @@ export default function GlobalError({
             <strong>{CONTACT.whatsappDisplay}</strong> y te atendemos directamente.
           </p>
           <a
-            href={whatsappBaseUrl()}
+            href={buildDirectWhatsAppUrl("error")}
             style={{
               display: "inline-block",
               padding: "14px 30px",

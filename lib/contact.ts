@@ -7,8 +7,8 @@
  */
 
 export const CONTACT = {
-  instagramHandle: "boquita_cr",
-  instagramUrl: "https://instagram.com/boquita_cr",
+  instagramHandle: "boquitacostarica",
+  instagramUrl: "https://www.instagram.com/boquitacostarica/",
   /**
    * El dominio tal y como se le enseña a un humano, sin protocolo. Aparece dos
    * veces en el mensaje de WhatsApp del pedido (cabecera y pie), y por eso vive
@@ -21,7 +21,12 @@ export const CONTACT = {
   siteDomain: "boquita.cr",
   whatsappDigits: "50671322355",
   whatsappDisplay: "+506 7132 2355",
-  address: "Calle Obelisco, condominio Condado del Río, Santa Ana, Costa Rica",
+  /**
+   * El correo público de Ale. Se muestra en «Sobre Nosotros» y en la columna de
+   * contacto del pie.
+   */
+  email: "ticaboquita@gmail.com",
+  address: "Condominio Condado del Río, Santa Ana, Costa Rica",
   addressLocality: "Santa Ana",
   addressRegion: "San José",
   addressCountry: "CR",

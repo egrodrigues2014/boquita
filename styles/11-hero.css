@@ -102,7 +102,7 @@
   .hero {
     min-height: 100vh;
     min-height: 100svh;
-    padding-block: 128px 64px;
+    padding-block: calc(var(--header-h) + 32px) 64px;
   }
 
   .hero-content {
@@ -112,7 +112,7 @@
 
 @media (max-width: 767px) {
   .hero {
-    padding-block: 120px 56px;
+    padding-block: calc(var(--header-h) + 28px) 56px;
   }
 
   .hero-content {
@@ -122,6 +122,6 @@
 
 @media (max-width: 479px) {
   .hero {
-    padding-block: 112px 42px;
+    padding-block: calc(var(--header-h) + 24px) 42px;
   }
 }

@@ -48,6 +48,7 @@ const MAX_DETAILED_LINES = 20;
 const LABEL = {
   greeting: "Hola, Ale 👋",
   detail: "📋 *Detalle del pedido*",
+  requestDetail: "📋 *Detalle de la solicitud*",
   total: "💰 *Total:*",
   totalPartial: "💰 *Total (productos con precio fijo):*",
   quoted: "⚠️ Hay productos que se cotizan aparte.",
@@ -66,6 +67,10 @@ const LABEL = {
  */
 function header(kind: string): string {
   return `🛍️ *${kind} desde ${CONTACT.siteDomain}*`;
+}
+
+function directHeader(icon: string, kind: string): string {
+  return `${icon} *${kind} desde ${CONTACT.siteDomain}*`;
 }
 
 function footer(): string {
@@ -216,9 +221,68 @@ export function buildWhatsAppUrl(
   };
 }
 
-/** Enlace de consulta, sin carrito. Lo usan el navbar y el CTA del pie. */
-export function waPlainLink(message: string): string {
-  return whatsappUrl(message);
+export type DirectWhatsAppKind = "order" | "consultation" | "quote" | "error";
+
+export function buildDirectWhatsAppMessage(
+  kind: DirectWhatsAppKind,
+  options: { productName?: string } = {},
+): string {
+  if (kind === "order") {
+    return [
+      LABEL.greeting,
+      "",
+      header("Nuevo pedido"),
+      "",
+      `${LABEL.request} Quiero hacer un pedido y confirmar disponibilidad, fecha y entrega.`,
+      "",
+      footer(),
+    ].join("\n");
+  }
+
+  if (kind === "consultation") {
+    return [
+      LABEL.greeting,
+      "",
+      directHeader("💬", "Nueva consulta"),
+      "",
+      `${LABEL.request} Quiero hacer una consulta sobre un pedido.`,
+      "",
+      footer(),
+    ].join("\n");
+  }
+
+  if (kind === "quote") {
+    return [
+      LABEL.greeting,
+      "",
+      directHeader("🧁", "Cotización"),
+      "",
+      LABEL.requestDetail,
+      `• ${options.productName ?? "Producto a cotizar"}`,
+      "└ Precio a convenir según tamaño y diseño",
+      "",
+      `${LABEL.request} Quiero cotizar este producto y contarles la idea para confirmar tamaño, diseño y fecha.`,
+      "",
+      footer(),
+    ].join("\n");
+  }
+
+  return [
+    LABEL.greeting,
+    "",
+    directHeader("⚠️", "Ayuda"),
+    "",
+    `${LABEL.request} La web me dio un error y quiero hacer un pedido por WhatsApp.`,
+    "",
+    footer(),
+  ].join("\n");
+}
+
+export function buildDirectWhatsAppUrl(
+  kind: DirectWhatsAppKind,
+  options: { productName?: string } = {},
+): string {
+  return whatsappUrl(buildDirectWhatsAppMessage(kind, options));
 }
 
 /**

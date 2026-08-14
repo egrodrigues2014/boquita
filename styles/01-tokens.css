@@ -84,7 +84,7 @@
   --focus: #8a5a06;
 
   /* Texto aún no revelado del statement (ScrollColorText). Es el estado «todavía
-     no» de un texto que el scroll va tiñendo; el estado revelado es --gold-ink
+     no» de un texto que el scroll va tiñendo; el estado revelado es --gold-display
      en el titular y --body-text en el cuerpo.
 
      ⚠ Este token estuvo en 0.55 (3.31:1) para cumplir AA-large, y fue un error de
@@ -94,15 +94,27 @@
      revelado se volvió imperceptible sin que ninguna medición lo señalara,
      porque nadie medía ese par.
 
-     A 0.22 el fantasma da 1.52:1 sobre crema (por debajo del 3:1 que le tocaría
-     como texto grande) y los saltos vuelven a 3.58× y 3.93×. La contrapartida
-     está aceptada y documentada como desvío D-26 en docs/DEVIATIONS.md; en corto:
-     el estado FINAL sí cumple (5.45:1 y 5.99:1), con `prefers-reduced-motion`
-     todo nace revelado, y sin JS `--reveal` vale 100% por defecto.
+     ⚠ Y se mide sobre BLANCO, que es el fondo de .statement-section, no sobre el
+     crema del bloque del catálogo. El token es translúcido, así que el fondo
+     decide su color real: sobre blanco aplana a #d4d0cd, sobre crema a #cfc8be.
+     El test estuvo aplanándolo contra el crema, un color que no sale en pantalla.
+
+     A 0.22 el fantasma da 1.53:1 sobre blanco (por debajo del 3:1 que le tocaría
+     como texto grande) y los saltos son 2.61× en el titular y 4.24× en el cuerpo.
+     La contrapartida está aceptada y documentada como desvío D-26 en
+     docs/DEVIATIONS.md; en corto: el estado FINAL sí cumple (3.99:1 AA-large en
+     el titular y 6.50:1 AA en el cuerpo), con `prefers-reduced-motion` todo nace
+     revelado, y sin JS `--reveal` vale 100% por defecto.
+
+     El titular es el más corto de los dos saltos porque usa --gold-display, que
+     es el token que le toca por tamaño (≥24px) y el que llevan los demás h2. Con
+     --gold-ink daba 3.87×, pero desentonaba con el resto de titulares.
 
      Quien vigila esto ahora es el par, no el umbral: tests/unit/contrast.test.ts
-     exige que el salto fantasma → revelado se mantenga por encima de 3.5×. */
-  --text-ghost: rgba(58, 42, 26, 0.22); /* #cfc8be sobre crema — ver D-26 */
+     exige 2.5× en el titular y 3.5× en el cuerpo. El del titular es más bajo
+     porque con --gold-display el techo absoluto son 3.99× —el salto desde un
+     fantasma blanco puro, o sea invisible—, no porque se haya relajado nada. */
+  --text-ghost: rgba(58, 42, 26, 0.22); /* #d4d0cd sobre el blanco del statement — ver D-26 */
 
   /* ── Cabecera ────────────────────────────────────────────────────────────
      Altura real de `.navbar`, medida: 12px de padding arriba y abajo más la
@@ -123,6 +135,12 @@
   :root {
     /* El logo pasa de 72px a 86px: +14px. */
     --header-h: 115px;
+  }
+}
+
+@media (max-width: 991px) {
+  :root {
+    --header-h: 155px;
   }
 }
 

@@ -35,6 +35,14 @@
   padding-block: var(--section-pad);
 }
 
+/* Ritmo vertical exclusivo de la portada. Es el hueco que ya funcionaba alrededor
+   del statement y ahora gobierna TODOS los cortes entre secciones. Los bloques
+   que se tocan reparten este valor entre sus dos fondos; nunca lo suman dos
+   veces. */
+body {
+  --home-section-gap: clamp(76px, 7vw, 104px);
+}
+
 /* La navbar es `position:absolute`: no ocupa sitio en el flujo, así que la
    primera sección de cada página empieza en y=0, DEBAJO de la cabecera.
    Con 80px de padding contra una cabecera de 101px, el contenido superior
@@ -74,6 +82,9 @@ main > .section:first-child {
   .section {
     --section-pad: 120px;
   }
+  body {
+    --home-section-gap: clamp(88px, 7vw, 120px);
+  }
 }
 
 /* ══════════════════ max-width descendente ══════════════════ */
@@ -81,6 +92,9 @@ main > .section:first-child {
 @media (max-width: 767px) {
   .section {
     --section-pad: 60px;
+  }
+  body {
+    --home-section-gap: 60px;
   }
 }
 

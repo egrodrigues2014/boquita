@@ -1,14 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, type MouseEvent } from "react";
 import { formatCRCShort } from "@/lib/format";
 import { MAX_QTY, cartHasQuoted, cartSubtotal, useCart } from "@/lib/cart";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import { buildWhatsAppUrl, earliestDate } from "@/lib/whatsapp";
 import { findProduct } from "@/content/products";
+import {
+  validateMarketingChoice,
+  type MarketingValidation,
+  type OrderSubmission,
+} from "@/lib/orderSubmission";
 import type { CheckoutFields } from "@/types/shop";
+
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 /**
  * Panel del carrito con el checkout dentro.
@@ -28,7 +35,18 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   const clear = useCart((state) => state.clear);
 
   const panelRef = useRef<HTMLDivElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const consentRef = useRef<HTMLInputElement>(null);
+  const attemptRef = useRef<{ id: string; fingerprint: string } | null>(null);
+  const lastSubmissionRef = useRef<OrderSubmission | null>(null);
   const [fields, setFields] = useState<CheckoutFields>({});
+  const [marketingEmail, setMarketingEmail] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [marketingError, setMarketingError] = useState<
+    Extract<MarketingValidation, { valid: false }> | undefined
+  >();
+  const [website, setWebsite] = useState("");
+  const [saveState, setSaveState] = useState<SaveState>("idle");
   const [sent, setSent] = useState(false);
 
   useScrollLock(open);
@@ -54,6 +72,78 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   const minDate = earliestDate(leadTime, new Date());
 
   const { url, truncated } = buildWhatsAppUrl(lines, fields);
+
+  async function persistSubmission(submission: OrderSubmission) {
+    setSaveState("saving");
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(submission),
+        keepalive: true,
+      });
+      if (!response.ok) throw new Error(`order storage returned ${response.status}`);
+      setSaveState("saved");
+    } catch (error) {
+      console.error("No se pudo guardar el intento de pedido", error);
+      setSaveState("error");
+    }
+  }
+
+  function submissionFor(marketing: OrderSubmission["marketing"]): OrderSubmission {
+    const snapshot = {
+      name: fields.name?.trim() || undefined,
+      date: fields.date || undefined,
+      zone: fields.zone?.trim() || undefined,
+      notes: fields.notes?.trim() || undefined,
+      marketing,
+      items: lines.map((line) => ({
+        slug: line.slug,
+        name: line.name,
+        unit: line.unit,
+        price: line.price,
+        qty: line.qty,
+      })),
+      website,
+    };
+    const fingerprint = JSON.stringify(snapshot);
+    if (!attemptRef.current || attemptRef.current.fingerprint !== fingerprint) {
+      attemptRef.current = { id: crypto.randomUUID(), fingerprint };
+    }
+    return { id: attemptRef.current.id, ...snapshot };
+  }
+
+  function handleFinalize(event: MouseEvent<HTMLAnchorElement>) {
+    const marketing = validateMarketingChoice(marketingEmail, marketingConsent);
+    if (!marketing.valid) {
+      event.preventDefault();
+      setMarketingError(marketing);
+      requestAnimationFrame(() => {
+        (marketing.field === "email" ? emailRef.current : consentRef.current)?.focus();
+      });
+      return;
+    }
+
+    setMarketingError(undefined);
+    const submission = submissionFor(marketing.marketing);
+    lastSubmissionRef.current = submission;
+    setSent(true);
+    void persistSubmission(submission);
+  }
+
+  function resetCompletedCart() {
+    clear();
+    setFields({});
+    setMarketingEmail("");
+    setMarketingConsent(false);
+    setMarketingError(undefined);
+    setWebsite("");
+    setSaveState("idle");
+    setSent(false);
+    attemptRef.current = null;
+    lastSubmissionRef.current = null;
+    onClose();
+  }
 
   return (
     <>
@@ -214,6 +304,78 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                   value={fields.notes ?? ""}
                   onChange={(event) => setFields((f) => ({ ...f, notes: event.target.value }))}
                 />
+
+                <fieldset className="cart-marketing">
+                  <legend>Promociones por correo</legend>
+                  <p className="cart-marketing-intro" id="cart-email-hint">
+                    Recibí novedades, productos de temporada y promociones de Boquita.
+                  </p>
+
+                  <label htmlFor="cart-email">Correo para recibir promociones (opcional)</label>
+                  <input
+                    ref={emailRef}
+                    id="cart-email"
+                    className="cart-input"
+                    type="email"
+                    inputMode="email"
+                    autoComplete="email"
+                    maxLength={254}
+                    value={marketingEmail}
+                    aria-invalid={marketingError?.field === "email" || undefined}
+                    aria-describedby={`cart-email-hint${
+                      marketingError?.field === "email" ? " cart-marketing-error" : ""
+                    }`}
+                    onChange={(event) => {
+                      setMarketingEmail(event.target.value);
+                      setMarketingError(undefined);
+                    }}
+                  />
+
+                  <div className="cart-consent">
+                    <input
+                      ref={consentRef}
+                      id="cart-marketing-consent"
+                      type="checkbox"
+                      checked={marketingConsent}
+                      aria-invalid={marketingError?.field === "consent" || undefined}
+                      aria-describedby={
+                        marketingError?.field === "consent" ? "cart-marketing-error" : undefined
+                      }
+                      onChange={(event) => {
+                        setMarketingConsent(event.target.checked);
+                        setMarketingError(undefined);
+                      }}
+                    />
+                    <span>
+                      <label htmlFor="cart-marketing-consent">
+                        Acepto recibir promociones por correo.
+                      </label>{" "}
+                      <Link href="/aviso-legal#promociones" onClick={onClose}>
+                        Ver privacidad
+                      </Link>
+                      .
+                    </span>
+                  </div>
+
+                  {marketingError && (
+                    <p className="cart-marketing-error" id="cart-marketing-error" role="alert">
+                      {marketingError.message}
+                    </p>
+                  )}
+
+                  <div className="cart-honeypot" aria-hidden="true">
+                    <label htmlFor="cart-website">Sitio web</label>
+                    <input
+                      id="cart-website"
+                      name="website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={website}
+                      onChange={(event) => setWebsite(event.target.value)}
+                    />
+                  </div>
+                </fieldset>
               </div>
 
               {truncated && (
@@ -231,26 +393,44 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setSent(true)}
+                onClick={handleFinalize}
               >
                 Finalizar por WhatsApp
                 <span className="sr-only"> (abre una pestaña nueva)</span>
               </a>
 
               {sent && (
-                <div className="cart-sent" role="status">
-                  <p>¿Ya enviaste el mensaje?</p>
-                  <button
-                    type="button"
-                    className="btn btn--ghost"
-                    onClick={() => {
-                      clear();
-                      setSent(false);
-                      onClose();
-                    }}
-                  >
-                    Sí, vaciar el carrito
-                  </button>
+                <div className={`cart-sent cart-sent--${saveState}`} aria-live="polite">
+                  {saveState === "saving" && <p>Guardando el intento de pedido…</p>}
+                  {saveState === "saved" && (
+                    <>
+                      <p>Pedido guardado. ¿Ya enviaste el mensaje?</p>
+                      <button type="button" className="btn btn--ghost" onClick={resetCompletedCart}>
+                        Sí, vaciar el carrito
+                      </button>
+                    </>
+                  )}
+                  {saveState === "error" && (
+                    <>
+                      <p>
+                        WhatsApp sigue funcionando, pero no pudimos guardar el pedido en el sitio.
+                      </p>
+                      <button
+                        type="button"
+                        className="btn btn--ghost"
+                        onClick={() => {
+                          if (lastSubmissionRef.current) {
+                            void persistSubmission(lastSubmissionRef.current);
+                          }
+                        }}
+                      >
+                        Reintentar guardado
+                      </button>
+                      <button type="button" className="cart-discard" onClick={resetCompletedCart}>
+                        Vaciar de todos modos
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>

@@ -52,3 +52,6 @@ desktop.ini
 
 # capturas de revision visual
 tests/e2e/__screenshots__/
+
+# material de referencia local del carrusel
+/docs/carrusel/

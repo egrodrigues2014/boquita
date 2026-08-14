@@ -1,6 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="44" height="32" viewBox="0 0 44 32" role="presentation">
   <!-- Comilla de apertura para blockquote (spec §2.3: background 50% 0 no-repeat).
-       Dos formas de cita en ámbar --gold-display sobre fondo claro. -->
+       Dos formas de cita en el ámbar del token gold-display sobre fondo claro.
+       ⚠ Sin dobles guiones NI en los comentarios: XML los prohíbe dentro de un
+       comentario y el navegador deja de decodificar la imagen. Ver
+       tests/unit/icons.test.ts. -->
   <g fill="#b07208">
     <path d="M18 32c-6 0-10-4.2-10-10.7C8 12 12.6 4.2 21.2 0l2 4C16.6 7.4 13 12 12.6 17.3c.8-.5 2-.8 3.2-.8 4.2 0 7.2 3 7.2 7.4C23 28.6 21.4 32 18 32Z" />
     <path d="M38.8 32c-6 0-10-4.2-10-10.7C28.8 12 33.4 4.2 42 0l2 4c-6.6 3.4-10.2 8-10.6 13.3.8-.5 2-.8 3.2-.8 4.2 0 7.2 3 7.2 7.4 0 4.7-1.6 8.1-5 8.1Z" />

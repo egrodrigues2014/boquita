@@ -70,6 +70,15 @@ export interface GalleryItem {
   image: ImageRef;
 }
 
+export type GalleryRows = [
+  GalleryItem[],
+  GalleryItem[],
+  GalleryItem[],
+  GalleryItem[],
+  GalleryItem[],
+  GalleryItem[],
+];
+
 export interface Metric {
   /** Máx. 8 caracteres: `.stat-num` va a 50px y desbordaría. */
   value: string;
@@ -90,7 +99,18 @@ export interface Social {
   label: string;
   href: string;
   /** Clave del icono en components/ui/SocialIcon */
-  icon: "instagram" | "whatsapp" | "facebook" | "mail";
+  icon: SocialIconName;
+  todo?: boolean;
+}
+
+export type SocialIconName = "instagram" | "whatsapp" | "facebook" | "mail";
+
+export interface FooterContact {
+  label: string;
+  display: string;
+  href: string;
+  icon: SocialIconName;
+  external?: boolean;
   todo?: boolean;
 }
 
@@ -147,8 +167,8 @@ export interface HomeContent {
 
   gallery: {
     title: string;
-    /** 4 únicas por fila; el render las repite hasta 7. */
-    rows: [GalleryItem[], GalleryItem[]];
+    /** 6 filas de 4 fotos; el render repite cada fila hasta 7 celdas. */
+    rows: GalleryRows;
   };
 
   testimonials: {
@@ -167,14 +187,12 @@ export interface HomeContent {
     };
     newsletter: { title: string; placeholder: string; label: string; button: string };
     brandText: string;
-    /** Sólo canales reales: no se rellenan huecos con placeholders. */
-    social: Social[];
+    /** Canales visibles en la columna de contacto del pie. */
+    contacts: [FooterContact, FooterContact, FooterContact];
     /** Exactamente 4 enlaces de navegacion. */
     links: Link[];
     address: string;
     addressTodo?: boolean;
-    /** Exactamente 2. */
-    phones: { display: string; href: string; todo?: boolean }[];
     copyright: string;
     legal: Link;
   };

@@ -37,7 +37,7 @@ export function bakeryJsonLd() {
     paymentAccepted: "Efectivo, SINPE Móvil, transferencia",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Calle Obelisco, condominio Condado del Río",
+      streetAddress: "Condominio Condado del Río",
       addressLocality: CONTACT.addressLocality,
       addressRegion: CONTACT.addressRegion,
       addressCountry: CONTACT.addressCountry,

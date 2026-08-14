@@ -5,8 +5,15 @@ import { Navbar } from "@/components/layout/Navbar";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { getCatalog } from "@/lib/db/catalog";
 import { getHomeContent } from "@/lib/homeContent";
-import { filterShopProducts } from "@/lib/shopSearch";
-import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion } from "@/types/shop";
+import { filterShopProducts, findShopAllergen, toShopSearchSources } from "@/lib/shopSearch";
+import {
+  CATEGORIAS,
+  OCASIONES,
+  SUBCATEGORIAS,
+  type Categoria,
+  type Ocasion,
+  type Subcategoria,
+} from "@/types/shop";
 
 /**
  * Catálogo completo, con filtros por categoría y por ocasión.
@@ -35,15 +42,29 @@ import { CATEGORIAS, OCASIONES, type Categoria, type Ocasion } from "@/types/sho
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ categoria?: string; ocasion?: string; q?: string }>;
+  searchParams: Promise<{
+    categoria?: string;
+    ocasion?: string;
+    subcategoria?: string;
+    sinAlergeno?: string;
+    q?: string;
+  }>;
 }): Promise<Metadata> {
   const [params, catalog] = await Promise.all([searchParams, getCatalog()]);
 
   const categoria = isCategoria(params.categoria) ? params.categoria : undefined;
   const ocasion = isOcasion(params.ocasion) ? params.ocasion : undefined;
+  const subcategoria = isSubcategoria(params.subcategoria) ? params.subcategoria : undefined;
+  const sinAlergeno = findShopAllergen(catalog, params.sinAlergeno);
   const q = params.q?.trim() ?? "";
 
-  const encontrados = filterShopProducts(catalog, { categoria, ocasion, q }).length;
+  const encontrados = filterShopProducts(catalog, {
+    categoria,
+    ocasion,
+    subcategoria,
+    sinAlergeno,
+    q,
+  }).length;
 
   // Búsqueda: no se indexa. Son infinitas URLs de contenido derivado, y una
   // búsqueda sin resultados sería una página vacía en el índice.
@@ -59,7 +80,12 @@ export async function generateMetadata({
     };
   }
 
-  const partes = [categoria && CATEGORIAS[categoria], ocasion && OCASIONES[ocasion]].filter(Boolean);
+  const partes = [
+    categoria && CATEGORIAS[categoria],
+    subcategoria && SUBCATEGORIAS[subcategoria],
+    ocasion && OCASIONES[ocasion],
+    sinAlergeno && `Sin ${sinAlergeno}`,
+  ].filter(Boolean);
 
   if (partes.length === 0) {
     return {
@@ -77,14 +103,18 @@ export async function generateMetadata({
   // búsquedas concretas («queques Santa Ana»), no a contenido duplicado.
   const query = new URLSearchParams();
   if (categoria) query.set("categoria", categoria);
+  if (subcategoria) query.set("subcategoria", subcategoria);
   if (ocasion) query.set("ocasion", ocasion);
+  if (sinAlergeno) query.set("sinAlergeno", sinAlergeno);
 
   return {
     title: partes.join(" · "),
     description:
       `${encontrados} ${encontrados === 1 ? "producto" : "productos"} de Boquita` +
       `${categoria ? ` en ${CATEGORIAS[categoria].toLowerCase()}` : ""}` +
-      `${ocasion ? ` para ${OCASIONES[ocasion].toLowerCase()}` : ""}. ` +
+      `${subcategoria ? ` de ${SUBCATEGORIAS[subcategoria].toLowerCase()}` : ""}` +
+      `${ocasion ? ` para ${OCASIONES[ocasion].toLowerCase()}` : ""}` +
+      `${sinAlergeno ? ` sin ${sinAlergeno}` : ""}. ` +
       "Horneado por encargo en Santa Ana.",
     alternates: { canonical: `/tienda?${query.toString()}` },
   };
@@ -98,10 +128,20 @@ function isOcasion(value: string | undefined): value is Ocasion {
   return value !== undefined && value in OCASIONES;
 }
 
+function isSubcategoria(value: string | undefined): value is Subcategoria {
+  return value !== undefined && value in SUBCATEGORIAS;
+}
+
 export default async function TiendaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ categoria?: string; ocasion?: string; q?: string }>;
+  searchParams: Promise<{
+    categoria?: string;
+    ocasion?: string;
+    subcategoria?: string;
+    sinAlergeno?: string;
+    q?: string;
+  }>;
 }) {
   const [params, products, home] = await Promise.all([
     searchParams,
@@ -113,35 +153,57 @@ export default async function TiendaPage({
   // haber editado el enlace a mano o el parámetro puede venir de un share viejo.
   const categoria = isCategoria(params.categoria) ? params.categoria : undefined;
   const ocasion = isOcasion(params.ocasion) ? params.ocasion : undefined;
+  const subcategoria = isSubcategoria(params.subcategoria) ? params.subcategoria : undefined;
+  const sinAlergeno = findShopAllergen(products, params.sinAlergeno);
   const query = typeof params.q === "string" ? params.q.trim() : "";
-  const filtered = filterShopProducts(products, { categoria, ocasion, q: query });
+  const filtered = filterShopProducts(products, {
+    categoria,
+    ocasion,
+    subcategoria,
+    sinAlergeno,
+    q: query,
+  });
 
   const activeLabel = categoria
     ? CATEGORIAS[categoria]
+    : subcategoria
+      ? SUBCATEGORIAS[subcategoria]
     : ocasion
       ? OCASIONES[ocasion]
+      : sinAlergeno
+        ? `Productos sin ${sinAlergeno}`
       : undefined;
 
   /** Conserva el otro filtro al cambiar uno: son combinables. */
   const hrefFor = (
-    next: { categoria?: Categoria; ocasion?: Ocasion },
+    next: {
+      categoria?: Categoria;
+      ocasion?: Ocasion;
+      subcategoria?: Subcategoria;
+      sinAlergeno?: string;
+    },
     options: { q?: string } = { q: query },
   ) => {
     const search = new URLSearchParams();
     const nextCategoria = "categoria" in next ? next.categoria : categoria;
     const nextOcasion = "ocasion" in next ? next.ocasion : ocasion;
+    const nextSubcategoria = "subcategoria" in next ? next.subcategoria : subcategoria;
+    const nextSinAlergeno = "sinAlergeno" in next ? next.sinAlergeno : sinAlergeno;
     if (nextCategoria) search.set("categoria", nextCategoria);
+    if (nextSubcategoria) search.set("subcategoria", nextSubcategoria);
     if (nextOcasion) search.set("ocasion", nextOcasion);
+    if (nextSinAlergeno) search.set("sinAlergeno", nextSinAlergeno);
     if (options.q) search.set("q", options.q);
     const queryString = search.toString();
     return queryString ? `/tienda?${queryString}` : "/tienda";
   };
 
   const clearSearchHref = hrefFor({}, { q: "" });
+  const searchProducts = toShopSearchSources(products);
 
   return (
     <>
-      <Navbar nav={home.nav} />
+      <Navbar nav={home.nav} searchProducts={searchProducts} />
 
       <main id="contenido">
         <section className="section">
@@ -183,6 +245,22 @@ export default async function TiendaPage({
               <nav className="shop-filters" aria-label="Filtro por ocasión activo">
                 <Link className="shop-filter" href={hrefFor({ ocasion: undefined })}>
                   Quitar el filtro «{OCASIONES[ocasion]}» ✕
+                </Link>
+              </nav>
+            )}
+
+            {subcategoria && (
+              <nav className="shop-filters" aria-label="Filtro por subcategoría activo">
+                <Link className="shop-filter" href={hrefFor({ subcategoria: undefined })}>
+                  Quitar el filtro «{SUBCATEGORIAS[subcategoria]}» ✕
+                </Link>
+              </nav>
+            )}
+
+            {sinAlergeno && (
+              <nav className="shop-filters" aria-label="Filtro por alérgeno activo">
+                <Link className="shop-filter" href={hrefFor({ sinAlergeno: undefined })}>
+                  Quitar el filtro «sin {sinAlergeno}» ✕
                 </Link>
               </nav>
             )}

@@ -1,5 +1,4 @@
 import { TestimonialsSlider } from "@/components/sections/TestimonialsSlider";
-import { Avatar } from "@/components/ui/Avatar";
 import { Reveal } from "@/components/ui/Reveal";
 import type { HomeContent } from "@/types/content";
 
@@ -9,14 +8,18 @@ import type { HomeContent } from "@/types/content";
  * La alineación de las flechas con el titular sale de dos números que trabajan
  * juntos: `h2.mb--40` y `.slider{padding-top:95px}`. No tocar uno sin el otro.
  *
- * En esta fase el slider es estático: las 6 tarjetas están en el DOM y se ven 3
- * (el resto quedan recortadas por `overflow:hidden`). Las flechas se renderizan
- * ya en su sitio para poder verificar su geometría, pero deshabilitadas — sin
- * JavaScript no navegan, y una flecha que no hace nada es peor que una apagada.
- * En 4f pasan a ser el slider real.
+ * **La tarjeta no lleva retrato**, y es una decisión, no un olvido: el spec §7
+ * define un `.review-avatar` de 70×70 obligatorio. No hay fotos de clientes
+ * reales, y las caras de stock quedan descartadas para un negocio real. Hubo un
+ * SVG con iniciales como sustituto y también se retiró: ocupaba el sitio de una
+ * foto sin aportar lo que una foto aporta. Desvío D-34.
  *
- * Los avatares son SVG con iniciales, no fotos: no hay caras de clientes reales
- * disponibles e inventar personas con fotos de stock sería deshonesto.
+ * ⚠ Con el retrato fuera, `.review-head` **dejó de ser flex**. Si alguien le
+ * devuelve el `display:flex`, el nombre y el rol se colocan uno al lado del
+ * otro en vez de apilarse.
+ *
+ * Devolver `null` con la lista vacía es la válvula para apagar el bloque desde
+ * el contenido, sin tocar código.
  */
 export function Testimonials({
   testimonials,
@@ -26,7 +29,7 @@ export function Testimonials({
   if (testimonials.items.length === 0) return null;
 
   return (
-    <section className="section">
+    <section className="section testimonials-section">
       <div className="container container--stretch">
         <Reveal as="h2" className="mb--40 w-50-tablet">
           {testimonials.title}
@@ -45,11 +48,8 @@ export function Testimonials({
             >
               <article className="review-card">
                 <div className="review-head">
-                  <Avatar name={item.name} />
-                  <div>
-                    <div className="review-name">{item.name}</div>
-                    <div className="review-role">{item.role}</div>
-                  </div>
+                  <div className="review-name">{item.name}</div>
+                  <div className="review-role">{item.role}</div>
                 </div>
                 <p>{item.quote}</p>
               </article>

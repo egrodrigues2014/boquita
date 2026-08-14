@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FEATURED_SLUGS, GALLERY_SLUGS, home } from "@/content/home";
+import { FEATURED_SLUGS, home } from "@/content/home";
 import { products as fallbackCatalog } from "@/content/products";
 import { buildHomeContent } from "@/lib/homeContent";
 import { homeSchema } from "@/content/schema";
@@ -112,20 +112,25 @@ describe("ninguna tarjeta de la portada lleva a un 404", () => {
 });
 
 describe("ninguna foto de la galería lleva a un 404", () => {
-  it("todas las fotos curadas están en el catálogo servido", () => {
+  it("todas las fotos del catálogo servido se publican en la galería", () => {
     const content = buildHomeContent(fallbackCatalog);
     const hrefs = content.gallery.rows.flat().map((item) => item.href);
+    const expected = fallbackCatalog.flatMap((product) =>
+      product.imageB
+        ? [`/tienda/${product.slug}`, `/tienda/${product.slug}`]
+        : [`/tienda/${product.slug}`],
+    );
 
-    expect(hrefs).toEqual(GALLERY_SLUGS.map((slug) => `/tienda/${slug}`));
+    expect(hrefs).toEqual(expected);
   });
 
-  it("si falta una foto curada, se rellena con otro producto SERVIDO", () => {
-    const ausente = GALLERY_SLUGS[0];
+  it("si falta un producto, la galería sólo usa fotos del catálogo SERVIDO", () => {
+    const ausente = fallbackCatalog[0]!.slug;
     const recortado = fallbackCatalog.filter((product) => product.slug !== ausente);
 
     const content = buildHomeContent(recortado);
     const hrefs = content.gallery.rows.flat().map((item) => item.href);
-    expect(hrefs).toHaveLength(8);
+    expect(hrefs).toHaveLength(23);
     expect(hrefs).not.toContain(`/tienda/${ausente}`);
 
     for (const href of hrefs) {

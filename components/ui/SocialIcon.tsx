@@ -1,4 +1,4 @@
-import type { Social } from "@/types/content";
+import type { Social, SocialIconName } from "@/types/content";
 
 /**
  * Iconos sociales como SVG inline con `fill:currentColor`, como pide la nota del
@@ -7,7 +7,7 @@ import type { Social } from "@/types/content";
  * Dentro de `.footer-dark`, `--gold-ink` vale #E8A81B → 6.58:1 sobre el marrón.
  */
 
-const PATHS: Record<Social["icon"], string> = {
+const PATHS: Record<SocialIconName, string> = {
   instagram:
     "M12 2.2c3.2 0 3.6 0 4.9.07 1.2.05 1.8.25 2.2.42.6.23 1 .5 1.4.94.44.44.7.84.94 1.4.17.4.37 1 .42 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.05 1.2-.25 1.8-.42 2.2-.23.6-.5 1-.94 1.4-.44.44-.84.7-1.4.94-.4.17-1 .37-2.2.42-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.05-1.8-.25-2.2-.42-.6-.23-1-.5-1.4-.94-.44-.44-.7-.84-.94-1.4-.17-.4-.37-1-.42-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.05-1.2.25-1.8.42-2.2.23-.6.5-1 .94-1.4.44-.44.84-.7 1.4-.94.4-.17 1-.37 2.2-.42C8.4 2.2 8.8 2.2 12 2.2Zm0 1.8c-3.1 0-3.5 0-4.7.07-.9.04-1.4.2-1.7.32-.4.17-.7.36-1 .66-.3.3-.5.6-.66 1-.12.3-.28.8-.32 1.7C3.55 8.9 3.54 9.3 3.54 12s0 3.1.07 4.3c.04.9.2 1.4.32 1.7.17.4.36.7.66 1 .3.3.6.5 1 .66.3.12.8.28 1.7.32 1.2.06 1.6.07 4.7.07s3.5 0 4.7-.07c.9-.04 1.4-.2 1.7-.32.4-.17.7-.36 1-.66.3-.3.5-.6.66-1 .12-.3.28-.8.32-1.7.06-1.2.07-1.6.07-4.3s0-3.1-.07-4.3c-.04-.9-.2-1.4-.32-1.7-.17-.4-.36-.7-.66-1-.3-.3-.6-.5-1-.66-.3-.12-.8-.28-1.7-.32-1.2-.06-1.6-.07-4.7-.07Zm0 3.06a5.94 5.94 0 1 1 0 11.88 5.94 5.94 0 0 1 0-11.88Zm0 1.8a4.14 4.14 0 1 0 0 8.28 4.14 4.14 0 0 0 0-8.28Zm7.56-2a1.39 1.39 0 1 1-2.78 0 1.39 1.39 0 0 1 2.78 0Z",
   whatsapp:
@@ -16,6 +16,20 @@ const PATHS: Record<Social["icon"], string> = {
     "M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06C2 17.08 5.66 21.24 10.44 22v-7.02H7.9v-2.92h2.54v-2.22c0-2.52 1.49-3.91 3.77-3.91 1.1 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.45 2.92h-2.33V22C18.34 21.24 22 17.08 22 12.06Z",
   mail: "M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4.24-8 5-8-5V6l8 5 8-5v2.24Z",
 };
+
+export function SocialIconGlyph({
+  icon,
+  className,
+}: {
+  icon: SocialIconName;
+  className?: string;
+}) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d={PATHS[icon]} />
+    </svg>
+  );
+}
 
 export function SocialIcon({ social, last = false }: { social: Social; last?: boolean }) {
   return (
@@ -27,9 +41,7 @@ export function SocialIcon({ social, last = false }: { social: Social; last?: bo
         ? {}
         : { target: "_blank", rel: "noopener noreferrer" })}
     >
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path d={PATHS[social.icon]} />
-      </svg>
+      <SocialIconGlyph icon={social.icon} />
     </a>
   );
 }

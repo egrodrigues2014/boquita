@@ -1,22 +1,31 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   16-gallery.css — Dos filas desbordadas con parallax horizontal (spec §6.6).
+   16-gallery.css — Filas desbordadas con parallax horizontal (spec §6.6).
 
    ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
 
-   Punto 7 del checklist: las dos filas DEBEN desbordar el viewport, estar
-   recortadas y moverse en direcciones opuestas al hacer scroll.
+   Punto 7 del checklist: las filas DEBEN desbordar el viewport, estar
+   recortadas y alternar direcciones al hacer scroll.
 
    Cada item mide 23% del ancho y hay 7 por fila, así que la tira ocupa ~161% y
    `.scroller{overflow:hidden}` la recorta: se ven ~4 fotos completas y 2
    cortadas por los bordes. **Ese recorte es parte del diseño, no un bug.**
 
    Se usan 4 imágenes únicas por fila, repetidas hasta 7. Como el `src` y el
-   `sizes` de las repetidas son idénticos, el navegador hace 8 peticiones, no 14.
+   `sizes` de las repetidas son idénticos, el navegador reutiliza cada foto.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* La galería sangra a todo el viewport, no a los 1170px del contenedor. */
 .gallery {
   width: 100%;
+}
+
+.gallery-section {
+  padding-top: var(--home-section-gap);
+}
+
+/* El margen global del h2 no debe sumarse al hueco exterior de la sección. */
+.gallery-section h2 {
+  margin-top: 0;
 }
 
 .gallery-row--1 {
@@ -37,8 +46,8 @@
   gap: 25px;
   margin-inline: 15px;
   position: relative;
-  /* DESVÍO D-3: el spec pone `will-change:transform` permanente. Con 14
-     imágenes serían dos capas compositadas grandes siempre activas, caro en
+  /* DESVÍO D-3: el spec pone `will-change:transform` permanente. Con muchas
+     imágenes serían capas compositadas grandes siempre activas, caro en
      móvil. Se mueve a `.track.is-animating`, que el componente activa sólo
      mientras la sección está en pantalla. Invisible y estrictamente mejor. */
 }
@@ -74,6 +83,17 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.35s ease-out;
+}
+
+.gallery-item:focus-visible .gallery-img {
+  transform: scale(1.06);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .gallery-item:hover .gallery-img {
+    transform: scale(1.06);
+  }
 }
 
 /* ══════════════════ min-width ascendente ══════════════════ */

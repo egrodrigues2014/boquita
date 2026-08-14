@@ -787,8 +787,8 @@ componente** el tratamiento del estado deshabilitado.
 - [ ] Foco visible que no dependa de `outline:0` (ver UI-096).
 
 ### UI-033 · Formulario: agrupación, validación y envío `[inferido]` 🟠 M
-**Nota.** El único formulario real es la newsletter del pie, y **no envía** — está fuera del render
-hasta tener backend (`ESTADO.md`). Esta tarea define el patrón, no lo conecta.
+**Nota.** El pie mantiene fuera del render su newsletter histórica. El formulario real vive ahora
+en el carrito y registra pedidos y correos consentidos mediante `POST /api/orders` (`ESTADO.md`).
 **Dependencias.** Bloqueada por UI-032.
 
 ### UI-034 · Enlaces y CTA textuales `[inferido]` 🟡 S
@@ -940,8 +940,8 @@ el foco y que respete `prefers-reduced-motion`.
 
 - **UI-078 · Sobre nosotros** `[inferido]` 🟢 M — bloqueada por UI-035.
 - **UI-079 · Aviso legal** `[inferido]` 🟢 M — ⚠ **prohibido reescribir el copy legal** (riesgo 11).
-  Nota: esa página promete hoy que no se guardan datos en servidor propio; **se reescribe antes de
-  que la newsletter inserte la primera fila** (`ESTADO.md`).
+  La página ya documenta la escritura en Neon, la retención de 24 meses y el consentimiento
+  promocional (`content/pages.ts`).
 - **UI-080 · 404** `[inferido]` 🟡 S — ya existe [`not-found.tsx`](../app/not-found.tsx) (commit
   `8fb7451`). Verificar antes de rehacer.
 - **UI-081 · Enlaces de recuperación en 404** `[inferido]` 🟡 S — bloqueada por UI-036.

@@ -16,7 +16,31 @@ async function openCart(page: Page) {
   await expect(drawer).toHaveCSS("transform", "none");
 }
 
+async function mockOrderSave(page: Page, status = 201) {
+  await page.route("**/api/orders", (route) =>
+    route.fulfill({
+      status,
+      contentType: "application/json",
+      body: JSON.stringify(status < 400 ? { status: "saved" } : { code: "storage_unavailable" }),
+    }),
+  );
+}
+
 test.describe("catálogo", () => {
+  test("muestra buscador con autocomplete en la tienda movil", async ({ page, viewport }) => {
+    test.skip(viewport!.width > 991, "El buscador movil vive dentro del catalogo");
+    await page.goto("/tienda");
+
+    const searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
+    await expect(searchbox).toBeVisible();
+    await searchbox.fill("huevo");
+    await expect(page.getByRole("option", { name: "Sin huevo" })).toBeVisible();
+    await page.getByRole("option", { name: "Sin huevo" }).click();
+
+    await expect(page).toHaveURL(/\/tienda\?sinAlergeno=huevo/);
+    await expect(page.locator(".shop-card")).toHaveCount(3);
+  });
+
   test("lista los 23 productos", async ({ page }) => {
     await page.goto("/tienda");
     await expect(page.locator(".shop-card")).toHaveCount(23);
@@ -523,6 +547,7 @@ test.describe("checkout por WhatsApp", () => {
     await openCart(page);
 
     // Se intercepta la apertura de la pestaña para no salir a WhatsApp.
+    await mockOrderSave(page);
     await context.route("**api.whatsapp.com**", (route) => route.abort());
     await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
 
@@ -536,11 +561,114 @@ test.describe("checkout por WhatsApp", () => {
     await page.getByRole("button", { name: "Añadir al carrito" }).click();
     await openCart(page);
 
+    await mockOrderSave(page);
     await context.route("**api.whatsapp.com**", (route) => route.abort());
     await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
     await page.getByRole("button", { name: "Sí, vaciar el carrito" }).click();
 
     await expect(page.getByRole("button", { name: "Carrito, vacío" })).toBeVisible();
+  });
+
+  test("guarda un pedido sin correo sin bloquear WhatsApp", async ({ page, context }) => {
+    await page.goto("/tienda/brigadeiros");
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await openCart(page);
+    await page.locator("#cart-name").fill("Ana");
+
+    let payload: Record<string, unknown> | undefined;
+    await page.route("**/api/orders", async (route) => {
+      payload = route.request().postDataJSON() as Record<string, unknown>;
+      await route.fulfill({ status: 201, contentType: "application/json", body: '{"status":"saved"}' });
+    });
+    await context.route("**api.whatsapp.com**", (route) => route.abort());
+
+    await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
+    await expect(page.getByText("Pedido guardado.")).toBeVisible();
+    expect(payload).toMatchObject({ name: "Ana", website: "" });
+    expect(payload).not.toHaveProperty("marketing");
+    expect(payload?.items).toEqual([
+      expect.objectContaining({ slug: "brigadeiros", qty: 1, price: expect.any(Number) }),
+    ]);
+  });
+
+  test("un correo empezado exige consentimiento antes de abrir WhatsApp", async ({ page }) => {
+    await page.goto("/tienda/brigadeiros");
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await openCart(page);
+    await page.locator("#cart-email").fill("ana@example.com");
+
+    let requests = 0;
+    await page.route("**/api/orders", (route) => {
+      requests += 1;
+      return route.abort();
+    });
+    await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click();
+
+    await expect(page.locator("#cart-marketing-error")).toContainText("Marcá la casilla");
+    await expect(page.locator("#cart-marketing-consent")).toBeFocused();
+    expect(requests).toBe(0);
+  });
+
+  test("guarda correo normalizado, consentimiento versionado y pedido completo", async ({
+    page,
+    context,
+  }) => {
+    await page.goto("/tienda/polvorones-espanoles");
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await openCart(page);
+    await page.locator("#cart-name").fill("María");
+    await page.locator("#cart-zone").fill("Santa Ana");
+    await page.locator("#cart-notes").fill("Caja de regalo");
+    await page.locator("#cart-email").fill(" MARIA@EXAMPLE.COM ");
+    await page.locator("#cart-marketing-consent").check();
+
+    let payload: Record<string, unknown> | undefined;
+    await page.route("**/api/orders", async (route) => {
+      payload = route.request().postDataJSON() as Record<string, unknown>;
+      await route.fulfill({ status: 201, contentType: "application/json", body: '{"status":"saved"}' });
+    });
+    await context.route("**api.whatsapp.com**", (route) => route.abort());
+    await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
+    await expect(page.getByText("Pedido guardado.")).toBeVisible();
+
+    expect(payload).toMatchObject({
+      name: "María",
+      zone: "Santa Ana",
+      notes: "Caja de regalo",
+      marketing: {
+        email: "maria@example.com",
+        consent: true,
+        version: "cart-2026-08",
+      },
+    });
+    const href = await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).getAttribute("href");
+    expect(decodeURIComponent(href!)).not.toContain("maria@example.com");
+  });
+
+  test("permite reintentar con el mismo UUID cuando Neon falla", async ({ page, context }) => {
+    await page.goto("/tienda/brigadeiros");
+    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await openCart(page);
+
+    const ids: string[] = [];
+    await page.route("**/api/orders", async (route) => {
+      const payload = route.request().postDataJSON() as { id: string };
+      ids.push(payload.id);
+      const retry = ids.length > 1;
+      await route.fulfill({
+        status: retry ? 200 : 503,
+        contentType: "application/json",
+        body: retry ? '{"status":"already_saved"}' : '{"code":"storage_unavailable"}',
+      });
+    });
+    await context.route("**api.whatsapp.com**", (route) => route.abort());
+    await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
+
+    await expect(page.getByRole("button", { name: "Reintentar guardado" })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar guardado" }).click();
+    await expect(page.getByText("Pedido guardado.")).toBeVisible();
+    expect(ids).toHaveLength(2);
+    expect(ids[1]).toBe(ids[0]);
   });
 });
 
@@ -592,6 +720,49 @@ test.describe("la portada enlaza bien con la tienda", () => {
     await expect(page).toHaveURL(/\/tienda\?q=brigadeiros/);
     await expect(page.locator(".shop-card")).toHaveCount(1);
     await expect(page.locator(".shop-card-name")).toHaveText("Brigadeiros");
+  });
+
+  test("la busqueda del header muestra autocomplete y aplica filtros", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(viewport!.width <= 991, "La busqueda visible vive en el header desktop");
+    await page.goto("/");
+
+    let searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
+    await searchbox.fill("Queq");
+    await expect(page.getByRole("option", { name: "Queques" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "Queque de zanahoria" })).toBeVisible();
+
+    const overflow = await page.locator(".nav-search-suggestions").evaluate((list) => ({
+      clientHeight: list.clientHeight,
+      scrollHeight: list.scrollHeight,
+    }));
+    expect(overflow.scrollHeight).toBeGreaterThan(overflow.clientHeight);
+
+    await page.getByRole("option", { name: "Queques" }).click();
+    await expect(page).toHaveURL(/\/tienda\?categoria=queques/);
+
+    await page.goto("/");
+    searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
+    await searchbox.fill("huevo");
+    await expect(page.getByRole("option", { name: "Sin huevo" })).toBeVisible();
+    await page.getByRole("option", { name: "Sin huevo" }).click();
+    await expect(page).toHaveURL(/\/tienda\?sinAlergeno=huevo/);
+    await expect(page.locator(".shop-card")).toHaveCount(3);
+  });
+
+  test("la portada movil muestra buscador en el header", async ({ page, viewport }) => {
+    test.skip(viewport!.width > 991, "El buscador movil vive en el header");
+    await page.goto("/");
+
+    const searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
+    await expect(searchbox).toBeVisible();
+    await searchbox.fill("Queq");
+    await expect(page.getByRole("option", { name: "Queques" })).toBeVisible();
+    await page.getByRole("option", { name: "Queques" }).click();
+
+    await expect(page).toHaveURL(/\/tienda\?categoria=queques/);
   });
 });
 

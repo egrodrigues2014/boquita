@@ -6,22 +6,29 @@
 */
 
 .statement-section {
-  --home-section-gap: clamp(76px, 7vw, 104px);
-
   background: var(--white);
   padding-block: var(--home-section-gap);
 }
 
+/* `stretch` y no `center`: la columna de texto tiene que ocupar la MISMA caja
+   que la foto para poder repartir titular y párrafo entre sus dos bordes. De
+   paso es lo que sincroniza las dos entradas — mismo borde superior y misma
+   altura significa cruzar a la vez el umbral del observer compartido. */
 .statement-media-layout {
   display: grid;
   grid-template-columns: minmax(0, 0.92fr) minmax(0, 1fr);
   column-gap: var(--home-section-gap);
   width: 100%;
-  align-items: center;
+  align-items: stretch;
 }
 
+/* La foto se exime del `stretch`: con él, `align-self` le impondría la altura
+   de la fila y se comería su `aspect-ratio`. Con `start` conserva su proporción
+   y además clava el borde superior de la fila, que es contra lo que se alinea
+   el titular. */
 .statement-photo {
   position: relative;
+  align-self: start;
   overflow: hidden;
   width: 100%;
   aspect-ratio: 493 / 300;
@@ -35,8 +42,23 @@
   object-fit: cover;
 }
 
+/* La celda derecha: el envoltorio de <Reveal>. Sólo estira; el reparto lo hace
+   la columna de dentro. */
 .statement-story {
-  display: block;
+  display: flex;
+  max-width: 620px;
+}
+
+/* Titular contra el borde superior de la foto, párrafo contra el inferior.
+   La holgura la pone la foto: su `aspect-ratio` marca la altura de la fila y
+   aquí sobra lo que el texto no ocupa. Si el texto llegara a ser más alto que
+   la foto (pasa cerca de 992px), `space-between` se queda sin holgura y manda
+   el `margin` del párrafo, que actúa de separación mínima. */
+.statement-story .scroll-color-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .scroll-color-text__heading {
@@ -48,7 +70,7 @@
   font-weight: 400;
   font-size: 50px;
   line-height: 1em;
-  text-align: left;
+  text-align: center;
   text-transform: uppercase;
   color: var(--text-ghost);
 }
@@ -57,12 +79,12 @@
   position: relative;
   z-index: 1;
   max-width: 620px;
-  margin: 20px 0 0;
+  margin: 28px 0 0;
   font-family: var(--ff-sans);
   font-weight: 400;
   font-size: 18px;
-  line-height: 1.5em;
-  text-align: left;
+  line-height: 1.8em;
+  text-align: center;
   text-transform: none;
   color: var(--text-ghost);
 }
@@ -84,17 +106,93 @@
   clip-path: inset(0 calc(100% - var(--reveal)) 0 0);
 }
 
+/* `--gold-display` y no `--gold-ink`, que es lo que hubo aquí hasta ahora: esto
+   es un `h2` de 50/42/34px, o sea el carril de ≥24px, y el titular era el ÚNICO
+   del sitio pintado con el token de <24px. Se veía —el cliente lo reportó como
+   «otra tipografía», y no lo era: la familia, el peso y el tamaño ya coincidían
+   con los demás titulares; lo que desentonaba era este ámbar más apagado.
+
+   Cuesta salto de revelado y se aceptó a sabiendas: `#B07208` es más claro que
+   `#8A5A06`, así que el par fantasma → revelado se acorta. MEDIDO con lib/color
+   sobre el blanco de esta sección: el salto pasa de 3.87× a 2.61×, y el estado
+   final de 5.92:1 a 3.99:1 — que es AA-large, el umbral que le toca a 50px, no
+   el AA normal que cumplía de sobra antes.
+
+   El 3.5× que exigía el test es INALCANZABLE con `#B07208`: el techo absoluto
+   son 3.99×, el salto desde un fantasma blanco puro, o sea invisible. De ahí que
+   `contrast.test.ts` baje el mínimo del titular a 2.5× —muy por encima del 1.65×
+   con el que UI-060 mató el efecto— y deje el del cuerpo en 3.5×, que no cambia
+   de token. Todo el detalle, en el desvío D-26. */
 .scroll-color-text__heading .scroll-color-text__fill {
-  color: var(--gold-ink);
+  color: var(--gold-display);
 }
 
 .scroll-color-text__body .scroll-color-text__fill {
   color: var(--body-text);
 }
 
-@media (min-width: 1280px) {
-  .statement-section {
-    --home-section-gap: clamp(88px, 7vw, 120px);
+/* ── Recorte óptico, sólo a dos columnas ──────────────────────────────────
+   `space-between` alinea CAJAS DE LÍNEA, y el ojo alinea TRAZOS. Sin recortar
+   el medio-espacio, el titular cae por debajo del borde superior de la foto y
+   la última línea del párrafo se queda corta del inferior.
+
+   Se recorta hasta el alto de mayúscula arriba y hasta la línea base abajo —no
+   hasta el trazo real— porque ambos son constantes de la fuente: no bailan
+   según qué glifos caigan en la línea. Es lo que hará `text-box-trim` cuando se
+   pueda dar por soportado.
+
+   MEDIDO con las webfonts cargadas (canvas TextMetrics, no deducido):
+     h2  Cormorant Infant 50px/lh 1em → ascent 46, descent 14, mayúscula 32.
+         medio-espacio (50−60)/2 = −5px; hasta la mayúscula −5+(46−32) = 9px
+         → 9/50 = 0.18em. Sale igual a 42px y a 34px salvo redondeo subpíxel.
+     p   Libre Franklin, ascent 0.962em y descent 0.231em. Con lh 1.6em:
+         medio-espacio (1.6−1.192)/2 = 0.204em; hasta la línea base
+         0.204+0.231 = 0.4346em. Es el valor SIN JS; con JS lo recalcula
+         `fitBody()` para el interlineado que toque (ver más abajo).
+
+   A ≤991 no aplica y no es un olvido: apilado no hay bordes de foto contra los
+   que alinear, y el recorte sólo estropearía el ritmo vertical.
+
+   ── El cuerpo LLENA la banda ────────────────────────────────────────────────
+   Con 18px el copy son 3 líneas (97px) contra una banda de 158-215px, así que
+   `space-between` metía toda la holgura —hasta 133px— en un agujero entre el
+   titular y el texto. El texto tiene que ocupar la banda entera, y para eso
+   crecen el tamaño y el interlineado. Desvío D-35.
+
+   **El tamaño es fluido, y no por gusto.** 26px fijos NO caben abajo: MEDIDO,
+   a 992-1024 la banda son 158-168px y 26px pide 6 líneas, con lo que el reparto
+   deja el interlineado en 0,91-0,97em — por debajo de ascent+descent, o sea
+   líneas solapadas. 22px es el ÚNICO tamaño que da 4 líneas en todo el rango de
+   dos columnas (medido a 1920/1440/1280/1100/1024/992), y el interlineado que
+   pide queda entre 1,71em y 2,44em. Así que 26px donde cabe (≥~1440) y 22px
+   donde no, con la rampa entre medias:
+     1.8vw → 22px hasta 1222, 23px a 1280, 26px desde 1444, y ahí se queda.
+
+   **El interlineado lo calcula JS** (`fitBody()` en ScrollColorText): cuenta las
+   líneas REALES y reparte la banda entre ellas. No puede ser un número fijo —
+   medido: con uno fijo el error va de −55px a +50px según el ancho, porque el
+   número de líneas salta. Y `content/schema.ts` admite un `body` de 40 a 280
+   caracteres, así que cualquier valor a mano caduca al cambiar el copy.
+
+   Los `var()` llevan fallback A PROPÓSITO: es el camino sin JS, y además un
+   `var()` a una variable no declarada no degrada, tumba la propiedad entera
+   (regla 5 de CLAUDE.md). Sin JS el párrafo sale a 1.6em: legible y sin
+   desbordar, sólo sin llenar exacto. */
+@media (min-width: 992px) {
+  /* La bandera del ajuste vive AQUÍ y no en el JS: así el breakpoint está
+     escrito en un solo sitio. `fitBody()` la lee y se retira si no vale 1. */
+  .statement-story {
+    --statement-fit: 1;
+  }
+
+  .scroll-color-text__heading {
+    margin-top: -0.18em;
+  }
+
+  .scroll-color-text__body {
+    font-size: clamp(22px, 1.8vw, 26px);
+    line-height: var(--body-lh, 1.6em);
+    margin-bottom: calc(-1 * var(--body-trim, 0.4346em));
   }
 }
 
@@ -109,15 +207,24 @@
     justify-self: center;
   }
 
+  /* El tope sube a 760 para no contradecir al del titular y el cuerpo: la celda
+     los capaba a 620 y ganaba ella, que es la de fuera.
+
+     El `text-align: center` ya NO se repite aquí: centrar es la base de la
+     sección a todos los anchos. Repetirlo dejaba dos sitios diciendo lo mismo, y
+     el de abajo tapaba en silencio cualquier cambio del de arriba. */
   .statement-story {
+    max-width: 760px;
     justify-self: center;
-    text-align: center;
   }
 
   .scroll-color-text__heading,
   .scroll-color-text__body {
     max-width: 760px;
-    text-align: center;
+  }
+
+  .scroll-color-text__body {
+    line-height: 1.7em;
   }
 
   .scroll-color-text__heading {
@@ -126,10 +233,6 @@
 }
 
 @media (max-width: 767px) {
-  .statement-section {
-    --home-section-gap: 60px;
-  }
-
   .statement-media-layout {
     row-gap: 36px;
   }

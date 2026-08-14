@@ -2,8 +2,21 @@
    40-prose.css — Páginas de texto: «sobre nosotros» y el aviso legal.
 
    No están en el spec. Se construyen con su misma escala tipográfica y sus
-   tokens, pero con una medida de línea acotada: los 1170px del contenedor son
-   demasiado anchos para leer prosa seguida.
+   tokens, y por defecto con una medida de línea acotada: los 1170px del
+   contenedor son demasiado anchos para leer prosa seguida.
+
+   «Sobre nosotros» y «Aviso legal» comparten el carril completo del contenedor
+   mediante `.prose--wide`. El 404 y la página de error siguen acotados.
+
+   Por eso ambas páginas llevan un carril tipográfico bajo `.editorial-page`:
+   con la línea a 1170px, el 18px/1,5 del resto del sitio es incómodo de leer.
+   Subir el cuerpo baja los caracteres por línea y el interlineado los separa —
+   es el arreglo legítimo cuando el ancho no se negocia. No «normalizar» esos
+   números al resto del sitio sin devolver antes la medida corta.
+
+   ⚠ El ámbar va por tamaño, no por gusto (regla 4 de CLAUDE.md): `--gold-ink`
+   para texto <24px y `--gold-display` SÓLO a ≥24px. Por eso la firma del cierre
+   no baja de 24px ni en móvil.
    ══════════════════════════════════════════════════════════════════════════ */
 
 /* ~70 caracteres por línea, que es donde la lectura es cómoda. */
@@ -16,12 +29,279 @@
   max-width: 620px;
 }
 
+/* La medida completa de las páginas editoriales. Cabeceras y prosa cuelgan de
+   `.container` idénticos, así que quitar el tope mantiene el mismo carril sin
+   escribir su ancho dos veces. Lo fija `geometry.spec.ts`. */
+.prose--wide {
+  max-width: 100%;
+}
+
 .prose-block {
   margin-top: 50px;
 }
 
 .prose-block:first-child {
   margin-top: 20px;
+}
+
+/* ── El carril de lectura de «Sobre nosotros» ──────────────────────────────
+   «Sobre nosotros» y «Aviso legal» cuelgan de `.editorial-page`; los detalles
+   exclusivos de la primera siguen bajo `.about-page`. El 404 y la página de
+   error comparten `.prose` y `.prose-block` y NO se pueden tocar desde aquí.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── El ritmo vertical de la página, en UN solo número ─────────────────────
+   Los huecos salían de tres sitios que no se hablaban entre sí: el
+   `padding-block` de `.section` (80px, 120 a ≥1280), el `margin-top` de
+   `.prose-block` (64px) y los `margin: 10px 0` de la tipografía base. Sumados
+   daban CINCO huecos distintos en una página que se lee de arriba abajo: 90px
+   bajo la cabecera, 90 hasta la rueda, 144 de la rueda al primer titular, 64
+   entre bloques y 80 hasta el pie (130/130/184/64/120 a ≥1280). El de 184 no se
+   leía como aire, se leía como un fallo de maquetación.
+
+   El número es 64 y no está inventado: es el ritmo que la prosa YA tenía. Así
+   todo lo demás baja hasta él y nada crece. No sube a ≥1280 —donde `.section`
+   sí pasa a 120— porque aquí no crece nada que lo justifique: el carril está
+   topado en 1170px y la escala tipográfica está congelada por encima de 992
+   (h1 70, h2 50, cuerpo 19/1,75), o sea que a 1920 los elementos son idénticos
+   a los de 1100 y un hueco mayor sólo es un agujero mayor.
+
+   ⚠ Se escribe `--section-pad`, NUNCA `padding-block` ni `padding-bottom`. El
+   atajo desde aquí sería (0,2,0) y le ganaría a `.section--no-bottom` (0,1,0)
+   POR ESPECIFICIDAD, no por orden: devolvería el aire fantasma que documenta la
+   cabecera de 04-layout.css, y esta vez sin que baste reordenar.
+
+   ⚠ Y esta regla (0,2,0) gana a los DOS overrides responsivos de `.section` en
+   04-layout.css (0,1,0), porque el `@media` no aporta especificidad: ni el
+   120px de ≥1280 ni el 60px de ≤767 llegan hasta aquí. El valor de móvil de
+   esta página se pone abajo, en su propio bloque, o no hay ninguno.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.editorial-page {
+  --editorial-rhythm: 64px;
+}
+
+.editorial-page .section {
+  --section-pad: var(--editorial-rhythm);
+}
+
+/* Los dos 10px de los cantos. `.container` es flex: los márgenes de sus hijos no
+   colapsan ni entre sí ni contra el padding de la sección, y en un flex column
+   la altura incluye el margen del último ítem — así que el del eyebrow se SUMA
+   al hueco de la cabecera y el del último párrafo al de la banda crema. Se
+   recortan sólo en los cantos: entre eyebrow, h1 y párrafos el 10+10 se queda,
+   que es el aire interno de la entradilla.
+
+   Por POSICIÓN y no por clase a propósito. `.h6-sans` y `p:last-child` valen
+   hoy, pero si mañana el primer elemento es otro, o alguien añade algo al final
+   de la entradilla, vuelven 10px — y 10px no los ve nadie a ojo. */
+.editorial-page .container > :first-child {
+  margin-top: 0;
+}
+
+.editorial-page .section--no-bottom .container > :last-child {
+  margin-bottom: 0;
+}
+
+.editorial-page p {
+  font-size: 19px;
+  line-height: 1.75;
+  /* Reparte la última línea para que no quede una palabra sola: a esta anchura
+     de línea, una viuda es muy visible. Sin soporte, no pasa nada. */
+  text-wrap: pretty;
+}
+
+/* El h1 conserva la escala responsive de 03-base.css, pero adopta el acabado
+   editorial de los h2: mismo peso, tinta y raya a todo el ancho del carril. */
+.about-page h1 {
+  width: 100%;
+  font-family: var(--ff-display);
+  font-weight: 400;
+  color: var(--gold-display);
+}
+
+/* El tema del que va el párrafo, en el ámbar de TEXTO (#8A5A06, 5.92:1 sobre
+   blanco): el mismo par que usan los precios del catálogo. Nunca `--gold`, que
+   sobre fondo claro es 2.09:1.
+
+   `display: block` porque la entradilla es el RÓTULO del bloque que viene debajo
+   y no la primera frase de un párrafo — por eso el dato pasó de «Queques.» a
+   «Queques:». Sigue siendo un `<strong>` DENTRO del `<p>`: es contenido de
+   frase, así que el parser no lo saca del párrafo y la hidratación no se entera;
+   sólo cambia la caja. Y el `{" "}` del JSX no deja sangría: al ser el `<strong>`
+   un bloque, ese espacio cae al principio de la línea siguiente, donde el
+   colapsado de blancos elimina los blancos iniciales.
+
+   La clase es genérica pero hoy sólo existe en esta página. Si algún día viaja a
+   otra, este `display` cambia su layout, no sólo su color. */
+.prose-lead-in {
+  display: block;
+  font-weight: 600;
+  color: var(--gold-ink);
+}
+
+/* Aire ENTRE temas, no antes del primero. Los dos selectores son la misma idea
+   mirada desde los dos lados: el salto de un tema al siguiente, y el salto del
+   último tema al párrafo de cierre de la sección.
+
+   Con un `p:has(.prose-lead-in)` a secas también casaría el PRIMER párrafo del
+   catálogo, que colapsa con el `margin-bottom: 18px` del h2: la sección
+   arrancaría 6px más abajo de su raya que sus siete hermanas, sin que nadie lo
+   viera a ojo y sin que `geometry.spec.ts` lo midiera (sólo mira h2 y bloques).
+
+   `:has()` y no una clase desde el JSX: el dato ya está en el DOM —el párrafo
+   tiene o no tiene entradilla—, igual que `.variant-option:has(input:checked)`
+   en 30-cart.css. ⚠ No ensanchar a `.about-page p + p`: se comería el
+   `margin-top: 28px` de la firma del cierre por especificidad. */
+.about-page p:has(.prose-lead-in) + p,
+.about-page p + p:has(.prose-lead-in) {
+  margin-top: 24px;
+}
+
+/* El tema que viene DESPUÉS de la sub-lista de plazos. Las dos reglas de arriba
+   sólo miran `+ p`, así que el rótulo siguiente a un `<ul>` se quedaba con los
+   10px del `p` global contra los 24 de todos los demás: la sección se descuadraba
+   justo por su mitad.
+
+   El hueco de ENTRADA a la lista no se toca a propósito: son los 10px del párrafo
+   que la introduce («Todo se hornea por encargo:»), y la lista tiene que leerse
+   colgando de esa frase, no separada como un tema nuevo. */
+.about-page .prose-list + p {
+  margin-top: 24px;
+}
+
+/* El `a` global es de 20px e `inline-block`: dentro de un párrafo de 19px
+   desalinea la línea base y abre huecos entre palabras. Y en un bloque de texto
+   corrido el color solo no distingue un enlace — hace falta el subrayado. */
+.editorial-page p a {
+  display: inline;
+  font-size: inherit;
+  line-height: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--gold-line);
+  text-underline-offset: 3px;
+}
+
+/* ── La lista de viñetas de «Pedidos y entregas» ───────────────────────────
+   Es una lista de verdad y no seis párrafos: son seis condiciones del mismo
+   trato —canal, retiro, entrega, pago, plazo y hora— y se consultan saltando de
+   una a otra, que es lo que un `<ul>` promete y un párrafo no.
+
+   Todo lo de abajo desmonta el `li` global del spec §2.3 (03-base.css), que está
+   pensado para una etiqueta corta: 16px, peso 500 y `--gold-ink`. Sobre prosa
+   corrida da una lista ámbar MÁS PEQUEÑA que el texto que la rodea. Es el mismo
+   desmontaje que ya hacen `.menu-item`, `.cart-line` y `.shop-card`, con sus dos
+   trampas:
+
+   · `background` en forma de ATAJO. Con `background-color` o con un
+     `background-position` suelto, el `url(list-bullet.svg)` global sigue ahí con
+     su `0 7px`. Aquí la imagen SÍ la queremos —es el punto de todo el sitio—,
+     pero hay que recolocarla, y eso obliga a reescribir el atajo.
+   · `display: block`. El `li` global es `flex`, y la blockificación de un ítem
+     flex NO convierte `flex` en `block`: se queda en flex. Con él, cualquier
+     enlace o `<em>` dentro de una viñeta sería un ítem flex propio y saltaría de
+     línea. `align-items: center` no hay que anularlo: sobre una caja de bloque
+     es declaración muerta, y una declaración muerta aquí ya se «limpió» dos
+     veces en `.shop-card`.
+
+   Los 13px del punto NO son gusto. El SVG mide 8×8 con el círculo centrado, se
+   ancla al borde superior de la primera línea, y la línea mide 19 × 1,75 =
+   33,25px: (33,25 − 8) / 2 = 12,6 ≈ 13. Es la misma cuenta que da el `0 7px` del
+   `li` global (16 × 1,4 = 22,4). Con `0 0` el punto se pegaría al canto superior
+   de una viñeta de tres líneas. Y no se usa `calc((1lh - 8px) / 2)`, que se
+   automantendría: si `lh` no resuelve, la posición cae al inicial `0% 0%` sin
+   avisar — el modo de fallo de la regla 5 de CLAUDE.md. Lo vigila
+   `paginas.spec.ts`, que recalcula el valor desde el `line-height` real.
+
+   El 19/1,75 se repite a mano desde `.editorial-page p` en vez de heredarse: el
+   `<li>` no vive dentro de un `<p>`, y un `.editorial-page li` alcanzaría al `li`
+   del nav si estas páginas crecieran. Ese mismo test ata los dos valores.
+
+   Los 14px de hueco son menos que los 24 de las entradillas del catálogo a
+   propósito: allí cada tema es un bloque con su rótulo, aquí el carril de la
+   viñeta ya agrupa los ítems y no hace falta que el aire lo haga otra vez.
+   ────────────────────────────────────────────────────────────────────────── */
+.prose-list {
+  /* El `ul` global ya es flex en columna. Se redeclara para que la lista no
+     dependa de que lo siga siendo: con los `li` a margen cero, si deja de serlo
+     las viñetas quedan pegadas. */
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  /* Los 25px del `ul` global sobran: el hueco contra el titular ya lo pone el
+     `margin-bottom: 18px` del h2, igual que para un párrafo. */
+  margin: 0;
+}
+
+.prose-list li {
+  display: block;
+  padding-left: 30px;
+  font-family: var(--ff-sans);
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1.75;
+  color: var(--body-text);
+  text-wrap: pretty;
+  background: url(/icons/list-bullet.svg) 0 13px no-repeat;
+}
+
+/* El ritmo entre los ocho bloques sale del token de arriba y no de un número
+   propio: era el único hueco de la página que ya estaba bien, y ahora manda.
+
+   ⚠ `--editorial-rhythm` se declara en `.editorial-page` y el selector exige
+   ese ámbito: así `.prose--wide` no puede viajar sola y dejar un `var()` sin
+   resolver. */
+.editorial-page .prose--wide .prose-block {
+  margin-top: var(--editorial-rhythm);
+}
+
+/* El primero no lleva hueco propio: el `padding-top` de su sección YA es el
+   hueco, y sumar los dos era el 184 de la rueda al primer titular. */
+.editorial-page .prose--wide .prose-block:first-child {
+  margin-top: 0;
+}
+
+/* El `margin-top: 0` es sólo por ese primer bloque, y hace falta de verdad:
+   `.prose` es flex item —contexto de formato propio—, así que el margen del h2
+   no colapsa hacia fuera y se quedaría dentro como 10px de más. Entre bloque y
+   bloque no pinta nada: ahí el colapso ya se lo come, max(10, 64) = 64. */
+.editorial-page .prose--wide .prose-block h2 {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+/* El remate de marca bajo cada titular, a la medida completa del carril. Con
+   56px era una marca junto al titular; a 1170 cierra su banda, que es lo que
+   hace legible una jerarquía de ocho secciones a esta anchura. Sigue siendo
+   decorativa (`--gold-line`, 4.00:1 ≥ 3:1 no-texto) y va DEBAJO del titular,
+   así que no mueve el ancla ni su `scroll-margin-top`.
+
+   El 14 de arriba y el 18 de abajo no cambian: con el medio-espacio negativo
+   del h2 a `line-height: 1em` son ópticamente ~21 contra ~27, y así la raya se
+   agrupa con el titular y no con el párrafo.
+
+   `width: 100%` y no `auto`: hoy dan lo mismo porque es una caja de bloque,
+   pero si algún día el h2 pasa a ser flex, `auto` la encogería a cero. */
+.editorial-page .prose--wide .prose-block h2::after,
+.about-page h1::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 2px;
+  margin-top: 14px;
+  background: var(--gold-line);
+}
+
+/* El cierre. 26px es lo que hace legítimo el carril AA-large del ámbar; por
+   debajo de 24px habría que cambiar de token, no de tamaño. */
+.about-page .prose-signature {
+  margin-top: 28px;
+  font-family: var(--ff-display);
+  font-style: italic;
+  font-size: 26px;
+  line-height: 1.3;
+  color: var(--gold-display);
 }
 
 /* El navbar es `position:absolute` y taparía el titular al llegar por un enlace
@@ -31,19 +311,13 @@
    (101 y 115): dejaba 9px de aire de más por debajo de 1280 y tapaba el titular
    5px por encima. Con el token va exacto en ambos, más un respiro de 16px. */
 .prose h2,
+.about-page #sobre-boquita,
 .faq-item dt {
   scroll-margin-top: calc(var(--header-h) + 16px);
 }
 
 .prose p {
   max-width: 100%;
-}
-
-.about-hero-img {
-  width: 100%;
-  height: auto;
-  max-height: 420px;
-  object-fit: cover;
 }
 
 /* ── Preguntas frecuentes ──────────────────────────────────────────────────
@@ -80,11 +354,66 @@
   color: var(--body-text);
 }
 
+/* A medida completa la lista pide más aire, y la pregunta tiene que mandar por
+   tamaño y por tinta: es lo que hace que la vista pueda bajar saltando de
+   pregunta en pregunta sin leer las respuestas. */
+.prose--wide .faq-item {
+  padding-block: 26px;
+}
+
+/* Con la raya del titular a la medida completa, el borde superior de la lista es
+   una SEGUNDA línea a todo lo ancho 18px más abajo, en otro color y otro grosor:
+   se lee como un descuido. La raya ya hace de tope de la lista. */
+.prose--wide .faq-item:first-child {
+  border-top: 0;
+}
+
+.prose--wide .faq dt {
+  font-size: 20px;
+}
+
+.prose--wide .faq dd {
+  margin-top: 10px;
+  font-size: 19px;
+  line-height: 1.75;
+  text-wrap: pretty;
+}
+
 @media (max-width: 767px) {
   .prose-block {
     margin-top: 40px;
   }
-  .about-hero-img {
-    max-height: 300px;
+  /* El ritmo de estas páginas en móvil. Tiene que estar aquí porque el override
+     de ≤767 de `.section` (60px, en 04-layout.css) es (0,1,0) y ya no llega: lo
+     tapa `.editorial-page .section`. Sin esta línea el móvil se quedaría con los
+     64 del escritorio. */
+  .editorial-page {
+    --editorial-rhythm: 48px;
+  }
+  /* En una columna estrecha el cuerpo vuelve al 18px del resto del sitio: aquí
+     la línea ya es corta y no hace falta compensarla. */
+  .editorial-page p {
+    font-size: 18px;
+    line-height: 1.7;
+  }
+  /* El mismo cuerpo que el párrafo en móvil, y el punto recentrado: la línea baja
+     a 18 × 1,7 = 30,6px, y (30,6 − 8) / 2 = 11,3 ≈ 11. Aquí el longhand SÍ vale:
+     el atajo de arriba ya dejó puesta la imagen, y esto sólo la mueve. */
+  .prose-list li {
+    font-size: 18px;
+    line-height: 1.7;
+    background-position: 0 11px;
+  }
+  .prose--wide .faq dt {
+    font-size: 18px;
+  }
+  .prose--wide .faq dd {
+    font-size: 18px;
+  }
+
+  /* ⚠ 24px y no menos: por debajo, `--gold-display` deja de cumplir AA-large
+     (4.00:1) y habría que cambiar de token. */
+  .about-page .prose-signature {
+    font-size: 24px;
   }
 }

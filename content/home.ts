@@ -1,7 +1,8 @@
 import { products } from "@/content/products";
-import { CONTACT, telHref, whatsappUrl } from "@/lib/contact";
+import { CONTACT } from "@/lib/contact";
+import { buildDirectWhatsAppUrl } from "@/lib/whatsapp";
 import { variantsLabel } from "@/lib/variants";
-import type { GalleryItem, HomeContent, ImageRef, Product } from "@/types/content";
+import type { GalleryItem, GalleryRows, HomeContent, ImageRef, Product } from "@/types/content";
 import { CATEGORIAS, type ShopProduct } from "@/types/shop";
 
 /**
@@ -50,16 +51,8 @@ export const FEATURED_SLUGS = [
   "cheesecake",
 ] as const;
 
-export const GALLERY_SLUGS = [
-  "queque-de-zanahoria",
-  "queque-personalizado",
-  "queque-devils-food",
-  "coffee-cake",
-  "queque-chocolate-chip-cookie",
-  "galletas-de-granola",
-  "brigadeiros",
-  "cheesecake",
-] as const;
+export const GALLERY_ITEMS_PER_ROW = 4;
+export const GALLERY_ROW_COUNT = 6;
 
 /** Ficha de catálogo → tarjeta de la rejilla de la portada (una forma más estrecha). */
 export function toFeatured(product: ShopProduct): Product {
@@ -82,6 +75,27 @@ export function toGalleryItem(product: ShopProduct): GalleryItem {
   };
 }
 
+/** Ficha de catalogo -> una o mas fotos enlazadas de la galeria. */
+export function toGalleryItems(product: ShopProduct): GalleryItem[] {
+  const main = toGalleryItem(product);
+  if (!product.imageB) return [main];
+
+  return [
+    main,
+    {
+      label: `${product.name} (segunda foto)`,
+      href: `/tienda/${product.slug}`,
+      image: { ...product.imageB, sizes: GALLERY_SIZES },
+    },
+  ];
+}
+
+export function chunkGalleryRows(items: GalleryItem[]): GalleryRows {
+  return Array.from({ length: GALLERY_ROW_COUNT }, (_, row) =>
+    items.slice(row * GALLERY_ITEMS_PER_ROW, (row + 1) * GALLERY_ITEMS_PER_ROW),
+  ) as GalleryRows;
+}
+
 function featuredProducts(): Product[] {
   return FEATURED_SLUGS.map((slug) => {
     const product = products.find((p) => p.slug === slug);
@@ -94,20 +108,18 @@ function featuredProducts(): Product[] {
   });
 }
 
-function galleryProducts(): [GalleryItem[], GalleryItem[]] {
-  const items = GALLERY_SLUGS.map((slug) => {
-    const product = products.find((p) => p.slug === slug);
-    if (!product) {
-      throw new Error(`Producto de galería inexistente en el catálogo: ${slug}`);
-    }
-    return toGalleryItem(product);
-  });
+function galleryProducts(): GalleryRows {
+  const items = products.flatMap(toGalleryItems);
 
-  return [items.slice(0, 4), items.slice(4, 8)];
+  if (items.length !== GALLERY_ROW_COUNT * GALLERY_ITEMS_PER_ROW) {
+    throw new Error(`La galeria necesita 24 fotos y tiene ${items.length}`);
+  }
+
+  return chunkGalleryRows(items);
 }
 
-const WA_CONSULTA = whatsappUrl("¡Hola Boquita! Quiero hacer una consulta.");
-const WA_PEDIDO = whatsappUrl("¡Hola Boquita! Quiero hacer un pedido.");
+const WA_CONSULTA = buildDirectWhatsAppUrl("consultation");
+const WA_PEDIDO = buildDirectWhatsAppUrl("order");
 
 /** Escaleras de srcset. Los tamaños los genera scripts/build-images.mjs. */
 
@@ -158,14 +170,15 @@ const serviceImage: ImageRef = {
 };
 
 const mediaPoster: ImageRef = {
-  src: "/img/media/493x300.webp",
+  src: "/img/producto/queque-de-zanahoria-800x600.webp",
   srcSet: [
-    { src: "/img/media/493x300.webp", width: 493 },
-    { src: "/img/media/986x600.webp", width: 986 },
+    { src: "/img/producto/queque-de-zanahoria-400x300.webp", width: 400 },
+    { src: "/img/producto/queque-de-zanahoria-800x600.webp", width: 800 },
+    { src: "/img/producto/queque-de-zanahoria-1200x900.webp", width: 1200 },
   ],
-  sizes: "(min-width: 1440px) 493px, (min-width: 768px) 45vw, calc(100vw - 30px)",
-  width: 493,
-  height: 300,
+  sizes: "(min-width: 992px) 500px, calc(100vw - 30px)",
+  width: 800,
+  height: 600,
   alt: "Queque de zanahoria entero con frosting de queso crema y pecanas, sobre un pie de cristal en el jardín",
 };
 
@@ -210,18 +223,27 @@ export const home: HomeContent = {
         ],
       },
       {
-        label: "Sobre nosotros",
+        label: "Sobre Nosotros",
+        // El `href` NO es decorativo: sin él, `Dropdown` renderiza la etiqueta
+        // como <button> y el clic sólo abre el panel. La página existía y
+        // respondía 200, pero era inalcanzable desde su propia etiqueta del nav.
+        href: "/sobre-nosotros",
         // Apuntaban a anclas de la portada, pero «Entregas y zonas» y
         // «Preguntas frecuentes» no existían en ninguna sección: el nav prometía
         // contenido que no estaba. Ahora van a la página real.
         items: [
-          { label: "La historia de Ale", href: "/sobre-nosotros#historia" },
+          { label: "Sobre Boquita", href: "/sobre-nosotros#sobre-boquita" },
+          { label: "Quién está detrás", href: "/sobre-nosotros#historia" },
           { label: "Cómo horneamos", href: "/sobre-nosotros#como-horneamos" },
-          { label: "Entregas y zonas", href: "/sobre-nosotros#entregas" },
+          { label: "Qué hay en el catálogo", href: "/sobre-nosotros#catalogo" },
+          { label: "Presentaciones", href: "/sobre-nosotros#presentaciones" },
+          { label: "Para qué ocasiones", href: "/sobre-nosotros#ocasiones" },
+          { label: "Pedidos y entregas", href: "/sobre-nosotros#entregas" },
           {
             label: "Preguntas frecuentes",
             href: "/sobre-nosotros#preguntas-frecuentes",
           },
+          { label: "Escríbeme", href: "/sobre-nosotros#escribeme" },
         ],
       },
     ],
@@ -264,7 +286,7 @@ export const home: HomeContent = {
     titleTop: "Del horno de Ale",
     titleBottom: "a tu mesa",
     body:
-      "Ale Budowski hornea en su casa de Santa Ana desde 2019. Sin conservantes y sin " +
+      "Ale Budowski hornea en su casa de Santa Ana desde 2022. Sin conservantes y sin " +
       "mezclas industriales: recetas propias, tandas pequeñas y el sabor de lo hecho a mano.",
     poster: mediaPoster,
   },
@@ -293,7 +315,7 @@ export const home: HomeContent = {
     image: serviceImage,
     metrics: [
       // ⚠ TODO: necesita un número real y defendible, o cambiar la métrica.
-      { value: "+500", label: "Pedidos horneados desde 2019" },
+      { value: "+500", label: "Pedidos horneados desde 2022" },
       // Verificable: son los productos del catálogo.
       { value: "23", label: "Recetas en el catálogo" },
     ],
@@ -306,9 +328,87 @@ export const home: HomeContent = {
 
   testimonials: {
     title: "Lo que dicen nuestros clientes",
-    // Bloqueante de lanzamiento: no hay comentarios reales extraíbles del PDF.
-    // La sección no se renderiza hasta recibir capturas/textos verificables.
-    items: [],
+    /**
+     * ⚠ ANDAMIO. Las seis van marcadas `todo` y NO son reseñas reales: Ale
+     * todavía no entregó los textos (`CONTENT_TODO §3`, bloqueante de
+     * lanzamiento). El layout es definitivo; el copy no.
+     *
+     * Cuando lleguen las de verdad se sustituye el texto y se quitan las seis
+     * marcas de golpe. `tests/unit/content.test.ts` exige hoy que las seis
+     * estén marcadas, así que quitarlas rompe el test: el andamio no se puede
+     * publicar por descuido, sólo a propósito.
+     *
+     * `role` es la OCASIÓN del pedido, no un cargo. La referencia pone
+     * «Cook»/«Manager» porque es una plantilla genérica; en una repostería lo
+     * que da credibilidad es dónde y para qué se encargó.
+     *
+     * Las citas miden a propósito entre ~110 y ~200 caracteres: la referencia
+     * describe tarjetas de 3 a 5 líneas, y el `min-height` de `.review-card`
+     * existe justo para que esa desigualdad no descuadre la fila. El tope duro
+     * son 320 caracteres (`content/schema.ts`), medido contra ese mismo alto.
+     */
+    items: [
+      {
+        id: "t1",
+        name: "María Fernanda Rojas",
+        role: "Cumpleaños en Santa Ana",
+        quote:
+          "Pedí el queque de zanahoria para los 60 de mi mamá y llegó justo a la hora " +
+          "acordada. Desapareció en veinte minutos y tres personas me pidieron el " +
+          "contacto de Ale antes de irse.",
+        todo: true,
+      },
+      {
+        id: "t2",
+        name: "Carlos Vargas Solís",
+        role: "Pedido de oficina, Escazú",
+        quote:
+          "Llevamos dos años pidiendo los brigadeiros para los cumpleaños de la oficina. " +
+          "Nunca se ha atrasado un pedido y siempre pregunta si hay alguien con alergias " +
+          "antes de hornear.",
+        todo: true,
+      },
+      {
+        id: "t3",
+        name: "Laura Céspedes Mora",
+        role: "Baby shower en Ciudad Colón",
+        quote:
+          "Le mandé una foto de lo que tenía en la cabeza y me devolvió algo mejor. " +
+          "Coordinamos color, tamaño y fecha por WhatsApp en un solo día, y no tuve que " +
+          "explicar nada dos veces.",
+        todo: true,
+      },
+      {
+        id: "t4",
+        name: "Andrés Mora Jiménez",
+        role: "Cliente frecuente",
+        quote:
+          "Compro galletas casi todas las semanas. Lo que me terminó de convencer es que " +
+          "el sabor no cambia: la tanda de hoy sabe igual que la del año pasado, y en " +
+          "repostería artesanal eso no es lo normal.",
+        todo: true,
+      },
+      {
+        id: "t5",
+        name: "Gabriela Ureña Piedra",
+        role: "Graduación en Pozos",
+        quote:
+          "Necesitaba algo sin azúcar para mi papá y sin gluten para mi hermana, en el " +
+          "mismo pedido. Ale me armó las dos opciones sin poner ninguna cara y sin " +
+          "cobrarme recargo por complicarle la vida.",
+        todo: true,
+      },
+      {
+        id: "t6",
+        name: "Diego Alvarado Chaves",
+        role: "Regalo corporativo",
+        quote:
+          "Encargamos cuarenta cajas para clientes en diciembre. Nos avisó con tiempo de " +
+          "hasta cuándo podíamos pedir, entregó todo empacado y rotulado, y nos ahorró la " +
+          "tarde que íbamos a pasar armando cajas.",
+        todo: true,
+      },
+    ],
   },
 
   footer: {
@@ -328,27 +428,37 @@ export const home: HomeContent = {
     brandText:
       "Boquita — Sweet & Salty. Repostería artesanal hecha en casa en Santa Ana, " +
       "Costa Rica. Horneamos por encargo, en tandas pequeñas.",
-    social: [
+    contacts: [
+      {
+        label: "WhatsApp de Boquita",
+        display: CONTACT.whatsappDisplay,
+        href: WA_CONSULTA,
+        icon: "whatsapp",
+        external: true,
+      },
       {
         label: "Instagram de Boquita",
+        display: `@${CONTACT.instagramHandle}`,
         href: CONTACT.instagramUrl,
         icon: "instagram",
+        external: true,
       },
-      { label: "WhatsApp de Boquita", href: WA_CONSULTA, icon: "whatsapp" },
+      {
+        label: "Correo de Boquita",
+        display: CONTACT.email,
+        href: `mailto:${CONTACT.email}`,
+        icon: "mail",
+      },
     ],
     links: [
       { label: "Inicio", href: "/" },
       { label: "Catálogo", href: "/tienda" },
       { label: "Galería", href: "/#galeria" },
-      { label: "Sobre nosotros", href: "/sobre-nosotros" },
+      { label: "Sobre Nosotros", href: "/sobre-nosotros" },
     ],
     address: CONTACT.address,
-    phones: [
-      { display: CONTACT.whatsappDisplay, href: telHref() },
-      { display: `WhatsApp: ${CONTACT.whatsappDisplay}`, href: WA_CONSULTA },
-    ],
     copyright: "© 2026 Boquita — Sweet & Salty.",
-    legal: { label: "Aviso legal", href: "/aviso-legal" },
+    legal: { label: "Aviso Legal", href: "/aviso-legal" },
   },
 };
 

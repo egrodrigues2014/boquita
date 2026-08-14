@@ -31,6 +31,7 @@
 @import "./16-gallery.css";
 @import "./17-testimonials.css";
 @import "./18-footer.css";
+@import "./19-product-wheel.css";
 
 /* Nuestro: no está en el CSS del spec */
 @import "./30-cart.css";

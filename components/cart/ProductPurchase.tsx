@@ -5,7 +5,7 @@ import { MAX_QTY, useCart } from "@/lib/cart";
 import { formatCRCShort } from "@/lib/format";
 import { useCartReady } from "@/lib/hooks/useCartReady";
 import { entryVariant, findVariant } from "@/lib/variants";
-import { waPlainLink } from "@/lib/whatsapp";
+import { buildDirectWhatsAppUrl } from "@/lib/whatsapp";
 import type { ShopProduct } from "@/types/shop";
 
 /**
@@ -66,10 +66,7 @@ export function ProductPurchase({
         <div className="add-to-cart">
           <a
             className="btn"
-            href={waPlainLink(
-              `¡Hola Boquita! Quiero cotizar un ${product.name.toLowerCase()}. ` +
-                "Les cuento la idea y me dicen si se puede.",
-            )}
+            href={buildDirectWhatsAppUrl("quote", { productName: product.name })}
             target="_blank"
             rel="noopener noreferrer"
           >

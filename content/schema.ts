@@ -8,7 +8,7 @@ import { z } from "zod";
  *   8 productos   → la rejilla es 2 columnas × 4 filas (§6.4, checklist 5)
  *   2 métricas    → `.stats` es una rejilla de 2 columnas (§6.5)
  *   6 testimonios → slider de 3/2/1 visibles, sin loop (§6.7, checklist 8)
- *   4 + 4 galería → dos filas que el render repite hasta 7 (§6.6, checklist 7)
+ *   6 x 4 galería → seis filas que el render repite hasta 7 (§6.6, checklist 7)
  *   2 inline      → exactamente 2 huecos en el flujo del h2 (§6.2, checklist 3)
  *   2 botones     → `.btn-group` del hero (§8)
  *   3 dropdowns + 1 enlace → el navbar (§5, §8)
@@ -91,6 +91,11 @@ const social = z.object({
   todo: z.boolean().optional(),
 });
 
+const footerContact = social.extend({
+  display: z.string().min(3).max(60),
+  external: z.boolean().optional(),
+});
+
 export const homeSchema = z.object({
   nav: z.object({
     dropdowns: z.tuple([navDropdown, navDropdown, navDropdown]),
@@ -140,8 +145,15 @@ export const homeSchema = z.object({
 
   gallery: z.object({
     title: z.string().min(3).max(40),
-    // 4 únicas por fila; el render las repite hasta 7.
-    rows: z.tuple([z.array(galleryItem).length(4), z.array(galleryItem).length(4)]),
+    // 6 filas de 4 fotos; el render repite cada fila hasta 7.
+    rows: z.tuple([
+      z.array(galleryItem).length(4),
+      z.array(galleryItem).length(4),
+      z.array(galleryItem).length(4),
+      z.array(galleryItem).length(4),
+      z.array(galleryItem).length(4),
+      z.array(galleryItem).length(4),
+    ]),
   }),
 
   testimonials: z.object({
@@ -166,20 +178,10 @@ export const homeSchema = z.object({
       button: z.string().min(2).max(20),
     }),
     brandText: z.string().min(40).max(300),
-    // No se rellenan huecos con Facebook/email falsos: sólo canales reales.
-    social: z.array(social).min(2).max(4),
+    contacts: z.tuple([footerContact, footerContact, footerContact]),
     links: z.array(link).length(4),
     address: z.string().min(10).max(160),
     addressTodo: z.boolean().optional(),
-    phones: z
-      .array(
-        z.object({
-          display: z.string().min(6).max(40),
-          href: z.string().min(1),
-          todo: z.boolean().optional(),
-        }),
-      )
-      .length(2),
     copyright: z.string().min(10).max(120),
     legal: link,
   }),

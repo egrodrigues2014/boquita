@@ -37,24 +37,44 @@ revierte.
 
 ### 3. Los 6 testimonios
 
-Con **nombre, rol, texto y consentimiento escrito** de cada persona. Los seis que hay en el código
-son inventados y no pueden publicarse. Los avatares serán SVG con iniciales, así que no hacen falta
-fotos de clientes.
+Con **nombre, rol y texto** de cada persona, más su **consentimiento escrito**. Los seis que hay en
+`content/home.ts` son de andamio.
+
+No hacen falta fotos: la tarjeta **ya no lleva retrato** (desvío D-34). El `rol` es la **ocasión del
+pedido** («Cumpleaños en Santa Ana», «Pedido de oficina, Escazú»), no un cargo — eso es lo que da
+credibilidad en una repostería.
 
 El PDF de Instagram sólo trae fotos y permalinks; no trae comentarios ni captions extraíbles
 (`assets/raw/manifest.json` lo documenta). Desde este entorno tampoco se pueden leer comentarios de
 Instagram sin acceso interactivo/login. Para cerrar este bloque, dejar en `assets/testimonios/` seis
 capturas o un `.txt/.md` con comentario, nombre y permiso.
 
-**Estado v1:** la sección queda oculta en producción. No se publican reseñas inventadas ni siquiera
-marcadas como `todo`.
+**Estado v1: la sección ya se publica, con las seis reseñas de andamio marcadas `todo: true`.** El
+layout es definitivo; el copy no. Se cambió de criterio respecto a v1 temprana —donde el bloque
+quedaba oculto— porque una portada que termina en la galería y salta al pie no tiene prueba social
+en ninguna parte, y la sección es normativa en el spec §6.7.
+
+**Lo que impide publicar el andamio por descuido:** `tests/unit/content.test.ts` exige hoy que las
+seis lleven la marca. Al sustituir los textos se quitan las seis a la vez y el test rompe, que es
+justo cuando alguien tiene que mirar si el contenido es real. Un segundo test prohíbe el estado
+intermedio: o van marcadas todas, o ninguna.
+
+Restricciones de forma, ya validadas por `content/schema.ts`: exactamente **6 items** (o 0 para
+apagar el bloque), `name` y `role` de 2 a 40 caracteres, y `quote` de 40 a **320** — el tope está
+medido contra el `min-height` de `.review-card`, pasarlo desborda la tarjeta más corta.
 
 ### 4. La métrica nº 1
 
 El bloque de servicio muestra dos métricas. La segunda («23 recetas en el catálogo») es verificable:
-la calcula `lib/homeContent.ts` contando el catálogo servido. La primera es un placeholder:
-**«2.400+ pedidos horneados desde 2019»** necesita un número real y defendible, o se cambia por otra
-métrica que sí se pueda sostener.
+la calcula `lib/homeContent.ts` contando el catálogo servido. La primera sigue siendo un placeholder:
+**«+500 pedidos horneados desde 2022»** necesita un número real y defendible, o se cambia por otra
+métrica que sí se pueda sostener. El **año ya es el bueno** (13 ago): Ale sitúa el primer pedido
+vendido en **abril de 2022**, y ese es el dato que cuenta `content/pages.ts`. La portada decía 2019 y
+se corrigió para que las dos páginas no se desmintieran.
+
+Ojo con el número de recetas: Ale cuenta **diecisiete recetas base** (7 queques, 3 galletas, 7
+postres) y la métrica cuenta **23 productos** del catálogo, porque los cupcakes son la misma receta en
+otro molde. Por eso «Sobre nosotros» dice «recetas base» y no «recetas» a secas.
 
 ### 4b. Dos fotos de producto en resolución original
 
@@ -105,18 +125,25 @@ donde harían falta 2×. No se va a fabricar un upscale: sería desenfoque a tri
 - ✅ Dirección pública: Calle Obelisco, condominio Condado del Río, Santa Ana.
 - ✅ WhatsApp/pedidos: +506 7132 2355.
 - ✅ Instagram publicado: @boquita_cr.
-- ✅ Voz: profesional e informal, con voseo suave.
-- Pendiente: URL real de Facebook y correo público. Mientras no existan, no se muestran enlaces
-  falsos.
+- ✅ Voz: profesional e informal, con voseo suave. En `/sobre-nosotros` es **primera persona del
+  singular** —ahí habla Ale—, mientras el resto del sitio va en plural.
+- ✅ Correo público: `ticaboquita@gmail.com`, en `CONTACT.email` (`lib/contact.ts`). Se muestra en el
+  cierre de «Sobre Nosotros» y, desde que el pie pasó de `social` a `contacts`, también en su columna
+  de contacto.
+- Pendiente: URL real de Facebook. Mientras no exista, no se muestra un enlace falso.
 
-### 9. Política de entrega
+### 9. Política de entrega — ✅ **CERRADA** (13 ago)
 
-Ahora mismo asumido: **retiro en Condado del Río, Santa Ana, y entrega coordinada por WhatsApp**, sin
-costo modelado. Definir:
+Contestada por Ale en `docs/boquita-sobre-nosotros.md` y publicada en `/sobre-nosotros#entregas`:
 
-- ¿Hay entrega a domicilio? ¿Con costo fijo o por zona?
-- ¿Qué zonas se cubren? (asumido: Santa Ana, Escazú y alrededores)
-- ¿48 horas de anticipación es correcto para todo, o los queques personalizados necesitan más?
+- **Retiro** en Calle Obelisco, condominio Condado del Río, Santa Ana.
+- **Entrega en todo el Gran Área Metropolitana**: en los sectores cercanos la lleva Ale en su propio
+  vehículo, y para el resto se coordina con mensajería. Sin costo modelado en el sitio: la zona y la
+  hora se acuerdan al confirmar el pedido.
+- **Pago en efectivo o por SINPE**, al confirmar. Esto cierra también el `todo` que llevaba la
+  pregunta «¿Cómo se paga?» de la FAQ.
+- **48 horas** de anticipación para casi todo y **una semana** para los queques personalizados
+  (también los de dos pisos).
 
 ### 10. Precio de los queques personalizados
 

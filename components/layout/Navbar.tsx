@@ -5,8 +5,10 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 import { useScrollLock } from "@/lib/hooks/useScrollLock";
 import { CartButton } from "@/components/cart/CartButton";
+import { ProductSearchAutocomplete } from "@/components/shop/ProductSearchAutocomplete";
 import { Btn } from "@/components/ui/Btn";
 import type { HomeContent, NavDropdown } from "@/types/content";
+import type { ShopSearchSource } from "@/lib/shopSearch";
 
 /**
  * Header / navbar (spec §5). Puntos 1 y 14 del checklist.
@@ -117,31 +119,13 @@ function Dropdown({
   );
 }
 
-function ProductSearchForm() {
-  return (
-    <form className="nav-search" action="/tienda" method="get" role="search">
-      <label className="sr-only" htmlFor="nav-product-search">
-        Buscar productos
-      </label>
-      <input
-        id="nav-product-search"
-        className="nav-search-input"
-        type="search"
-        name="q"
-        placeholder="Buscar productos"
-        autoComplete="off"
-      />
-      <button className="nav-search-button" type="submit" aria-label="Buscar productos">
-        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none">
-          <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
-          <path d="M16.5 16.5 21 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </button>
-    </form>
-  );
-}
-
-export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
+export function Navbar({
+  nav,
+  searchProducts,
+}: {
+  nav: HomeContent["nav"];
+  searchProducts: ShopSearchSource[];
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [hoverEnabled, setHoverEnabled] = useState(false);
@@ -293,7 +277,7 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
         </div>
 
         <div className="navbar-actions">
-          <ProductSearchForm />
+          <ProductSearchAutocomplete products={searchProducts} />
 
           <CartButton />
 
@@ -314,6 +298,10 @@ export function Navbar({ nav }: { nav: HomeContent["nav"] }) {
             <rect width="27" height="2" y="14" />
           </svg>
         </button>
+      </div>
+
+      <div className="nav-mobile-search">
+        <ProductSearchAutocomplete products={searchProducts} />
       </div>
 
       {/* DESVÍO D-4: scrim. Un panel de 320px sobre contenido vivo no tiene

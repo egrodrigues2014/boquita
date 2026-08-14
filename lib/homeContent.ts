@@ -1,12 +1,14 @@
 import {
   FEATURED_SLUGS,
-  GALLERY_SLUGS,
+  GALLERY_ITEMS_PER_ROW,
+  GALLERY_ROW_COUNT,
+  chunkGalleryRows,
   home as fallbackHome,
   toFeatured,
-  toGalleryItem,
+  toGalleryItems,
 } from "@/content/home";
 import { getCatalog } from "@/lib/db/catalog";
-import type { GalleryItem, HomeContent, Product } from "@/types/content";
+import type { GalleryRows, HomeContent, Product } from "@/types/content";
 import type { ShopProduct } from "@/types/shop";
 
 /**
@@ -67,32 +69,18 @@ function featuredFrom(catalog: ShopProduct[]): Product[] {
   return chosen.map(toFeatured);
 }
 
-function galleryFrom(catalog: ShopProduct[]): [GalleryItem[], GalleryItem[]] {
-  const bySlug = new Map(catalog.map((product) => [product.slug, product]));
-  const chosen: ShopProduct[] = [];
+function galleryFrom(catalog: ShopProduct[]): GalleryRows {
+  const items = catalog.flatMap(toGalleryItems);
+  const expected = GALLERY_ROW_COUNT * GALLERY_ITEMS_PER_ROW;
 
-  for (const slug of GALLERY_SLUGS) {
-    const product = bySlug.get(slug);
-    if (product) chosen.push(product);
-  }
-
-  if (chosen.length < GALLERY_SLUGS.length) {
-    const taken = new Set(chosen.map((product) => product.slug));
-    for (const product of catalog) {
-      if (chosen.length === GALLERY_SLUGS.length) break;
-      if (!taken.has(product.slug)) chosen.push(product);
-    }
-  }
-
-  if (chosen.length < GALLERY_SLUGS.length) {
+  if (items.length !== expected) {
     console.warn(
-      `[home] la galería de la portada se queda en ${chosen.length} de ${GALLERY_SLUGS.length}: ` +
-        `el catálogo servido sólo tiene ${catalog.length} productos`,
+      `[home] la galeria de la portada tiene ${items.length} fotos de ${expected}: ` +
+        `el catalogo servido tiene ${catalog.length} productos`,
     );
   }
 
-  const items = chosen.map(toGalleryItem);
-  return [items.slice(0, 4), items.slice(4, 8)];
+  return chunkGalleryRows(items);
 }
 
 /**

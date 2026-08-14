@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { legal } from "@/content/pages";
+import { getCatalog } from "@/lib/db/catalog";
 import { getHomeContent } from "@/lib/homeContent";
+import { toShopSearchSources } from "@/lib/shopSearch";
 
 /**
  * Aviso legal y privacidad.
@@ -26,19 +28,23 @@ export const metadata: Metadata = {
 
 export default async function AvisoLegalPage() {
   // Sólo por el nav y el pie, que comparten el contenido global de la portada.
-  const home = await getHomeContent();
+  const [catalog, home] = await Promise.all([getCatalog(), getHomeContent()]);
 
   return (
     <>
-      <Navbar nav={home.nav} />
+      <Navbar nav={home.nav} searchProducts={toShopSearchSources(catalog)} />
 
-      <main id="contenido">
-        <section className="section">
+      <main id="contenido" className="editorial-page legal-page">
+        <section className="section section--no-bottom">
           <div className="container container--start">
             <p className="h6-sans primary">Última actualización: {legal.updated}</p>
             <h1>{legal.title}</h1>
+          </div>
+        </section>
 
-            <div className="prose">
+        <section className="section">
+          <div className="container container--start">
+            <div className="prose prose--wide">
               {legal.sections.map((block) => (
                 <article className="prose-block" key={block.id}>
                   <h2 id={block.id}>{block.title}</h2>

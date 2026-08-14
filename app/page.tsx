@@ -7,8 +7,10 @@ import { Service } from "@/components/sections/Service";
 import { Statement } from "@/components/sections/Statement";
 import { Testimonials } from "@/components/sections/Testimonials";
 import { JsonLd } from "@/components/ui/JsonLd";
+import { getCatalog } from "@/lib/db/catalog";
 import { getHomeContent } from "@/lib/homeContent";
 import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
+import { toShopSearchSources } from "@/lib/shopSearch";
 
 /**
  * Portada. Server Component: todo el contenido y las imágenes viajan en el
@@ -21,12 +23,15 @@ import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
  *
  *   1 header.navbar        absoluto, sobre el hero
  *   2 section.hero         100vh, imagen full-bleed con copy centrado
- *   3 section.statement    frase editorial con color revelado al hacer scroll
+ *   3 section.statement    foto a la izquierda + titular y párrafo repartidos en su
+ *                          altura; el scroll los tiñe palabra a palabra (D-35)
  *   4 section.media-text   foto + texto, grid asimétrico sin video
  *   5 wrapper              imagen ancha + bloque crema del catálogo
- *   6 section.service      imagen que sobresale + 2 métricas
+ *   6 section.service      imagen + texto y 2 métricas
  *   7 section.gallery      2 filas desbordadas
- *   8 section.testimonials slider de tarjetas crema — oculto hasta tener reseñas reales
+ *   8 section.testimonials slider de 6 tarjetas crema, sin retrato (D-34). El copy
+ *                          es andamio marcado `todo` hasta que Ale entregue reseñas
+ *                          reales; con `items: []` la sección se apaga sola
  *   9 footer               tarjeta CTA solapada + bloque oscuro
  *
  * `getHomeContent()` es el copy de `content/home.ts` con la rejilla del catálogo
@@ -34,7 +39,7 @@ import { bakeryJsonLd, websiteJsonLd } from "@/lib/seo";
  * Sin `DATABASE_URL` devuelve exactamente el contenido estático.
  */
 export default async function HomePage() {
-  const home = await getHomeContent();
+  const [catalog, home] = await Promise.all([getCatalog(), getHomeContent()]);
 
   return (
     <>
@@ -44,9 +49,9 @@ export default async function HomePage() {
       <JsonLd data={bakeryJsonLd()} />
       <JsonLd data={websiteJsonLd()} />
 
-      <Navbar nav={home.nav} />
+      <Navbar nav={home.nav} searchProducts={toShopSearchSources(catalog)} />
 
-      <main id="contenido">
+      <main id="contenido" className="home-page">
         <Hero hero={home.hero} />
         <Statement mediaText={home.mediaText} />
         <OverlapMenu wideImage={home.wideImage} menu={home.menu} />

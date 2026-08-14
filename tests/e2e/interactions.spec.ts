@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { type Page, expect, test } from "@playwright/test";
 
 /**
  * Comportamiento interactivo: puntos 7, 8, 12 y parte del 14 del checklist §9.
@@ -107,12 +107,89 @@ test.describe("reveal al entrar en pantalla", () => {
       .toBeGreaterThanOrEqual(99);
   });
 
+  test("el relleno está completo cuando la foto llega a la cabecera", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(
+      viewport!.width < 992,
+      "apilado, la foto va encima del texto y no comparten borde superior",
+    );
+
+    const words = page.locator(".statement-section .scroll-color-text__word");
+
+    /**
+     * Primero se deja aterrizar la entrada. No es ceremonia: sin revelar, la
+     * celda está a `translate3d(0,100px,0)` y `getBoundingClientRect()` lo
+     * incluye, así que el destino se calcularía 100px más abajo de donde la foto
+     * acaba de verdad — y el `waitForFunction` de abajo no se cumpliría nunca.
+     */
+    await page.locator(".statement-photo").scrollIntoViewIfNeeded();
+    await expect(page.locator(".statement-photo")).toHaveCSS("transform", "none");
+    await expect(page.locator(".statement-story")).toHaveCSS("transform", "none");
+
+    // La cabecera es `position: fixed` y tapa `--header-h`. Al llegar ahí el
+    // borde superior de la foto, el teñido tiene que estar hecho — con holgura,
+    // porque el recorrido acaba 80px antes (HEADER_LEAD en ScrollColorText).
+    await page.evaluate(() => {
+      const photo = document.querySelector(".statement-photo")!;
+      const headerH = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--header-h"),
+      );
+      window.scrollTo(0, photo.getBoundingClientRect().top + window.scrollY - headerH);
+    });
+
+    // `scroll-behavior: smooth` (02-reset.css) ANIMA el salto: leer al frame
+    // siguiente devuelve el estado de partida, no el de destino.
+    await page.waitForFunction(() => {
+      const photo = document.querySelector(".statement-photo")!.getBoundingClientRect();
+      const headerH = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--header-h"),
+      );
+      return Math.abs(photo.top - headerH) < 2;
+    });
+
+    const values = await words.evaluateAll((items) =>
+      items.map((item) => Number.parseFloat(getComputedStyle(item).getPropertyValue("--reveal"))),
+    );
+    expect(Math.min(...values)).toBeGreaterThanOrEqual(99);
+  });
+
+  test("la foto y el texto suben con el mismo gesto y a la vez", async ({ page }) => {
+    // Se comparan ENTRE SÍ y no contra literales: lo que se exige es que sean el
+    // mismo gesto, no un valor concreto. Antes el <p> subía en 0.95s/120ms por su
+    // cuenta y el <h2> no subía en absoluto.
+    const gesto = (selector: string) =>
+      page.evaluate((sel) => {
+        const cs = getComputedStyle(document.querySelector(sel)!);
+        return {
+          property: cs.transitionProperty,
+          duration: cs.transitionDuration,
+          delay: cs.transitionDelay,
+        };
+      }, selector);
+
+    expect(await gesto(".statement-story")).toEqual(await gesto(".statement-photo"));
+
+    // El párrafo ya no lleva revelado propio: lo sube la celda entera, con el
+    // titular dentro. Si vuelve a aparecer, se puede volver a desincronizar.
+    await expect(page.locator(".scroll-color-text__body.reveal")).toHaveCount(0);
+
+    await page.locator(".statement-photo").scrollIntoViewIfNeeded();
+    await expect(page.locator(".statement-photo")).toHaveClass(/is-in/);
+    await expect(page.locator(".statement-story")).toHaveClass(/is-in/);
+  });
+
   test("Del horno de Ale no renderiza play ni lightbox de video", async ({ page }) => {
     await expect(page.locator(".media .play-wrap")).toHaveCount(0);
     await expect(page.locator('[data-lightbox="video"]')).toHaveCount(0);
     await expect(page.locator(".media-text-section")).toHaveCount(0);
     await expect(page.locator(".statement-dot")).toHaveCount(0);
     await expect(page.locator(".statement-photo-img")).toBeVisible();
+    await expect(page.locator(".statement-photo-img")).toHaveAttribute(
+      "src",
+      /queque-de-zanahoria/,
+    );
     await expect(page.locator(".statement-photo a")).toHaveCount(0);
   });
 
@@ -144,7 +221,7 @@ test.describe("prefers-reduced-motion", () => {
     await page.locator(".gallery").scrollIntoViewIfNeeded();
 
     const read = () =>
-      page.locator(".track--1").evaluate((el) => getComputedStyle(el).transform);
+      page.locator(".track--1").first().evaluate((el) => getComputedStyle(el).transform);
 
     const before = await read();
     await page.mouse.wheel(0, 600);
@@ -152,10 +229,15 @@ test.describe("prefers-reduced-motion", () => {
     expect(await read()).toBe(before);
   });
 
-  test("no monta el slider de testimonios mientras el bloque está pendiente", async ({ page }) => {
+  test("el slider de testimonios salta de tarjeta sin deslizarse", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.reload();
-    await expect(page.locator(".slider-mask")).toHaveCount(0);
+
+    // El slider sigue funcionando: lo que se apaga es el deslizamiento, no la
+    // navegación. Lo neutraliza el kill-switch de 99-a11y.css.
+    await expect(page.locator(".slider-mask")).toHaveCSS("transition-duration", "0s");
+    await page.getByRole("button", { name: "Ver reseñas siguientes" }).click();
+    await expect(page.locator(".slider-mask")).toHaveCSS("--i", "1");
   });
 
   test("la frase editorial queda revelada sin animación", async ({ page }) => {
@@ -166,6 +248,15 @@ test.describe("prefers-reduced-motion", () => {
       "100%",
     );
     await expect(page.locator(".statement-photo-img")).toHaveCSS("filter", "none");
+  });
+
+  test("detiene el carrusel de productos", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/sobre-nosotros");
+
+    const disc = page.locator(".product-wheel__disc");
+    await expect(disc).toHaveCSS("animation-name", "none");
+    await expect(disc).toHaveCSS("will-change", "auto");
   });
 });
 
@@ -204,29 +295,103 @@ test.describe("parallax de la galería", () => {
     page,
   }) => {
     // Arriba de la página, con la galería fuera del alcance del gate.
-    await expect(page.locator(".track--1")).not.toHaveClass(/is-animating/);
+    const firstTrack = page.locator(".track--1").first();
+    await expect(firstTrack).not.toHaveClass(/is-animating/);
 
     await page.locator(".gallery").scrollIntoViewIfNeeded();
-    await expect(page.locator(".track--1")).toHaveClass(/is-animating/);
-    await expect(page.locator(".track--1")).toHaveCSS("will-change", "transform");
+    await expect(firstTrack).toHaveClass(/is-animating/);
+    await expect(firstTrack).toHaveCSS("will-change", "transform");
   });
 });
 
 // ── Punto 8 · slider ───────────────────────────────────────────────────────
-test.describe("testimonios pendientes", () => {
-  test("no muestra flechas hasta tener reseñas reales", async ({ page }) => {
-    await expect(page.getByRole("button", { name: "Ver reseñas anteriores" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Ver reseñas siguientes" })).toHaveCount(0);
+/**
+ * El componente cliente inyecta UN entero (`--i`) y el resto de la aritmética
+ * vive en CSS. Por eso estos tests leen `--i` y no el `transform` resuelto:
+ * medir píxeles aquí sería medir el `calc()` del CSS, no la navegación.
+ */
+test.describe("slider de testimonios", () => {
+  const anteriores = (page: Page) => page.getByRole("button", { name: "Ver reseñas anteriores" });
+  const siguientes = (page: Page) => page.getByRole("button", { name: "Ver reseñas siguientes" });
+
+  test.beforeEach(async ({ page }) => {
+    await page.locator(".slider").scrollIntoViewIfNeeded();
+
+    // Esperar a la hidratación ANTES de tocar nada. El servidor ya pinta las
+    // flechas con su `aria-disabled` correcto, así que un test que sólo mire el
+    // atributo pasa sin que el JavaScript haya llegado — y el clic siguiente se
+    // perdería sin handler. `--i` es lo primero que escribe el componente al
+    // montarse, así que es la señal de que el slider está vivo.
+    await expect(page.locator(".slider-mask")).toHaveCSS("--i", "0");
   });
 
-  test("no expone reseñas inventadas al teclado", async ({ page }) => {
-    await page.keyboard.press("Tab");
-    await expect(page.locator(".review-card")).toHaveCount(0);
+  test("la flecha derecha avanza una tarjeta", async ({ page }) => {
+    const mask = page.locator(".slider-mask");
+
+    await siguientes(page).click();
+    await expect(mask).toHaveCSS("--i", "1");
+    await expect(anteriores(page)).toHaveAttribute("aria-disabled", "false");
   });
 
-  test("no deja reseñas ocultas en el DOM para lectores de pantalla", async ({ page }) => {
-    await expect(page.locator(".review-card")).toHaveCount(0);
-    await expect(page.locator(".slider p.sr-only")).toHaveCount(0);
+  /**
+   * UI-031 / D-21. Las flechas usan `aria-disabled` y NO `disabled`, porque al
+   * deshabilitar un elemento que tiene el foco el navegador lo manda al <body>
+   * y quien navega con teclado pierde el anclaje. La contrapartida es que
+   * `aria-disabled` no deshabilita nada por su cuenta: es una promesa que
+   * cumple el handler. Esto fija la promesa, igual que `tienda.spec.ts` hace
+   * con los steppers.
+   */
+  /**
+   * UI-031 / D-21. Que Playwright no pueda pulsar este botón con un `click()`
+   * normal ya dice algo: considera `aria-disabled="true"` como no accionable, o
+   * sea que la semántica se está anunciando bien. Lo que se comprueba aquí es lo
+   * otro: que si alguien lo activa igualmente —puntero, Enter, un lector de
+   * pantalla—, el handler no haga nada y el foco se quede donde estaba.
+   *
+   * ⚠ Se usa `dispatchEvent("click")` y NO `click({ force: true })`, y no es
+   * cosmético. `force` desactiva la comprobación de blanco: el clic se manda a
+   * unas coordenadas, y si el layout se movió entremedias —el reveal, el rAF del
+   * parallax, una imagen que termina de cargar más arriba— aterriza en lo que
+   * haya ahí. Con esta página eso significaba caer en un `.gallery-item` de la
+   * fila de encima y **navegar a una ficha de producto**: el test fallaba 1 de 8
+   * bajo carga con «element(s) not found», porque ya no estaba en la portada.
+   * `dispatchEvent` va al elemento directamente, sin coordenadas ni hit-testing.
+   * `tienda.spec.ts:670` usa `force` para lo mismo y es la causa probable del
+   * intermitente que `ESTADO.md` tiene anotado ahí.
+   */
+  test("la izquierda nace apagada y al pulsarla no pasa nada", async ({ page }) => {
+    await expect(anteriores(page)).toHaveAttribute("aria-disabled", "true");
+
+    await anteriores(page).focus();
+    await anteriores(page).dispatchEvent("click");
+
+    await expect(page.locator(".slider-mask")).toHaveCSS("--i", "0");
+    // El foco sigue en el botón: con `disabled` real el navegador lo habría
+    // mandado al <body>, que es justo lo que la decisión documentada evita.
+    await expect(anteriores(page)).toBeFocused();
+  });
+
+  test("End y Home llevan a los extremos", async ({ page, viewport }) => {
+    const mask = page.locator(".slider-mask");
+    const porVista = viewport!.width >= 992 ? 3 : viewport!.width >= 768 ? 2 : 1;
+
+    await siguientes(page).focus();
+    await page.keyboard.press("End");
+    // 6 reseñas: el último índice es 6 − las que caben a la vez.
+    await expect(mask).toHaveCSS("--i", String(6 - porVista));
+    await expect(siguientes(page)).toHaveAttribute("aria-disabled", "true");
+
+    await page.keyboard.press("Home");
+    await expect(mask).toHaveCSS("--i", "0");
+  });
+
+  test("anuncia el rango visible a los lectores de pantalla", async ({ page, viewport }) => {
+    const porVista = viewport!.width >= 992 ? 3 : viewport!.width >= 768 ? 2 : 1;
+    const aviso = page.locator(".slider p.sr-only");
+
+    await expect(aviso).toHaveText(`Mostrando reseñas 1 a ${porVista} de 6`);
+    await siguientes(page).click();
+    await expect(aviso).toHaveText(`Mostrando reseñas 2 a ${porVista + 1} de 6`);
   });
 });
 
@@ -297,9 +462,10 @@ test.describe("navegación", () => {
       .poll(async () => (await menu.boundingBox())!.x, { timeout: 2000 })
       .toBeCloseTo(0, 0);
 
-    // Catálogo es el único grupo con destino propio: en el drawer su lista sale
-    // desplegada de entrada, así que sirve para medir los dos niveles a la vez.
-    const grupo = page.locator(".nav-dropdown-toggle--link");
+    // Los grupos con destino propio (Catálogo y Sobre nosotros) salen en el
+    // drawer con su lista ya desplegada, así que sirven para medir los dos
+    // niveles a la vez. Se toma el primero, que es Catálogo.
+    const grupo = page.locator(".nav-dropdown-toggle--link").first();
     const subenlace = page.locator(".nav-dropdown-link").first();
 
     const panel = (await menu.boundingBox())!;
@@ -378,5 +544,23 @@ test.describe("navegación", () => {
     // panel cubre el scrim y sería el panel quien recibiera el clic.
     await page.locator(".nav-scrim").click({ position: { x: viewport!.width - 20, y: 400 } });
     await expect(page.locator("#nav-menu")).not.toHaveClass(/nav-menu--open/);
+  });
+
+  test("la etiqueta «Sobre Nosotros» del nav lleva a su página", async ({ page, viewport }) => {
+    // La regresión que este test existe para cazar: el grupo no llevaba `href`,
+    // así que `Dropdown` lo pintaba como <button> y el clic sólo abría el panel.
+    // La página respondía 200 y era inalcanzable desde su propia etiqueta.
+    if (viewport!.width <= 991) {
+      await page.getByRole("button", { name: "Abrir menú" }).click();
+      await expect(page.locator("#nav-menu")).toHaveClass(/nav-menu--open/);
+    }
+
+    // Acotado a `#nav-menu`: el pie tiene otro enlace con la misma etiqueta.
+    await page
+      .locator("#nav-menu")
+      .getByRole("link", { name: "Sobre Nosotros", exact: true })
+      .click();
+    await expect(page).toHaveURL(/\/sobre-nosotros$/);
+    await expect(page.locator("h1")).toHaveText("Un bocado de felicidad");
   });
 });

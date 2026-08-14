@@ -99,7 +99,7 @@ blanco** (`#E8A81B` sobre blanco = 2.09:1). Así que `--primary` del spec se div
 | Token | Uso | Ratio |
 | --- | --- | --- |
 | `--gold` `#E8A81B` | **sólo relleno** sobre fondo claro. Y texto dentro de `.footer-dark` | 6.58 sobre marrón |
-| `--gold-display` `#B07208` | texto ámbar **≥24px**: `h2`, `h4`, `.text-primary`, `.stat-num` | 4.00 blanco / 3.68 crema |
+| `--gold-display` `#B07208` | texto ámbar **≥24px**: `h2`, `h4`, `.text-primary`, `.stat-num` — incluido el titular revelado del statement, que hasta «Titular alineado» iba en `--gold-ink` y era el único `h2` fuera de este carril | 4.00 blanco / 3.68 crema |
 | `--gold-ink` `#8A5A06` | texto ámbar **<24px** e interactivo: precios, enlaces, iconos | 5.92 blanco / 5.45 crema |
 | `--gold-line` `#B07208` | trazos y bordes (umbral no-texto de 3:1) | 4.00 |
 | `--gold-bright` `#F2C014` | el amarillo del logo, decorativo **sólo sobre oscuro** | 8.08 sobre marrón |
@@ -235,13 +235,17 @@ No hay pago online, a propósito: se pide por WhatsApp, que es el canal que la t
 1. El cliente elige una **presentación** en la ficha y la añade. El carrito vive en `localStorage`
    con clave versionada (`boquita.cart.v2`; subió a v2 porque al cargar el catálogo real cambiaron
    todos los slugs y un carrito de fantasmas es un pedido mal enviado).
-2. El drawer del carrito recoge nombre, fecha, zona y notas. La fecha mínima se calcula desde el
+2. El drawer del carrito recoge nombre, fecha, zona y notas. El correo promocional es opcional y
+   sólo se acepta junto con su casilla de consentimiento. La fecha mínima se calcula desde el
    **lead time más largo del carrito**: si hay un queque personalizado, no se ofrece pasado mañana.
-3. «Finalizar por WhatsApp» es un `<a href>` real a `wa.me` con el pedido ya escrito — sobrevive
-   al bloqueo de popups de iOS y funciona con WhatsApp Web.
-4. **El carrito no se vacía al pulsar.** WhatsApp puede no abrirse o el cliente puede cerrarlo sin
+3. «Finalizar por WhatsApp» es un `<a href>` real a `api.whatsapp.com/send` con el pedido ya escrito
+   — sobrevive al bloqueo de popups de iOS y funciona con WhatsApp Web. El correo nunca entra en ese
+   mensaje.
+4. El clic inicia en paralelo un `POST /api/orders`. Neon guarda un intento con estado
+   `whatsapp_opened`; no afirma que el mensaje se enviara ni que exista una venta confirmada.
+5. **El carrito no se vacía al pulsar.** WhatsApp puede no abrirse o el cliente puede cerrarlo sin
    enviar; vaciarlo ahí perdería el pedido sin que nadie lo haya recibido. Se vacía con un botón
-   explícito de «ya hice mi pedido».
+   explícito después de guardar, o con «Vaciar de todos modos» si Neon falla.
 
 Los productos con precio a convenir (el queque personalizado) **no entran al carrito**: su CTA va
 directo a WhatsApp. Sumar un «desde» daría un total que no es el que se va a pagar.
@@ -249,6 +253,22 @@ directo a WhatsApp. Sumar un «desde» daría un total que no es el que se va a 
 Cada línea guarda su presentación, su precio **y su anticipación** en el momento de añadirse, no una
 referencia al catálogo: el carrito vive en `localStorage` y el catálogo ya no vive en el cliente. Las
 líneas de carritos anteriores al campo de anticipación se resuelven contra `content/products.ts`.
+
+### Clientes, pedidos y privacidad
+
+La migración `drizzle/0002_nervous_sprite.sql` añade `customers`, `orders`, `order_items` y
+`form_rate_limits`; `0003_curvy_cerise.sql` añade los índices de retención y búsqueda por cliente.
+El UUID nace en el navegador y se reutiliza al reintentar; una única sentencia con CTEs hace
+atómicos cliente, pedido e ítems y evita duplicados. Los pedidos sin correo quedan con cliente nulo.
+Con correo consentido se actualiza el cliente existente y se conserva cada pedido.
+
+- Los intentos de pedido se eliminan a los **24 meses** en la limpieza oportunista de nuevas altas.
+- El límite diario usa un HMAC de la IP con `IP_SALT`; la IP original no se almacena y los contadores
+  vencidos se eliminan a los dos días. En producción, `IP_SALT` es obligatorio.
+- `npm run customer:privacy -- optout correo@ejemplo.com` revoca promociones. El borrado completo
+  exige confirmación explícita: `npm run customer:privacy -- delete correo@ejemplo.com --confirm`.
+- Neon es por ahora la fuente de suscriptores. **Esta entrega no envía campañas** ni comparte la
+  lista con una plataforma externa.
 
 ### El mensaje que recibe Ale
 
@@ -316,8 +336,8 @@ así que el navegador reutiliza la misma petición. Hay un test que lo afirma.
 ## Dos cosas que conviene saber
 
 **Vercel Hobby es para uso no comercial.** Una tienda que vende productos es comercial y Vercel
-puede pedir el paso a Pro. Por eso todo el acceso a base de datos está detrás de `lib/db` —hoy son
-dos archivos, `index.ts` construye el único cliente y `catalog.ts` es la única lectura— y las
+puede pedir el paso a Pro. Por eso todo el acceso a base de datos está detrás de `lib/db` —`index.ts`
+construye el único cliente y los módulos de catálogo y pedidos concentran las consultas— y las
 subidas de archivos irán detrás de una interfaz `StorageDriver`: migrar a Cloudflare Pages (que sí
 permite uso comercial en su plan gratis) es cuestión de días, no de semanas. La cuenta de Neon es
 propia y no del marketplace de Vercel, precisamente para no atar la base al host.

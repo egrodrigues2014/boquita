@@ -3,10 +3,11 @@ import {
   MAX_ENCODED_LENGTH,
   WA_NUMBER,
   buildCompactMessage,
+  buildDirectWhatsAppMessage,
+  buildDirectWhatsAppUrl,
   buildOrderMessage,
   buildWhatsAppUrl,
   earliestDate,
-  waPlainLink,
 } from "@/lib/whatsapp";
 import type { CartLine } from "@/types/shop";
 
@@ -290,12 +291,79 @@ describe("buildCompactMessage", () => {
   });
 });
 
-describe("waPlainLink", () => {
-  it("arma un enlace de consulta sin carrito", () => {
-    const url = waPlainLink("¡Hola Boquita! Quiero hacer una consulta.");
-    expect(url).toBe(
-      `https://api.whatsapp.com/send?phone=${WA_NUMBER}&text=${encodeURIComponent("¡Hola Boquita! Quiero hacer una consulta.")}`,
+describe("buildDirectWhatsAppMessage", () => {
+  it("alinea el pedido directo con la estructura del carrito", () => {
+    expect(buildDirectWhatsAppMessage("order")).toBe(
+      [
+        "Hola, Ale 👋",
+        "",
+        "🛍️ *Nuevo pedido desde boquita.cr*",
+        "",
+        "📌 *Solicitud:* Quiero hacer un pedido y confirmar disponibilidad, fecha y entrega.",
+        "",
+        "🌐 Generado desde boquita.cr",
+      ].join("\n"),
     );
+  });
+
+  it("alinea la consulta directa con saludo, solicitud y procedencia", () => {
+    expect(buildDirectWhatsAppMessage("consultation")).toBe(
+      [
+        "Hola, Ale 👋",
+        "",
+        "💬 *Nueva consulta desde boquita.cr*",
+        "",
+        "📌 *Solicitud:* Quiero hacer una consulta sobre un pedido.",
+        "",
+        "🌐 Generado desde boquita.cr",
+      ].join("\n"),
+    );
+  });
+
+  it("alinea la cotización directa e incluye el producto", () => {
+    expect(buildDirectWhatsAppMessage("quote", { productName: "Queque personalizado" })).toBe(
+      [
+        "Hola, Ale 👋",
+        "",
+        "🧁 *Cotización desde boquita.cr*",
+        "",
+        "📋 *Detalle de la solicitud*",
+        "• Queque personalizado",
+        "└ Precio a convenir según tamaño y diseño",
+        "",
+        "📌 *Solicitud:* Quiero cotizar este producto y contarles la idea para confirmar tamaño, diseño y fecha.",
+        "",
+        "🌐 Generado desde boquita.cr",
+      ].join("\n"),
+    );
+  });
+
+  it("alinea la salida de error con un mensaje útil para Ale", () => {
+    expect(buildDirectWhatsAppMessage("error")).toBe(
+      [
+        "Hola, Ale 👋",
+        "",
+        "⚠️ *Ayuda desde boquita.cr*",
+        "",
+        "📌 *Solicitud:* La web me dio un error y quiero hacer un pedido por WhatsApp.",
+        "",
+        "🌐 Generado desde boquita.cr",
+      ].join("\n"),
+    );
+  });
+});
+
+describe("buildDirectWhatsAppUrl", () => {
+  it("apunta al número correcto y codifica el mensaje directo", () => {
+    const message = buildDirectWhatsAppMessage("quote", { productName: "Queque personalizado" });
+    const url = buildDirectWhatsAppUrl("quote", { productName: "Queque personalizado" });
+
+    expect(url).toBe(
+      `https://api.whatsapp.com/send?phone=${WA_NUMBER}&text=${encodeURIComponent(message)}`,
+    );
+    expect(url).not.toContain("wa.me");
+    expect(url).toContain("%0A");
+    expect(url).toContain("%F0%9F%91%8B");
   });
 });
 

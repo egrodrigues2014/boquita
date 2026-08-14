@@ -1,0 +1,130 @@
+/* ========================================================================== 
+   Carrusel circular de productos de la página «Sobre nosotros».
+
+   El disco completo queda fuera de la ventana visible: sólo se recorta su arco
+   superior. Las tarjetas no se animan individualmente; el navegador compone y
+   gira una única capa, de modo que el coste no crece con cada fotografía.
+   ========================================================================== */
+
+.product-wheel {
+  --wheel-card-w: 24rem;
+  --wheel-card-h: 23rem;
+  --wheel-window-h: 31.5rem;
+  --wheel-peek: 16.5rem;
+  --wheel-radius-card: 1.5rem;
+
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: var(--wheel-window-h);
+  padding-top: var(--wheel-peek);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: clip;
+  background: var(--primary-light);
+}
+
+.product-wheel__disc {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(var(--wheel-radius) * 2);
+  height: calc(var(--wheel-radius) * 2);
+  animation: product-wheel-spin 72s linear infinite;
+  will-change: transform;
+}
+
+.product-wheel__set {
+  display: contents;
+}
+
+.product-wheel__set--copy {
+  display: none;
+}
+
+.product-wheel__card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--wheel-card-w);
+  height: var(--wheel-card-h);
+  border-radius: var(--wheel-radius-card);
+  overflow: hidden;
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--wheel-angle))
+    translateY(calc(-1 * var(--wheel-radius)));
+}
+
+.product-wheel__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes product-wheel-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes product-wheel-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 991px) {
+  .product-wheel {
+    --wheel-window-h: 24.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .product-wheel {
+    --wheel-card-w: 15rem;
+    --wheel-card-h: 14rem;
+    --wheel-radius-card: 1rem;
+
+    height: auto;
+    padding: 1.25rem 0 2rem;
+    justify-content: flex-start;
+  }
+
+  .product-wheel__disc {
+    display: flex;
+    width: max-content;
+    height: auto;
+    animation-name: product-wheel-slide;
+    animation-duration: 50s;
+  }
+
+  .product-wheel__set,
+  .product-wheel__set--copy {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 2rem;
+    padding-right: 2rem;
+  }
+
+  .product-wheel__card {
+    position: static;
+    flex: 0 0 auto;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-wheel__disc {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+}

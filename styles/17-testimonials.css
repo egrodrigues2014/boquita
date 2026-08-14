@@ -28,6 +28,16 @@
   overflow: hidden;
 }
 
+.testimonials-section {
+  /* El último hueco pertenece visualmente a Home: queda blanco antes de que
+     empiece la superficie marrón del footer. */
+  padding-block: var(--home-section-gap);
+}
+
+.testimonials-section h2 {
+  margin-top: 0;
+}
+
 .slider-mask {
   --slide-w: 32%;
   --slide-gap: 20px;
@@ -57,19 +67,13 @@
   /* Sin border-radius y sin sombra: sólo fondo crema. */
 }
 
+/* ⚠ NO devolverle el `display:flex`. Lo tenía para poner el retrato de 70×70 al
+   lado del par nombre+rol, que iba envuelto en su propio div. Sin retrato el
+   envoltorio sobra, y sus dos hijos son ahora hijos directos de esta caja: en
+   flex se colocarían en fila, con el rol a la derecha del nombre. El desvío que
+   quita el retrato es D-34. */
 .review-head {
-  display: flex;
-  align-items: flex-start;
   margin-bottom: 20px;
-}
-
-.review-avatar {
-  width: 70px;
-  height: 70px;
-  margin-right: 20px;
-  border-radius: 0; /* cuadrado, sin redondear */
-  object-fit: cover;
-  flex: none;
 }
 
 .review-name {

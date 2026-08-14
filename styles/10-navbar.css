@@ -157,16 +157,29 @@
   min-width: 0;
 }
 
+.nav-mobile-search {
+  display: none;
+}
+
 .nav-search {
+  position: relative;
   flex: 1 1 320px;
   max-width: 430px;
   min-width: 220px;
-  display: flex;
-  align-items: stretch;
+  display: block;
   height: 46px;
   border: 1px solid rgba(176, 114, 8, 0.36);
   border-radius: 4px;
+  overflow: visible;
+  background: var(--white);
+}
+
+.nav-search-control {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
   overflow: hidden;
+  border-radius: 3px;
   background: var(--white);
 }
 
@@ -225,6 +238,42 @@
 
 .nav-search-button:hover {
   filter: brightness(0.96);
+}
+
+.nav-search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -1px;
+  right: -1px;
+  z-index: 130;
+  max-height: calc(44px * 3);
+  overflow-y: auto;
+  border: 1px solid rgba(232, 168, 27, 0.32);
+  border-radius: 4px;
+  background: var(--white);
+  box-shadow: 0 12px 28px rgba(58, 42, 26, 0.12);
+}
+
+.nav-search-suggestion {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 9px 14px;
+  color: var(--text-dark);
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  line-height: 1.35;
+  text-transform: none;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.nav-search-suggestion:hover,
+.nav-search-suggestion:focus-visible,
+.nav-search-suggestion--active {
+  background: var(--primary-light);
+  color: var(--gold-ink);
 }
 
 .navbar .btn--nav {
@@ -349,6 +398,20 @@
 /* ≤991: el MISMO .nav-menu se convierte en un panel fijo de 320px a la
    izquierda. No hay componente drawer aparte, sólo una clase de estado. */
 @media (max-width: 991px) {
+  .nav-container {
+    justify-content: flex-start;
+    gap: 6px;
+  }
+
+  .brand {
+    margin-right: auto;
+  }
+
+  .nav-menu-wrapper {
+    width: 0;
+    flex-basis: 0;
+  }
+
   .nav-menu {
     position: fixed;
     inset: 0 auto 0 0;
@@ -530,11 +593,23 @@
   .navbar-actions {
     flex: 0 0 auto;
     justify-content: flex-end;
-    margin-right: 20px;
+    margin-right: 0;
   }
 
   .nav-search {
     display: none;
+  }
+
+  .nav-mobile-search {
+    display: block;
+    padding: 8px 15px 0;
+  }
+
+  .nav-mobile-search .nav-search {
+    display: block;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
   }
 
   .cart-icon {
@@ -564,11 +639,5 @@
   .cart-icon {
     width: 30px;
     height: 30px;
-  }
-}
-
-@media (max-width: 479px) {
-  .navbar-actions {
-    margin-right: 15px;
   }
 }

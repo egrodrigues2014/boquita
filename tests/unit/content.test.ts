@@ -42,32 +42,38 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(home.service.metrics).toHaveLength(2);
   });
 
-  it("testimonios: 0 mientras están bloqueados, 6 cuando sean reales (§6.7)", () => {
-    expect([0, 6]).toContain(home.testimonials.items.length);
+  it("6 testimonios → el slider muestra 3 y recorta el resto (§6.7)", () => {
+    // El esquema admite 0 (bloque apagado) o 6. Aquí está encendido.
+    expect(home.testimonials.items).toHaveLength(6);
   });
 
-  it("4 + 4 fotos de galería, todas únicas (§6.6)", () => {
-    const [row1, row2] = home.gallery.rows;
-    expect(row1).toHaveLength(4);
-    expect(row2).toHaveLength(4);
+  it("6 filas de 4 fotos de galería, todas únicas (§6.6)", () => {
+    expect(home.gallery.rows).toHaveLength(6);
+    for (const row of home.gallery.rows) {
+      expect(row).toHaveLength(4);
+    }
     expect(home.gallery.title).toBe("GALERÍA");
 
-    const srcs = [...row1, ...row2].map((i) => i.image.src);
-    expect(new Set(srcs).size).toBe(8);
+    const items = home.gallery.rows.flat();
+    const srcs = items.map((i) => i.image.src);
+    expect(srcs).toHaveLength(24);
+    expect(new Set(srcs).size).toBe(24);
 
     const catalogSlugs = new Set(products.map((product) => product.slug));
-    const hrefs = [...row1, ...row2].map((item) => item.href);
+    const hrefs = items.map((item) => item.href);
     for (const href of hrefs) {
       const slug = href.replace("/tienda/", "");
       expect(catalogSlugs.has(slug), `${href} no apunta a una ficha del catálogo`).toBe(true);
     }
+
+    expect(hrefs.filter((href) => href === "/tienda/queque-personalizado")).toHaveLength(2);
   });
 
   it("statement usa el copy de Ale sin conservar la frase editorial anterior", () => {
     expect(home.statement).toEqual({});
     expect(home.mediaText.titleTop).toBe("Del horno de Ale");
     expect(home.mediaText.titleBottom).toBe("a tu mesa");
-    expect(home.mediaText.body).toContain("Ale Budowski hornea en su casa de Santa Ana desde 2019");
+    expect(home.mediaText.body).toContain("Ale Budowski hornea en su casa de Santa Ana desde 2022");
     expect(JSON.stringify(home)).not.toContain("cada receta nace con ingredientes honestos");
     expect(JSON.stringify(home.statement)).not.toContain("inline");
   });
@@ -93,11 +99,9 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(nav).not.toContain("Catálogo de productos");
   });
 
-  it("redes reales, 5 enlaces y 2 teléfonos en el pie (§6.8)", () => {
-    expect(home.footer.social.length).toBeGreaterThanOrEqual(2);
-    expect(home.footer.social.length).toBeLessThanOrEqual(4);
+  it("3 contactos reales y 4 enlaces en el pie (§6.8)", () => {
+    expect(home.footer.contacts).toHaveLength(3);
     expect(home.footer.links).toHaveLength(4);
-    expect(home.footer.phones).toHaveLength(2);
   });
 });
 
@@ -122,8 +126,8 @@ describe("las imágenes referenciadas existen en public/", () => {
   const images = collect(home);
 
   it("encuentra las 13 imágenes del layout", () => {
-    // hero, wide, service, media, cta, 8 de galería
-    expect(images).toHaveLength(13);
+    // hero, wide, service, media, cta, 24 de galería
+    expect(images).toHaveLength(29);
   });
 
   it.each(images.map((img) => [img.src, img] as const))("existe %s", (_src, img) => {
@@ -145,19 +149,47 @@ describe("los TODO están marcados, no escondidos", () => {
     expect(home.menu.products.filter((p) => p.priceTodo).map((p) => p.slug)).toEqual([]);
   });
 
-  it("no publica testimonios inventados", () => {
-    expect(home.testimonials.items).toHaveLength(0);
+  it("las reseñas de andamio van marcadas, todas o ninguna", () => {
+    // Una mezcla de reales y de andamio es el estado que nadie sabría leer: ni
+    // se puede lanzar ni se puede decir que falta contenido.
+    const marcadas = home.testimonials.items.filter((t) => t.todo).length;
+    expect([0, home.testimonials.items.length]).toContain(marcadas);
+  });
+
+  it("hoy las 6 reseñas siguen siendo de andamio", () => {
+    /**
+     * Este test sustituye al que exigía `items.length === 0`. La sección ya se
+     * publica —el layout es definitivo— pero el copy no es real: Ale todavía no
+     * entregó los textos (`CONTENT_TODO §3`).
+     *
+     * Cuando lleguen, se sustituyen las citas y se quitan las 6 marcas de
+     * golpe, y este test rompe. Ese es el propósito: el guardarraíl no
+     * desaparece al encender la sección, cambia de lado. Publicar el andamio
+     * como si fuera real sigue exigiendo un acto deliberado.
+     */
+    expect(home.testimonials.items.filter((t) => t.todo)).toHaveLength(6);
   });
 
   it("las redes públicas no usan placeholders", () => {
-    expect(home.footer.social.every((s) => !s.todo)).toBe(true);
-    expect(JSON.stringify(home.footer.social)).not.toMatch(/ticaboquita|facebook/i);
+    expect(home.footer.contacts.every((contact) => !contact.todo)).toBe(true);
+    expect(home.footer.contacts.map((contact) => contact.icon)).toEqual([
+      "whatsapp",
+      "instagram",
+      "mail",
+    ]);
+    expect(home.footer.contacts.map((contact) => contact.display)).toEqual([
+      "+506 7132 2355",
+      "@boquitacostarica",
+      "ticaboquita@gmail.com",
+    ]);
   });
 
   it("la métrica sin verificar está marcada y la verificable no", () => {
     const [pedidos, verificable] = home.service.metrics;
     expect(pedidos.value).toBe("+500");
-    expect(pedidos.label).toBe("Pedidos horneados desde 2019");
+    // 2022, no 2019: es la fecha del primer pedido vendido, la que cuenta Ale en
+    // «Sobre nosotros». Las dos páginas tienen que decir lo mismo.
+    expect(pedidos.label).toBe("Pedidos horneados desde 2022");
     expect(pedidos.todo).toBeUndefined();
     expect(verificable.todo).toBeUndefined();
     // "14 recetas" es comprobable contra el catálogo fuente.
@@ -174,8 +206,7 @@ describe("enlaces", () => {
       ...home.hero.ctas.map((c) => c.href),
       ...home.gallery.rows.flat().map((item) => item.href),
       ...home.footer.links.map((l) => l.href),
-      ...home.footer.social.map((s) => s.href),
-      ...home.footer.phones.map((p) => p.href),
+      ...home.footer.contacts.map((contact) => contact.href),
       home.footer.cta.button.href,
     ];
     for (const href of hrefs) {

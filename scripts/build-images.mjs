@@ -228,6 +228,9 @@ const LOGO_VARIANT_SIZES = {
     [36, 36],
     [72, 72],
     [144, 144],
+    // El pie renderiza 72px fijos: 216 es el escalón 3x de los móviles densos. Sigue siendo
+    // reducción desde 816, no upscale.
+    [216, 216],
   ],
 };
 
@@ -459,8 +462,40 @@ async function processJob(job) {
   }
 }
 
+/**
+ * El papel del original es blanco puro, pero el original es un JPEG: alrededor de cada trazo oscuro
+ * la compresión deja un anillo de píxeles casi-blancos (240-250). Con el umbral en 248 ese anillo no
+ * se recortaba y sobrevivía como un halo pálido pegado a los arcos. A 235 se va, y no se come nada
+ * del dibujo: lo más claro que hay dentro es la crema del disco, y ahí no llega el relleno.
+ */
+const LOGO_BG_MIN = 235;
+
+/**
+ * El disco dorado, en fracciones del lado para no depender del tamaño al que se procese. Medido
+ * sobre `assets/logo-boquita.jpg` (816×816) con una rejilla de 102px: el disco va de x≈140 a x≈610
+ * y de y≈160 a y≈635.
+ *
+ * Es la valla del relleno de fondo, y el motivo está en el dibujo: **el anillo exterior es
+ * discontinuo**. La crema blanca de la parte alta del disco es del mismo blanco que el papel, así
+ * que por los huecos del anillo el relleno entra desde fuera y se la lleva entera — quedan flotando
+ * las virutas doradas sobre el marrón del pie. No es un riesgo futuro: los `logo-light-144x144` y
+ * `logo-transparent-192x192` que había commiteados ya estaban así. Sólo se libraban los tamaños
+ * pequeños, porque a partir de ~100px de lado la reducción deja de emborronar el anillo lo bastante
+ * como para cerrarle los huecos al relleno.
+ */
+const LOGO_DISC = { cx: 375 / 816, cy: 398 / 816, r: 235 / 816 };
+
+function isInsideLogoDisc(x, y, width, height) {
+  const dx = x - LOGO_DISC.cx * width;
+  const dy = y - LOGO_DISC.cy * height;
+  const radius = LOGO_DISC.r * width;
+  return dx * dx + dy * dy < radius * radius;
+}
+
 function isLogoBackground(data, offset) {
-  return data[offset] >= 248 && data[offset + 1] >= 248 && data[offset + 2] >= 248;
+  return (
+    data[offset] >= LOGO_BG_MIN && data[offset + 1] >= LOGO_BG_MIN && data[offset + 2] >= LOGO_BG_MIN
+  );
 }
 
 function transparentizeEdgeBackground(data, width, height, channels) {
@@ -472,6 +507,7 @@ function transparentizeEdgeBackground(data, width, height, channels) {
     if (x < 0 || y < 0 || x >= width || y >= height) return;
     const pixel = y * width + x;
     if (seen[pixel]) return;
+    if (isInsideLogoDisc(x, y, width, height)) return;
     const offset = pixel * channels;
     if (!isLogoBackground(out, offset)) return;
     seen[pixel] = 1;
@@ -499,13 +535,28 @@ function transparentizeEdgeBackground(data, width, height, channels) {
   return out;
 }
 
-async function writeLogoVariant(variant, [w, h]) {
-  const srcPath = path.join(ROOT, "assets", "logo-boquita.jpg");
-  const dir = path.join(OUT, "brand");
-  await mkdir(dir, { recursive: true });
+/**
+ * El original de 816×816 ya recortado y recoloreado, del que cuelgan todos los tamaños de la
+ * variante.
+ *
+ * **El orden es el motivo de que esto exista.** Antes se reducía primero y se recortaba después, así
+ * que el relleno de papel y el umbral de tinta caían sobre un bitmap de 72px en el que casi todo
+ * píxel de un trazo es mezcla de tinta y papel: no pasaba ni por papel (≥ 235) ni por tinta (< 95),
+ * se quedaba tal cual, y el resultado era el borde sucio y el «Sweet & Salty» ilegible del pie. A
+ * 816 los dos umbrales caen sobre píxeles limpios, y la reducción posterior promedia ~130 de ellos
+ * por cada píxel de salida.
+ *
+ * Se memoiza porque el recorte es un relleno por inundación sobre 666k píxeles y hay diez tamaños
+ * colgando de sólo dos masters.
+ */
+const logoMasters = new Map();
 
+async function logoMaster(variant) {
+  const cached = logoMasters.get(variant);
+  if (cached) return cached;
+
+  const srcPath = path.join(ROOT, "assets", "logo-boquita.jpg");
   const { data, info } = await sharp(srcPath, { failOn: "error" })
-    .resize(w, h, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true });
@@ -525,9 +576,24 @@ async function writeLogoVariant(variant, [w, h]) {
     }
   }
 
-  await sharp(out, {
-    raw: { width: info.width, height: info.height, channels: info.channels },
-  })
+  const master = { data: out, info };
+  logoMasters.set(variant, master);
+  return master;
+}
+
+/**
+ * Reduce el master al tamaño pedido. `lanczos3` y no el filtro por defecto: el logo es trazo fino
+ * sobre fondo transparente, y a 36px la diferencia entre un kernel y otro es la diferencia entre una
+ * letra y una mancha.
+ */
+async function writeLogoVariant(variant, [w, h]) {
+  const dir = path.join(OUT, "brand");
+  await mkdir(dir, { recursive: true });
+
+  const { data, info } = await logoMaster(variant);
+
+  await sharp(data, { raw: { width: info.width, height: info.height, channels: info.channels } })
+    .resize(w, h, { fit: "contain", kernel: "lanczos3", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png({ compressionLevel: 9, adaptiveFiltering: true })
     .toFile(path.join(dir, `logo-${variant}-${w}x${h}.png`));
   written++;
@@ -555,16 +621,16 @@ async function writeAppIcons() {
     .toFile(path.join(appDir, "apple-icon.png"));
   written++;
 
-  // Transparente: mismo tratamiento de borde que las variantes de marca.
-  const { data, info } = await sharp(srcPath, { failOn: "error" })
-    .resize(APP_ICON_PX, APP_ICON_PX, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
+  // Transparente: mismo tratamiento de borde que las variantes de marca — y por el mismo motivo,
+  // recortado a 816 y reducido después.
+  const { data, info } = await logoMaster("transparent");
 
-  const out = transparentizeEdgeBackground(data, info.width, info.height, info.channels);
-
-  await sharp(out, { raw: { width: info.width, height: info.height, channels: info.channels } })
+  await sharp(data, { raw: { width: info.width, height: info.height, channels: info.channels } })
+    .resize(APP_ICON_PX, APP_ICON_PX, {
+      fit: "contain",
+      kernel: "lanczos3",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
     .png({ compressionLevel: 9, adaptiveFiltering: true })
     .toFile(path.join(appDir, "icon.png"));
   written++;

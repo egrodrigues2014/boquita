@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { waPlainLink } from "@/lib/whatsapp";
+import { buildDirectWhatsAppUrl } from "@/lib/whatsapp";
 
 /**
  * Límite de error de la aplicación.
@@ -43,9 +43,7 @@ export default function Error({
             </button>
             <a
               className="btn btn--ghost"
-              href={waPlainLink(
-                "¡Hola Boquita! La web me dio un error y quiero hacer un pedido por aquí.",
-              )}
+              href={buildDirectWhatsAppUrl("error")}
               target="_blank"
               rel="noopener noreferrer"
             >

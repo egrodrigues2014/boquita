@@ -23,19 +23,32 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 
 ## De un vistazo
 
-*Última revisión: 12 de agosto de 2026.*
+*Última revisión: 14 de agosto de 2026.*
 
 | | |
 | --- | --- |
 | Rama | `main`, en sincronía con `origin` (`https://github.com/egrodrigues2014/boquita.git`). `ui/quick-wins` ya está fusionada y se puede borrar |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
-| Sin commitear | **Tres bloques a la vez, no commitear el árbol entero.** (1) El statement sigue en vuelo: `components/ui/ScrollColorText.tsx`, `styles/12-statement.css`, `styles/14-overlap-menu.css`. (2) El drawer móvil: `components/layout/Navbar.tsx`, `styles/10-navbar.css`, `styles/99-a11y.css`. (3) **El catálogo real de Ale**, que es el bloque grande: `types/shop.ts`, `content/products.ts`, `content/home.ts`, `content/shopSchema.ts`, `content/pages.ts`, `lib/variants.ts`, `lib/cart.ts`, `lib/shopSearch.ts`, `lib/productImage.ts`, `lib/db/*`, `components/cart/ProductPurchase.tsx` (nuevo, sustituye a `AddToCartButton.tsx`), `components/cart/CartDrawer.tsx`, `components/shop/ProductCard.tsx` (nuevo, la tarjeta del catálogo rediseñada — D-33), `app/tienda/**`, `app/layout.tsx`, `app/not-found.tsx`, `app/opengraph-image.tsx`, `styles/05-components.css` (`.btn--sm`), `styles/30-cart.css`, `scripts/build-images.mjs`, `scripts/seed-catalog.ts`, `drizzle/0001_*`, `assets/products/` (24 fotos), `data/`, `public/img/producto/` y los tests. Verificar con `git status --short` |
-| Tests unitarios | **227 en verde**, 11 ficheros (`npm test`, medido el 12 ago tras el rediseño de la tarjeta). `npm run lint` y `npm run typecheck` limpios el mismo día |
-| Tests e2e | **Suite completa medida el 12 ago tras el rediseño de la tarjeta**, contra `NEXT_DIST_DIR=.next-verify` y build nuevo: **1.003 en verde + 64 skipped + 5 en rojo** de 1.072 casos (15,1 min). Los 5 rojos son de **otros dos bloques en vuelo, ninguno de la tarjeta**: (1) cuatro son `geometry.spec.ts:36` (statement) a 991, 767, 479 y 390 — el titular queda por encima del fondo de la foto, no por debajo; (2) el quinto es `seo-perf.spec.ts:151` a 1920, «la primera carga pesa menos de 1.2 MB»: mide **1.294 KB, de los que 831 KB son imágenes de la portada**. La causa es que la galería de la portada pasó a servir fotos de `/img/producto/` (ver el diff de `tests/e2e/seo-perf.spec.ts` y `components/sections/Gallery.tsx`). **No es atribuible a la tarjeta**: la portada no renderiza `ProductCard`, y el bundle de CSS entero mide 45 KB en disco contra los 94 KB de exceso. Los tests de la tarjeta se volvieron a correr aislados: **57 en verde + 7 skipped** (los skips son los ≤479 con `hasTouch` y los de una columna). Verificar con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=line`; ojo con encauzar la salida a `tail` o a `Select-Object -Last`, que se traga el principio del resumen |
-| ⚠ Intermitentes | Dos, medidos el 12 ago y **anteriores a este bloque**; en la última pasada de la suite pasaron los dos, así que no salen en la fila de arriba. (1) `paginas.spec.ts:51` (el ancla `#entregas` de sobre-nosotros no queda tapada por el navbar) falla ~6 de 24 repeticiones, a anchos distintos cada vez. Medido con una sonda: cuando falla, `scroll-margin-top: 131px` **no se aplica** y el titular queda a 12px del borde en vez de a 131px, con `scrollY` 1861 de un máximo de 3481 — así que no es que la página se quede corta para desplazarse. Es una carrera entre el desplazamiento al fragmento y el que hace el router; es un bug real de navegación, no del test. (2) `tienda.spec.ts:532` (el control `aria-disabled` conserva el foco) falla suelto bajo carga y pasa **4 de 4** al repetirlo aislado |
-| ⚠ Sin cobertura | Tres cosas. (1) `interactions.spec.ts:171` era el único test de que el statement respeta `prefers-reduced-motion`. Comprobado a mano el 7 ago (36 palabras a `--reveal:100%`, con y sin JS), pero **hoy no lo vigila nadie**. (2) El **aspecto** del realce del drawer: el test mide caja, sangrías, alto y navegación, pero nadie comprueba el color del fondo, la barra de 3px ni el `transform` del `.nav-label`, ni que decaigan bajo `prefers-reduced-motion`. (3) El **aspecto** del selector de presentación: los e2e comprueban que cambia el precio, que hay 3 opciones y que con una sola no se dibuja, pero nadie mira el realce de `:has(input:checked)` ni los 44px de alto de la fila |
+| Sin commitear | **Ocho bloques a la vez, no commitear el árbol entero.** (0) **Los testimonios encendidos** (este bloque): `content/home.ts` (sólo la clave `testimonials`), `components/sections/Testimonials.tsx`, `styles/17-testimonials.css`, `app/page.tsx` (docstring), `components/ui/Avatar.tsx` (**borrado**), `tests/unit/content.test.ts`, `tests/e2e/geometry.spec.ts`, `tests/e2e/interactions.spec.ts` y los docs. (0b) **La galería de 2 a 6 filas**, en vuelo por otra vía: `types/content.ts`, `content/schema.ts`, `content/home.ts` (claves `gallery`/`GALLERY_*`) y el bucle de filas de `geometry.spec.ts`. Los dos comparten tres ficheros —`content/home.ts`, `geometry.spec.ts` y `content.test.ts`— tocando claves y bloques distintos en cada uno. (1) **El statement, cerrado** (este bloque): `components/sections/Statement.tsx`, `components/ui/ScrollColorText.tsx`, `styles/12-statement.css`, `app/page.tsx` (docstring), `tests/e2e/geometry.spec.ts`, `tests/e2e/interactions.spec.ts` y los docs (`ESTADO`, `DEVIATIONS` con D-35, `HOME_CINEMATIC`). `styles/14-overlap-menu.css` **ya no está tocado**: entró en el commit anterior, y esta fila se había quedado atrás. Comparte `app/page.tsx`, `geometry.spec.ts` e `interactions.spec.ts` con el bloque (0), tocando bloques distintos de cada uno. (2) El drawer móvil: `components/layout/Navbar.tsx`, `styles/10-navbar.css`, `styles/99-a11y.css`. (3) **El catálogo real de Ale**, que es el bloque grande: `types/shop.ts`, `content/products.ts`, `content/home.ts`, `content/shopSchema.ts`, `content/pages.ts`, `lib/variants.ts`, `lib/cart.ts`, `lib/shopSearch.ts`, `lib/productImage.ts`, `lib/db/*`, `components/cart/ProductPurchase.tsx` (nuevo, sustituye a `AddToCartButton.tsx`), `components/cart/CartDrawer.tsx`, `components/shop/ProductCard.tsx` (nuevo, la tarjeta del catálogo rediseñada — D-33), `app/tienda/**`, `app/layout.tsx`, `app/not-found.tsx`, `app/opengraph-image.tsx`, `styles/05-components.css` (`.btn--sm`), `styles/30-cart.css`, `scripts/build-images.mjs`, `scripts/seed-catalog.ts`, `drizzle/0001_*`, `assets/products/` (24 fotos), `data/`, `public/img/producto/` y los tests. (4) **Los derivados del logo, rehechos**: `scripts/build-images.mjs`, `components/layout/Footer.tsx` (una línea de `srcSet`), `tests/unit/logo.test.ts` (nuevo), los 8 PNG de `public/img/brand/` regenerados, `public/img/brand/logo-light-216x216.png` (nuevo) y `app/icon.png`. No comparte fichero con ningún otro bloque salvo `scripts/build-images.mjs`, que el bloque (3) toca en los *jobs* de producto y este sólo en las funciones del logo. (5) **«Sobre Nosotros»: enlace del nav, texto real de Ale, medida completa, ritmo único de 64px y la raya del titular a todo el carril** (este bloque): `content/home.ts` (sólo las claves `nav` y `footer.links`, y el `mediaText`/`metrics` de la fecha), `content/pages.ts` (la clave `about` entera), `lib/contact.ts` (`email`), `app/sobre-nosotros/page.tsx`, `styles/40-prose.css`, `tests/unit/pages.test.ts` (nuevo), `tests/unit/icons.test.ts` (nuevo), `tests/unit/content.test.ts`, `tests/e2e/geometry.spec.ts`, `tests/e2e/interactions.spec.ts`, `tests/e2e/paginas.spec.ts`, `public/icons/list-bullet.svg` y `public/icons/quote-icon.svg` (los dos, mal formados desde siempre), `CLAUDE.md` (§Idioma, la excepción del tuteo) y los docs. Comparte `content/pages.ts`, `app/sobre-nosotros/page.tsx`, `styles/40-prose.css` y los tres specs con el bloque del carrusel, que entró en la misma página mientras este estaba en vuelo: el carrusel sustituyó la foto del obrador y `geometry.spec.ts` pasó a medir el texto contra el contenedor. Comparte `content/home.ts` con (0) y (0b), y los tres ficheros de tests con (0) y (1), tocando claves y bloques distintos en cada uno. (6) **El titular del statement alineado con los demás `h2`** (este bloque): `styles/12-statement.css` (sólo la regla del `__fill` del titular y su comentario), `styles/01-tokens.css` (sólo el comentario de `--text-ghost`), `tests/unit/contrast.test.ts` y los docs (`ESTADO`, `DEVIATIONS` con D-26 reescrito, `README`). Comparte `styles/12-statement.css` con el bloque (1), tocando reglas distintas: (1) es geometría y entrada, este es sólo color. No comparte ningún otro fichero. Verificar con `git status --short` |
+| Bloque Aviso Legal | `app/aviso-legal/page.tsx`, la clase compartida añadida a `app/sobre-nosotros/page.tsx`, `styles/40-prose.css`, el test nuevo al final de `tests/e2e/geometry.spec.ts` y D-37. Comparte tres ficheros con el bloque de “Sobre Nosotros”; el copy de privacidad sí se amplió al activar pedidos y consentimiento en Neon (`content/pages.ts`). |
+| Bloque clientes y pedidos | `app/api/orders/route.ts`, `components/cart/CartDrawer.tsx`, `lib/orderSubmission.ts`, `lib/db/orderSubmissions.ts`, las cuatro tablas de `lib/db/schema.ts`, migraciones `0002_nervous_sprite.sql` y `0003_curvy_cerise.sql`, `scripts/customer-privacy.ts`, `styles/30-cart.css` y pruebas. Las migraciones aditivas se aplicaron a Neon el 14 ago. Escritura, limpieza e idempotencia reales verificadas: `write-ok`, `cleanup-ok`, `rate-cleanup-ok`, `idempotency-ok` e `idempotency-cleanup-ok`. |
+| Tests unitarios | **319 en verde**, 16 ficheros (`npm test`, medido el 14 ago). `npm run lint` y `npm run typecheck` limpios; el build aislado `.next-order-capture` compila e incluye `/api/orders`. |
+| Tests e2e (14 ago, titular del statement) | Contra `NEXT_DIST_DIR=.next-verify` y build nuevo, la **suite entera** en dos tandas: **1.098 en verde + 88 skipped + 14 en rojo** (8,5 min + 9,5 min). **Ninguno de los 14 es del statement**, y los cuatro están diagnosticados. (1) `a11y.spec.ts:156` ×4 (w1920/1440/1280/1100), **determinista**: violación de modo estricto — `.nav-search-input` resuelve a **2 elementos** porque `Navbar.tsx` monta `ProductSearchAutocomplete` dos veces, en `:280` (barra de escritorio) y `:304` (drawer). Es del bloque (2) sin commitear; el test necesita desambiguar el localizador, o el navbar no debería montar los dos a la vez. (2) `paginas.spec.ts:284` ×8, **determinista**: `/aviso-legal` renderiza **7** `.prose-block` y el test espera **6** — del bloque «Aviso Legal». (3) `seo-perf.spec.ts:182` ×1 (w1920): **2398 KB** en la primera vista contra un presupuesto de 2000, y **1909 KB son imágenes** (link 240, script 138, css 89) — del bloque del catálogo, no del CSS. (4) `lightbox.spec.ts:36` ×1 (w1920): **flake bajo carga**, pasa **3/3** aislado con `--repeat-each=3`. Comprobado además en navegador a w1440: el titular del statement y el del catálogo computan **idénticos** en color (`rgb(176, 114, 8)`), familia (Cormorant Infant), peso (400) y tamaño (50px) |
+| Tests e2e (14 ago, clientes y pedidos) | Contra `.next-order-capture`: **48 escenarios** del checkout a 8 anchos; 40 pasaron en la primera corrida y los 8 del consentimiento pasaron tras acotar un selector de test que también encontraba el anunciador de rutas de Next. Auditoría axe del carrito: **8 en verde** y pasada final móvil: **7 en verde**. Persistencia real incluida idempotencia, sin restos temporales, detallada en la fila del bloque. |
+| Tests e2e (14 ago, ritmo vertical de Home) | Contra build nuevo en `.next-home-spacing`: el test nuevo compara las **6 transiciones reales** entre contenidos y pasa a los **8 anchos**; `geometry.spec.ts` completo da **200 en verde + 8 skipped, cero rojos** en 4,2 min. Tras mover el último hueco al fondo blanco, el test específico volvió a pasar **8 de 8** y se regeneraron/revisaron las capturas finales a 1920 y 390px. |
+| Tests e2e (14 ago, Aviso Legal) | Contra build nuevo en `.next-legal-verify`: **56 en verde** para geometría editorial, contenido legal y axe en los 8 anchos; la comprobación aislada de que la cabecera no tapa el contenido suma **8 en verde**. Tras retirar la frase fiscal y «Servicios de terceros», la repetición de contenido + geometría da **24 en verde** y las **8 capturas** se regeneraron y revisaron a ojo. El primer intento sobre `.next-verify` perdió `middleware-manifest.json` por el bloqueo de OneDrive; el directorio exclusivo compiló completo. |
+| Tests e2e (14 ago, al cerrar «Pedidos y entregas» por rótulos) | Contra `NEXT_DIST_DIR=.next-verify` y build nuevo: `paginas.spec.ts` **120 en verde + 8 skipped, cero rojos** (2,5 min) —incluido el intermitente del ancla `#entregas`, que esta vez pasó a los 8 anchos— y `geometry + a11y` **256 en verde + 20 skipped + 4 en rojo** (6,7 min), los 4 el conocido `a11y.spec.ts:156` del buscador de cabecera. El test de la sección afirma ahora los **seis rótulos en orden**, que las negritas del bloque son exactamente esos seis, que la lista tiene **dos** ítems y que **ningún párrafo queda sangrado** respecto al carril, que era la queja del cliente. Unitarios: **305 en verde**, 14 ficheros |
+| Tests e2e (14 ago, `paginas geometry a11y`, al cerrar el formato del catálogo, los tópicos y el tuteo) | Contra `NEXT_DIST_DIR=.next-verify` y build nuevo: **376 en verde + 28 skipped + 4 en rojo** de 408 a los 8 anchos (9,2 min). Los 4 rojos son otra vez `a11y.spec.ts:156` (buscador de cabecera, del bloque del autocompletado), y **el ancla `#entregas` pasó a los 8** — ver la fila de intermitentes, donde queda medido que cae en conjuntos de anchos distintos en cada pasada. Los **3 tests nuevos** —los temas del catálogo en su línea, la lista de «Pedidos y entregas» con su viñeta, y el cierre en tuteo— pasan a los 8 anchos. Capturas de `sobre-nosotros-{1920,390}.png` revisadas a ojo, a 1:1: la etiqueta se lee como rótulo, el punto de la viñeta cae a la altura de la primera línea también en los ítems de dos y tres líneas |
+| Tests e2e (13 ago, `geometry paginas a11y`, al cerrar el ritmo de «Sobre Nosotros») | Contra `NEXT_DIST_DIR=.next-verify` y build nuevo: **360 en verde + 28 skipped + 4 en rojo** de 392 a los 8 anchos (7,7 min). Los **2 tests nuevos** —«todos los huecos verticales miden lo mismo» y «la raya del titular cubre el carril»— pasan **a los 8 anchos** (re-medidos aparte tras añadir la aserción del borde de la FAQ: **24 en verde**, 1,4 min). Los 4 rojos son otra vez `a11y.spec.ts:156` (buscador de cabecera) a los cuatro anchos ≥1100, del bloque del autocompletado; el intermitente de `#entregas` pasó esta vez. Capturas de `sobre-nosotros-{1920,1100,991,390}.png` regeneradas y revisadas a ojo: los cinco huecos se ven iguales y a 991 —donde `--header-h` sube a 155px— la primera pantalla no queda apretada |
+| Tests e2e (13 ago, **suite entera**, al cerrar «Sobre Nosotros») | Contra `NEXT_DIST_DIR=.next-verify` y build nuevo: **1.074 en verde + 88 skipped + 6 en rojo** de 1.168 a los 8 anchos (20,9 min). De los 6 rojos, **2 son los intermitentes conocidos** (`paginas.spec.ts` `#entregas` a w1920 y `tienda.spec.ts` aria-disabled a w767) y los **4 restantes son `a11y.spec.ts:156`** —el anillo de foco del buscador de cabecera, `.nav-search`— a los cuatro anchos ≥1100 donde ese buscador se renderiza. **No son de este bloque:** fallan a 4 de 4, o sea de forma determinista, y este trabajo no toca `components/shop/ProductSearchAutocomplete.tsx` ni `styles/10-navbar.css`; son del bloque del autocompletado, que sigue sin commitear. Es el primer sitio donde mirar al cerrar ese bloque |
+| Tests e2e (13 ago, **suite entera**) | **Medida al cerrar el statement**, contra `NEXT_DIST_DIR=.next-verify` y build nuevo: **1.042 en verde + 68 skipped + 2 en rojo** de 1.112 a los 8 anchos (19,4 min). Los **2 rojos son los dos intermitentes de la fila de abajo, ninguno del statement** — ver ahí el A/B que lo mide. Los **2 rojos que había del statement** (`interactions.spec.ts`, «la frase editorial revela color al hacer scroll», a 1920 y 1280, última palabra en `--reveal: 97%`) **están cerrados**: el recorrido ahora acaba en `--header-h` + 80px, así que el progreso satura a 1 en vez de quedarse en 0,995. Re-medido sólo `geometry` + `interactions` sobre el build definitivo: **340 en verde + 28 skipped + 0 en rojo** (6,4 min). Las 72 capturas de `tests/e2e/__screenshots__/` se regeneraron en esa pasada (9 vistas × 8 anchos) |
+| Tests e2e (13 ago, `a11y paginas geometry`) | Tras formatear el texto de «Sobre Nosotros»: **344 en verde + 28 skipped + 4 en rojo** (9,1 min). **El audit de axe sobre `/sobre-nosotros` pasa**, que es lo que valida el reparto del ámbar en el DOM real. Los 4 rojos son otra vez `a11y.spec.ts:156` (buscador de cabecera) y esta pasada da la **causa exacta, que no es de accesibilidad**: `.nav-search-input` resuelve a **dos elementos** —el del escritorio y el del `.nav-mobile-search`— y Playwright falla por modo estricto antes de medir nada. Se arregla en el bloque del autocompletado acotando el localizador; ver la fila de intermitentes |
+| Tests e2e (13 ago, `geometry paginas interactions`) | Repasada tras ensanchar el texto de «Sobre Nosotros», sobre build nuevo: **455 en verde + 40 skipped + 1 en rojo** (9,9 min). El test nuevo, «en sobre nosotros el texto mide lo mismo que la foto», pasa **a los 8 anchos**. El único rojo es `geometry.spec.ts:341` a w390 (`.footer-social` esperaba 0 y encontró 1) y **es del bloque del pie, que se estaba editando en paralelo en este mismo árbol**: el fichero de tests ya exige el pie nuevo —sin `social`, con `contacts`— mientras el build servido traía el viejo. Falló sólo en w390 porque ese worker cargó la versión nueva del spec a mitad de pasada. Se vuelve a medir al cerrar el bloque del pie |
+| Tests e2e (12 ago, previo) | **Suite completa medida el 12 ago tras el rediseño de la tarjeta**, contra `NEXT_DIST_DIR=.next-verify` y build nuevo: **1.003 en verde + 64 skipped + 5 en rojo** de 1.072 casos (15,1 min). Los 5 rojos son de **otros dos bloques en vuelo, ninguno de la tarjeta**: (1) cuatro son `geometry.spec.ts:36` (statement) a 991, 767, 479 y 390 — el titular queda por encima del fondo de la foto, no por debajo; (2) el quinto es `seo-perf.spec.ts:151` a 1920, «la primera carga pesa menos de 1.2 MB»: mide **1.294 KB, de los que 831 KB son imágenes de la portada**. La causa es que la galería de la portada pasó a servir fotos de `/img/producto/` (ver el diff de `tests/e2e/seo-perf.spec.ts` y `components/sections/Gallery.tsx`). **No es atribuible a la tarjeta**: la portada no renderiza `ProductCard`, y el bundle de CSS entero mide 45 KB en disco contra los 94 KB de exceso. Los tests de la tarjeta se volvieron a correr aislados: **57 en verde + 7 skipped** (los skips son los ≤479 con `hasTouch` y los de una columna). Verificar con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=line`; ojo con encauzar la salida a `tail` o a `Select-Object -Last`, que se traga el principio del resumen |
+| ⚠ Intermitentes | Dos, **anteriores a este bloque**, y son los 2 rojos de la fila de arriba. (1) `paginas.spec.ts:51` (el ancla `#entregas` de sobre-nosotros no queda tapada por el navbar). Medido con una sonda: cuando falla, `scroll-margin-top: 131px` **no se aplica** y el titular queda a 12px del borde en vez de a 131px, con `scrollY` 1861 de un máximo de 3481 — así que no es que la página se quede corta para desplazarse. Es una carrera entre el desplazamiento al fragmento y el que hace el router; es un bug real de navegación, no del test. **Corrección del 13 ago sobre lo que decía esta fila:** no falla «~6 de 24 a anchos distintos», falla **mucho más suelto que en la suite** — dentro de la suite entera cayó 1 de 8 (w1280), y aislado 7 de 8. Encaja con la carrera: sin contención, el desplazamiento del router gana más veces. **Medición del 14 ago, con sonda propia:** cayó en **conjuntos de anchos distintos en dos pasadas seguidas** —{1280, 1100, 767} en la suite de tres ficheros y {1920, 1440, 1280, 1100} aislado—, o sea que **no es determinista**, que es lo que descarta que lo cause un cambio de contenido (ese día «Pedidos y entregas» cambió de forma dos veces y la longitud de la página con ella). Y sobra recorrido: a 1920, `scrollY` 3.479 de un máximo de 5.771 con el titular en el offset 3.510. Cuando falla, el titular queda a **31px** del canto con `scroll-margin-top: 131px` computado — el mismo síntoma de siempre, con el número de hoy. **A/B medido, no deducido**, para descartar que lo cause el statement: se guardaron en `stash` los cuatro ficheros del bloque (`Statement.tsx`, `ScrollColorText.tsx`, `12-statement.css`, `app/page.tsx`), se reconstruyó y el test **sigue cayendo 5 de 8** — misma banda de ruido, y `/sobre-nosotros` no renderiza el statement. (2) `tienda.spec.ts:532` (el control `aria-disabled` conserva el foco) falla suelto bajo carga y pasa **4 de 4** al repetirlo aislado. **Pista nueva del 13 ago:** el test hermano de los testimonios daba exactamente el mismo síntoma, y la causa medida era el `click({ force: true })` — `force` desactiva la comprobación de blanco, así que bajo un desplazamiento de layout el clic aterriza en otro elemento y navega fuera de la página. Cambiarlo por `dispatchEvent("click")` lo dejó en 40 de 40 tres veces seguidas. `tienda.spec.ts:670` usa el mismo `force`; **no se ha tocado**, pero es el primer sitio donde mirar |
+| ⚠ Sin cobertura | Seis cosas. (0b) **Las capturas de `screenshots.spec.ts` pueden salir con media página en blanco.** `page.screenshot({fullPage:true})` no dispara el `IntersectionObserver` de los `Reveal` que están fuera del viewport, así que lo que se ve depende de si la captura llega después del failsafe de 2.500ms que añade `.reveal-all` (`app/layout.tsx`). Medido el 14 ago: en `sobre-nosotros-1920.png` salió todo y en `sobre-nosotros-390.png` **el contenido se corta en y=5.384** de 11.097 — la mitad inferior en blanco. No es un fallo del sitio (con scroll real, y a los 2,5s pase lo que pase, el contenido se revela), pero **invalida la revisión visual de las capturas altas**: para mirar una sección de la mitad de abajo hay que capturarla con `scrollIntoViewIfNeeded` + esperar `is-in`. Se arregla en el propio spec forzando `.reveal-all` antes de disparar. (0) **El color de los dos iconos SVG.** `list-bullet.svg` y `quote-icon.svg` llevan `#b07208` **quemado dentro del fichero**: no siguen a `--gold-line`/`--gold-display`, así que donde el token se invierta (`.footer-dark`) el icono seguiría siendo el oscuro. El acoplamiento existía desde siempre y daba igual porque **ninguno de los dos se pintaba** (ver el bloque de `/sobre-nosotros`); desde el 14 ago el bullet sí se ve, así que ahora importa. `tests/unit/icons.test.ts` ya lee esos ficheros y `contrast.test.ts` ya parsea `01-tokens.css`: comparar el `fill` con el token son seis líneas. (1) El statement bajo `prefers-reduced-motion`: el test existe y **pasa** (`interactions.spec.ts`, «la frase editorial queda revelada sin animación»), pero sólo mira la **primera** palabra a `--reveal: 100%`, no las 36, y no comprueba el camino **sin JS** (donde `--reveal` vale 100% por defecto y es `.js` quien lo baja a 0%). Comprobado a mano el 7 ago; el hueco que queda es el de las 35 palabras restantes y el de no-JS. Tampoco vigila nadie que el recorte óptico decaiga bien si la webfont no llega y entra el fallback de `adjustFontFallback`. **Y con el relleno del párrafo (punto 4) hay dos huecos nuevos:** el camino **sin JS** —comprobado a mano el 13 ago a 1440 (26px, 4 líneas, línea base a ras, hueco de 66px), pero ningún test lo corre con JavaScript desactivado— y el comportamiento **cuando saltan los topes** de interlineado (1,15-2,8em): hoy el test sólo afirma que `data-fit` **no** existe con el copy actual, así que nadie comprueba que el tope haga lo correcto si Ale escribe 40 o 280 caracteres. La forma barata de cubrirlo sería un test que reemplace el copy por los dos extremos y afirme el `data-fit`. (2) El **aspecto** del realce del drawer: el test mide caja, sangrías, alto y navegación, pero nadie comprueba el color del fondo, la barra de 3px ni el `transform` del `.nav-label`, ni que decaigan bajo `prefers-reduced-motion`. (3) El **aspecto** del selector de presentación: los e2e comprueban que cambia el precio, que hay 3 opciones y que con una sola no se dibuja, pero nadie mira el realce de `:has(input:checked)` ni los 44px de alto de la fila. (4) **El anillo de foco del buscador se ha quedado sin comprobar.** `a11y.spec.ts:156` es el único test que lo afirma —axe no lo detecta: un `outline:0` deja el elemento perfectamente accesible en el árbol, sólo invisible con teclado— y desde el bloque del drawer **no llega a ejecutarse**: `.nav-search-input` resuelve a 2 elementos (`Navbar.tsx:280` y `:304` montan `ProductSearchAutocomplete` dos veces) y Playwright aborta por modo estricto antes de mirar el anillo. O sea que `.nav-search:has(:focus-visible)` (`10-navbar.css:201`) lleva sin vigilancia desde entonces. Al cerrar el bloque del drawer: desambiguar el localizador y comprobar que el segundo buscador no duplica un combobox en el árbol de accesibilidad |
 | Desplegado | **no.** Nunca se ha desplegado. No hay proyecto de Vercel creado |
-| Base de datos | Neon Postgres migrada y sembrada con el catálogo real el 12 ago: **23 filas en `products` y 60 en `product_variants`** (`npm run db:migrate && npm run db:seed`). El build posterior no imprime ningún aviso de fallback, así que la lectura viene de Postgres |
+| Base de datos | Neon Postgres migrada y sembrada con el catálogo real: **23 filas en `products` y 60 en `product_variants`**. El 14 ago se aplicaron `0002_nervous_sprite.sql` (cuatro tablas del checkout) y `0003_curvy_cerise.sql` (índices); escrituras y limpiezas reales verificadas con UUID temporales |
 | Lanzable | **no**: faltan testimonios reales, métrica defendible, panorámica original y dominio/hosting. Los precios ya **no** bloquean. Ver [🔴](#-bloquea-el-lanzamiento) |
 
 ---
@@ -55,6 +68,18 @@ y el pipeline de imágenes.
   empareja con su permalink posicionalmente por página (validado 37/37).
   `scripts/build-images.mjs` genera los derivados con sharp; nunca hace upscale, aborta si un tamaño
   supera el recorte.
+- **Los derivados del logo se recortan a 816 y se reducen después** (13 ago). Antes era al revés:
+  se reducía primero y el recorte del papel blanco caía sobre un bitmap de 72px donde casi todo píxel
+  de un trazo es mezcla de tinta y papel, así que no pasaba ni por fondo ni por tinta y se quedaba
+  sucio — el «Sweet & Salty» del pie era ruido. Con el orden cambiado y `lanczos3` sale legible.
+  El recorte lleva ahora una **valla circular** (`LOGO_DISC` en `scripts/build-images.mjs`, medida
+  sobre el original: centro 375/398, radio 235 de 816): el anillo exterior del dibujo es
+  discontinuo, y por sus huecos el relleno se colaba dentro del disco y borraba la crema blanca de
+  arriba. **No es un riesgo futuro: ya estaba ocurriendo** — los `logo-light-144x144.png` y
+  `logo-transparent-192x192.png` que había commiteados no tenían crema; sólo se libraban los tamaños pequeños, donde
+  la reducción emborrona el anillo y le cierra los huecos al relleno por casualidad. Lo vigila
+  `tests/unit/logo.test.ts` (32 casos: tamaño, crema, disco y esquina de cada variante).
+  El pie gana un escalón `logo-light-216x216.png` para el 3x de los móviles densos.
 - `/dev/tokens` es la página de especímenes (`force-static`, `noindex`).
 - `--header-h` (101px, 115px a ≥1280) es la altura de la cabecera. La navbar es `position: fixed` y
   no ocupa sitio en el flujo, así que todo lo que empiece por debajo de ella depende de este token.
@@ -96,7 +121,14 @@ Las 9 secciones del spec §6 en orden fijo, en `app/page.tsx`.
   `visibilitychange` — no escucha `scroll`. La tabla del spec §4.2 vive en `lib/parallax.ts` con
   interpolación lineal por tramos.
 - Slider de testimonios sin librería: la aritmética de breakpoints está en CSS, el JS sólo inyecta
-  `--i`.
+  `--i`. **Encendido** — ver el bloque propio más abajo.
+- **Un solo ritmo entre todas las secciones de Home** (`--home-section-gap` en
+  `styles/04-layout.css`): 120px en escritorio ancho, fluido entre 76 y 104px en el tramo medio y
+  60px en móvil. El corte catálogo→servicio reparte el valor entre el fondo crema y el blanco; los
+  demás cortes lo reservan una sola vez. El último queda como una banda blanca entre las tarjetas
+  y la superficie marrón del footer, cuyo padding oscuro sigue siendo interno. Antes el primer corte
+  sumaba **170 + 112 = 282px**. Lo fija
+  `geometry.spec.ts` midiendo seis pares de cajas reales a los ocho anchos. Desvío D-38.
 - Nav con patrón *disclosure* (no `role="menu"`), 3 dropdowns + 1 enlace, `Catálogo` como enlace real
   a `/tienda`, búsqueda GET a `/tienda?q=...`, carrito estable y CTA de WhatsApp. A ≤991 mantiene
   drawer de 320px con focus trap y scroll lock.
@@ -119,6 +151,76 @@ Las 9 secciones del spec §6 en orden fijo, en `app/page.tsx`.
   3. `99-a11y.css` forzaba `transition: color 0.3s` sobre `.nav-dropdown-link` justificándolo por un
      `margin-left` que ya no existe: recortaba el fundido del fondo y dejaba el del texto.
   El ancho del panel **no** cambia: sigue en 320px, que es lo que afirma `interactions.spec.ts`.
+- **El statement reparte el texto en la altura de la foto, y las dos columnas suben juntas**
+  (`components/sections/Statement.tsx`, `components/ui/ScrollColorText.tsx`,
+  `styles/12-statement.css`). Tres cosas, las tres pedidas por el cliente sobre capturas:
+  1. **Una sola entrada para las dos celdas.** Antes la foto subía con `<Reveal delay={100}>`, el
+     párrafo subía por su cuenta con un `observeOnce` a mano y un timing propio (0,95s/120ms) y el
+     titular **no subía en absoluto**. Ahora el `<h2>` y el `<p>` van dentro de un único
+     `<Reveal className="statement-story" delay={100}>` y `ScrollColorText` ya no toca el observer:
+     sólo tiñe. Lo que sincroniza el disparo es la geometría — a ≥992 las dos celdas tienen el mismo
+     borde superior y la misma altura, así que cruzan el umbral del observer compartido en el mismo
+     tick. Lo fija `interactions.spec.ts` comparando los dos gestos **entre sí**, no contra literales.
+  2. **El teñido acaba 80px antes de la cabecera**, no en `y=0`. La cabecera es `position: fixed` y
+     tapa 101-115px: con el recorrido mapeado a una altura de viewport entera, el texto se metía
+     debajo con el color a medias. `update()` lee `--header-h` (releído en el `resize`, que cambia en
+     1280) y descuenta `HEADER_LEAD = 80`. **Efecto colateral medido:** esto cierra los 2 rojos de
+     `interactions.spec.ts` («la frase editorial revela color al hacer scroll») a 1920 y 1280, donde
+     la última palabra se quedaba en `--reveal: 97%` — con el denominador acortado el progreso satura
+     a 1 en vez de quedarse en 0,995.
+  3. **Titular arriba y párrafo abajo, a ras de los bordes de la foto** a ≥992: `align-items: stretch`
+     en la rejilla, `align-self: start` en la foto (si no, `stretch` se comería su `aspect-ratio`) y
+     `justify-content: space-between` en la columna. El ras es **óptico**: `space-between` alinea cajas
+     de línea y el ojo alinea trazos, así que se recorta el medio-espacio con `margin-top: -0.18em` en
+     el `h2` y `margin-bottom: -0.539em` en el `p`. Los dos números están **medidos** con canvas
+     TextMetrics sobre las webfonts cargadas —Cormorant Infant a `lh 1em` dejaba el titular 9px por
+     debajo; Libre Franklin a 1.8em dejaba la última línea 9,7px corta— y verificados a **0,00px** de
+     desvío a 1920, 1440, 1280, 1100, 1024 y 992. Se recorta a cap-height y línea base, no al trazo
+     real, porque son constantes de la fuente y no bailan con los glifos de la línea. El bloque vive
+     bajo `@media (min-width: 992px)`: apilado no hay bordes contra los que alinear, y el valor del
+     `p` depende del `line-height`, que a ≤991 baja a 1.7em.
+  4. **El párrafo LLENA esa banda**, que es el precio del punto 3: con el titular arriba y el texto
+     abajo, `space-between` metía toda la holgura en un agujero central de hasta **133px** (3 líneas de
+     18px = 97px contra una banda de 158-215px). El cuerpo pasa a `clamp(22px, 1.8vw, 26px)` y el
+     interlineado lo calcula `fitBody()` en `ScrollColorText`. **El tamaño es fluido porque 26px fijos
+     no caben:** medido, a 992-1024 la banda son 158-168px y 26px pide 6 líneas → interlineado de
+     0,91-0,97em, por debajo de `ascent+descent`, o sea líneas solapadas. **22px es el único tamaño con
+     4 líneas en todo el rango** de dos columnas. Y el interlineado no puede ser un número fijo: el
+     error iría de −55px a +50px según el ancho, y `content/schema.ts` admite un `body` de 40 a 280
+     caracteres, así que caducaría al cambiar el copy. **Medido a 1920/1600/1440/1280/1100/1024/992:**
+     4 líneas en todos, hueco titular↔párrafo de **28px exactos** (el `margin-top`), línea base a
+     **0px** del pie de la foto, interlineado entre 1,71em y 2,33em y ningún tope activado. Sin JS
+     queda el fallback de 1.6em: la línea base sigue a ras y el hueco sube a 66px (medido a 1440).
+  Es el desvío **D-35**, que además registra por fin que esta sección nunca fue la del spec §6.2.
+  `geometry.spec.ts` mide el **trazo** y no la caja — una aserción sobre cajas pasaría igual con el
+  recorte mal puesto — y espera `is-in` + `transform: none` en `.statement-story` antes de medir,
+  porque la celda ahora se desplaza 100px durante la entrada.
+- **El titular del statement se alinea con los demás `h2` de la portada**
+  (`styles/12-statement.css`, `styles/01-tokens.css`, `tests/unit/contrast.test.ts`). El cliente lo
+  reportó sobre capturas como «otra tipografía» comparándolo con «Lo que sale del horno», y **no lo
+  era**: `.scroll-color-text__heading` y el `h2` base ya declaraban lo mismo — `var(--ff-display)`,
+  peso 400, 50/42/34px, `line-height: 1em`, versalitas, sin `letter-spacing`. Lo que desentonaba era
+  el **color**: revelaba a `--gold-ink` (#8A5A06) cuando todos los demás `h2` van a `--gold-display`
+  (#B07208). Era además el **único `h2` del sitio** pintado con el token de <24px, contra la regla de
+  ámbar por tamaño. Pasa a `--gold-display`.
+  - **Cuesta salto de revelado y se aceptó a sabiendas.** #B07208 es más claro, así que el par
+    fantasma → revelado se acorta: **de 3,87× a 2,61×** (medido con `lib/color.ts` sobre el blanco de
+    la sección), y el estado final baja de 5,92:1 a **3,99:1** — AA-*large*, que es el umbral que le
+    toca a 50px, en vez del AA normal que cumplía de sobra. Se le preguntó al cliente con las cifras
+    delante y eligió el cambio.
+  - **El mínimo del titular en `contrast.test.ts` baja de 3,5× a 2,5×, y no es una relajación:** con
+    #B07208 el techo absoluto son **3,99×** —el salto desde un fantasma blanco puro, o sea
+    invisible—, así que 3,5× es inalcanzable por construcción. 2,5× sigue muy por encima del 1,65×
+    con el que UI-060 mató el efecto. El cuerpo no cambia de token y conserva su 3,5×: la constante
+    se parte en dos para no desprotegerlo de propina.
+  - **Y de paso, un fallo de medida que llevaba ahí desde D-26:** el test aplanaba `--text-ghost`
+    contra el **crema**, y la sección está sobre **blanco** (`12-statement.css:9`, afirmado por
+    `geometry.spec.ts:113`). Como el token es translúcido, el fondo decide su color real —`#d4d0cd`
+    sobre blanco, `#cfc8be` sobre crema—, así que se venían publicando saltos un ~8% cortos contra
+    un color que no aparece en pantalla. Corregido: `STATEMENT_BG` y los dos estados finales pasan a
+    medirse sobre blanco. Todas las aserciones ganan margen, porque ahora miden lo que se ve.
+  - Se mantienen el efecto palabra a palabra, el centrado (D-35) y toda la geometría: el color no
+    altera métricas. D-26 queda reescrito con las cifras nuevas.
 - Lightbox con `<dialog>` nativo, por **delegación** de eventos sobre los `data-lightbox` que
   renderiza el servidor.
 - SEO local: JSON-LD `Bakery` + `WebSite` (`lib/seo.ts`), `opengraph-image.tsx` generada en runtime,
@@ -200,6 +302,59 @@ precio y el botón no se desbordan a ningún ancho, que la tarjeta no reintroduc
 global, que el acercamiento se dispara desde la zona de texto y que decae bajo
 `prefers-reduced-motion`.
 
+### Los testimonios, en el aire bajo la galería
+
+**La sección estaba construida entera desde la Fase 1 y llevaba oculta desde entonces**, porque
+`content/home.ts` declaraba `items: []` y el componente devuelve `null` con la lista vacía. Se
+encendió: es el bloque H-07 de la referencia, y va exactamente donde la referencia lo pone — justo
+debajo de la galería (`docs/ANALISIS-REFERENCIA-ITALY128-HOME2-MENU2.md`, mapa vertical del DOM).
+`app/page.tsx` ya lo tenía en ese orden; no hubo que mover nada.
+
+- **Las 6 reseñas son de andamio, no reales**, y van marcadas `todo: true`. Ale sigue sin entregar
+  textos (`CONTENT_TODO §3` sigue bloqueando el lanzamiento). El layout sí es definitivo.
+- **El guardarraíl no desapareció al encender la sección, cambió de lado.** Antes un test exigía
+  `items.length === 0`. Ahora `tests/unit/content.test.ts` exige que las **seis** lleven la marca, y
+  un segundo test prohíbe el estado intermedio —o marcadas todas, o ninguna—. Quitar el andamio
+  rompe el primero, que es justo cuando alguien tiene que mirar si el contenido es real.
+- **La tarjeta no lleva retrato** (desvío D-34). Se borran la regla `.review-avatar` y
+  `components/ui/Avatar.tsx`, que era su único consumidor.
+- ⚠ **`.review-head` dejó de ser `flex` y eso es lo único que rompía en silencio.** Estaba en flex
+  para poner el retrato al lado del par nombre + rol, que iba envuelto en su propio div. Sin retrato
+  el envoltorio sobra y sus dos hijos pasan a ser hijos directos: en flex se habrían colocado **en
+  fila**, con el rol a la derecha del nombre en vez de debajo.
+- Los `min-height` de `.review-card` **no cambian**. El retrato y el par nombre + rol iban lado a
+  lado con `align-items: flex-start`, así que quitarlo resta ~13px de contenido, no 70.
+- El `role` de cada reseña es la **ocasión del pedido** («Cumpleaños en Santa Ana»), no un cargo: la
+  referencia pone «Cook»/«Manager» porque es una plantilla genérica.
+
+Verificado el 13 de agosto con build de producción en `.next-verify`: **394 en verde + 36 skipped**
+de `geometry`, `interactions` y `a11y` a los 8 anchos, con 2 en rojo que **no son de este bloque**
+(ver la fila de tests). Cubre: que las 6 tarjetas están bajo la galería sin solaparla, que no hay
+ningún `.review-avatar`, que el fondo es `--primary-light`, que `--per-view` da 3/2/1 según el ancho
+y que las tarjetas a la vista cuadran de altura; que las flechas miden 34×34 con borde de 1px,
+comparten fila, arrancan en el borde del slider y **cuelgan del titular por el acople de `h2.mb--40`
+con `padding-top: 95px`** —a ≤479 el `margin-top: 30px` se come 30 de esos 40 y el test lo dice—, con
+los 184px entre círculos y la línea de 160×1, que a ≤479 pasa a 260 y deja de unirlas. Y del
+comportamiento: que la derecha avanza, que la izquierda nace `aria-disabled` y al forzar el clic no
+hace nada conservando el foco, que `End`/`Home` van a los extremos, que la región `aria-live` anuncia
+el rango, y que con `prefers-reduced-motion` el slider **sigue navegando** pero sin deslizamiento.
+
+Dos cosas que costaron una pasada en rojo cada una, y las dos son de método:
+
+1. **Los tests esperan a la hidratación leyendo `--i` antes de tocar nada.** El servidor ya pinta las
+   flechas con su `aria-disabled` correcto, así que un test que sólo mire el atributo pasa antes de
+   que llegue el JavaScript, y el clic siguiente se pierde sin handler.
+2. **`dispatchEvent("click")` y NO `click({ force: true })` para pulsar un control `aria-disabled`.**
+   `force` desactiva la comprobación de blanco: el clic va a unas coordenadas, y si el layout se
+   movió entremedias aterriza en lo que haya ahí. Aquí caía en un `.gallery-item` de la fila de
+   encima y **navegaba a una ficha de producto** — el test fallaba 1 de 8 bajo carga con
+   «element(s) not found», porque ya no estaba en la portada. Con `dispatchEvent` el evento va al
+   elemento, sin coordenadas. Tres pasadas seguidas del grupo: **40 de 40 las tres veces**.
+
+⚠ **Esto apunta al intermitente de `tienda.spec.ts:532`**, que usa `click({ force: true })` para lo
+mismo con los steppers y está anotado como «falla suelto bajo carga». Mismo mecanismo, muy
+probablemente misma causa. **No se ha tocado**: es de otro bloque y hay que medirlo antes.
+
 ### Tienda, fichas y carrito
 
 - `/tienda` con filtros de categoría, ocasión y búsqueda `q` **combinables** por `searchParams`,
@@ -250,8 +405,130 @@ Verificado por `tests/unit/whatsapp.test.ts` (18), `tests/unit/shop.test.ts` (17
 
 ### Páginas de texto y límites de error
 
-- `/sobre-nosotros` — historia, zonas de entrega y 8 FAQ, con JSON-LD `FAQPage` + `AboutPage`.
-- `/aviso-legal` — con `robots: noindex, follow`.
+- `/sobre-nosotros` — **el texto real de Ale** (13 ago), tomado de `docs/boquita-sobre-nosotros.md`:
+  entradilla, **seis secciones** (`historia`, `como-horneamos`, `catalogo`, `presentaciones`,
+  `ocasiones`, `entregas`), **11 FAQ** y el cierre, con JSON-LD `FAQPage` + `AboutPage`. Va en
+  **primera persona del singular** —es la página donde habla Ale—, a diferencia del resto del sitio.
+  El copy anterior era de andamio y ya mentía: prometía «cachitos de jamón» y «asado negro», que no
+  existen en el catálogo real (`types/shop.ts`). La estructura y los efectos no cambiaron: cada
+  bloque sigue siendo un `<Reveal as="article" className="prose-block">`.
+  - **La etiqueta «Sobre nosotros» del navbar no navegaba.** No era JavaScript: `Dropdown`
+    (`components/layout/Navbar.tsx:71`) sólo pinta un `<a href>` si el grupo trae `href`, y ese no lo
+    tenía, así que salía como `<button>` y el clic se limitaba a abrir el panel — la página respondía
+    200 y era **inalcanzable desde su propia etiqueta**. Arreglado con `href: "/sobre-nosotros"` en
+    `content/home.ts`. Efecto lateral esperado, el mismo que ya tenía Catálogo: en el drawer móvil su
+    lista sale desplegada de entrada. Lo vigila `tests/unit/pages.test.ts` (8 casos, nuevo) y un e2e
+    de clic en `interactions.spec.ts`.
+  - **La portada decía «desde 2019» y Ale sitúa el primer pedido en abril de 2022.** Corregidos
+    `home.mediaText.body` y la métrica «Pedidos horneados desde 2022» con sus dos tests. El `+500`
+    sigue sin ser un número medido (`CONTENT_TODO.md §4`).
+  - `CONTACT.email` (`ticaboquita@gmail.com`) lo añadió este bloque para el cierre de la página. El
+    bloque del pie, en vuelo en paralelo, lo publica además en su columna de contacto.
+  - **La etiqueta se escribe «Sobre Nosotros»**, con N mayúscula, en sus tres apariciones visibles:
+    el grupo del navbar, el enlace del pie (`content/home.ts`) y el `metadata.title` de la página.
+  - **Las páginas de contenido llevan un carril tipográfico compartido** (`.editorial-page` en
+    `styles/40-prose.css`), porque
+    con la línea a 1170px el 18px/1,5 del resto del sitio no se lee cómodo: cuerpo a **19px/1,75**
+    con `text-wrap: pretty`, entradilla a 22px en `--text-dark`, preguntas a 20px y respuestas a
+    19px con más aire. En móvil vuelve al 18px, donde la línea ya es corta.
+  - **Las entradillas del catálogo van en negrita ámbar, con dos puntos y en su propia línea**
+    (14 ago): «Queques:», «Galletas:», «Postres:», «Queques personalizados:» — los cuatro temas del
+    catálogo; los otros seis rótulos de la página son los de «Pedidos y entregas», que usa esta misma
+    forma. Antes eran puntos y quedaban en la misma línea que su texto.
+    Se expresan como **dato, no como marcado**: el párrafo admite la forma
+    `{ lead, text }` (`type Paragraph` en `content/pages.ts`) y la página pinta
+    `<strong class="prose-lead-in">`. No hay mini-markdown ni parser. El `lead` lleva su propia
+    puntuación porque el render mete un solo espacio; `tests/unit/pages.test.ts` distingue las dos
+    formas válidas —entradilla que cierra frase y frase suelta que sigue en minúscula—. La etiqueta
+    salta de línea con `display: block` en el CSS, no con marcado: sigue siendo un `<strong>` dentro
+    del `<p>`, o sea contenido de frase, así que el parser no lo saca del párrafo. El aire de 24px
+    entre temas va con `.about-page p:has(.prose-lead-in) + p` **y** su simétrico, los dos: con uno
+    solo, el primer párrafo del catálogo también lo cogería y la sección arrancaría 6px más abajo de
+    su raya que sus siete hermanas.
+  - **«Pedidos y entregas» va por rótulos, con los plazos como única lista** (14 ago, a petición del
+    cliente y en dos pasos: primero pasó de párrafos con entradilla a **seis viñetas**, y ese mismo
+    día a la forma actual). Son seis rótulos —cómo se pide, cuánto hay que esperar, dónde se recoge,
+    dónde se lleva, cómo se paga y a qué hora llega— con su texto debajo, la misma forma que el
+    catálogo: quien entra busca UNA cosa y la encuentra por el rótulo. La versión en viñetas se
+    descartó porque sangraba el texto 30px y la sección se leía desalineada de sus hermanas, que es
+    justo lo que reportó el cliente. **La única lista que queda son los dos plazos** (48 horas / 1
+    semana), donde la viñeta sí gana: son dos valores del mismo eje y se comparan de un vistazo. El
+    hueco de 24px entre rótulos lo pone el `:has()` de arriba, y el que va **tras** la sub-lista una
+    regla propia (`.about-page .prose-list + p`): las dos del `:has()` sólo miran `+ p`, y sin ella el
+    rótulo siguiente al `<ul>` se quedaba en 10px y la sección se descuadraba por la mitad. La
+    dirección del retiro sale de `CONTACT.address`, nunca escrita a mano. `type Paragraph` mantiene la
+    tercera forma, `{ items: string[] }`, que la página pinta como `<ul class="prose-list" role="list">`. Dos cosas
+    que no son evidentes: el `<ul>` sale **hermano** de los `<p>` y no dentro de uno (el parser
+    cierra el `<p>` al ver el `<ul>` → mismatch de hidratación, que no rompe ningún test y sólo avisa
+    en consola), y el `role="list"` hace falta porque el `list-style: none` de `02-reset.css` le quita
+    a WebKit las semánticas de lista. El CSS desmonta el `li` global del spec §2.3 —16px, peso 500 y
+    ámbar— como ya hacen `.menu-item`, `.cart-line` y `.shop-card`; el punto se centra a mano en la
+    primera línea (13px en escritorio, 11 en móvil = `(altura de línea − 8) / 2`).
+    - **Las guardias `isLeadParagraph` / `isListParagraph`** (`content/pages.ts`) no son azúcar: en
+      cuanto una sección **mezcla** las dos formas, TypeScript infiere el literal con
+      `items?: undefined` en la otra rama, el `in` deja de discriminar y `items` sale
+      `string[] | undefined`. Dentro de la guardia el parámetro es la unión declarada, donde el `in`
+      sí estrecha. Lo caza `npm run typecheck`, no un test.
+    - ⚠ **La dirección no cuadra entre el código y los docs.** `CONTACT.address` publica «Condominio
+      Condado del Río, Santa Ana, Costa Rica» y `docs/boquita-sobre-nosotros.md:102` y
+      `docs/CONTENT_TODO.md:125,139` dicen «**Calle Obelisco**, condominio Condado del Río…». Es
+      anterior a este bloque y **no se ha resuelto inventando**: hay que preguntárselo a Ale. Lo que
+      publica el sitio es lo que dice `lib/contact.ts`.
+  - **Los dos SVG de `public/icons/` estaban mal formados y nunca se habían pintado** (14 ago).
+    Salió al estrenar el bullet en la lista: el punto no aparecía. El servidor respondía **200 con
+    `image/svg+xml`**, el `background-image` computado traía su URL y aun así el fondo salía en
+    blanco — el navegador **no decodificaba la imagen**. La causa: un `--` dentro de un comentario
+    XML (el nombre de un token, `--gold-line` en `list-bullet.svg` y `--gold-display` en
+    `quote-icon.svg`), que XML prohíbe expresamente. Se arreglan los dos quitando la doble raya del
+    comentario, y con eso el bullet del spec §2.3 se pinta por primera vez —también en `/dev/tokens`
+    y en el `blockquote`—. **Nadie lo había visto** porque las cuatro listas de producción anulan el
+    `li` global y el `blockquote` sólo vive en la página de especímenes. Lo cierra
+    `tests/unit/icons.test.ts` (nuevo, 5 casos: dobles guiones en comentarios, tamaño intrínseco,
+    fichero completo y etiquetas cuadradas) y una aserción nueva del e2e que **decodifica** el SVG en
+    el navegador: el `background-image` computado no demuestra nada, con la URL rota vale igual, y por
+    eso el test de la lista pasó en verde con las viñetas invisibles.
+  - **El bloque de cierre va en tuteo** (14 ago, decisión del cliente): «Escríbeme», «Cuéntame qué
+    necesitas», «También puedes escribirme a» y el botón «Escríbeme por WhatsApp». Es la **única
+    excepción** al voseo del sitio y está registrada en `CLAUDE.md` §Idioma: el resto de la página, la
+    FAQ incluida, sigue voseando —«Escribime por WhatsApp» sigue siendo la primera respuesta de la
+    FAQ—. Lo afirma `tests/unit/pages.test.ts` con un regex de voseo, porque es justo lo que alguien
+    «normaliza» de vuelta en una pasada de estilo.
+  - **Un solo hueco vertical en toda la página: 64px, 48px en móvil** (`--editorial-rhythm` en
+    `styles/40-prose.css`). Antes salían de tres sitios que no se hablaban entre sí —el
+    `padding-block` de `.section`, el `margin-top` de `.prose-block` y los `margin: 10px 0` de la
+    tipografía base— y daban **cinco huecos distintos**: 130 bajo la cabecera, 130 hasta la rueda,
+    **184** de la rueda al primer titular, 64 entre bloques y 120 hasta el pie (a ≥1280). Los 184 no
+    se leían como aire, se leían como un fallo de maquetación, y era el reporte del cliente. El 64 no
+    está inventado: es el ritmo que la prosa ya tenía, así que todo lo demás **baja** hasta él y nada
+    crece. **No sube a ≥1280**, donde `.section` sí pasa a 120, porque aquí no crece nada que lo
+    justifique: el carril está topado en 1170px y la escala tipográfica está congelada por encima de
+    992. Es un desvío del §2.5 del spec: **D-36** en `docs/DEVIATIONS.md`. Dos trampas quedan
+    escritas en el CSS: se escribe `--section-pad` y **nunca** el atajo `padding-block` (desde
+    `.editorial-page` le ganaría a `.section--no-bottom` por especificidad, no por orden), y esa misma
+    especificidad tapa los dos overrides responsivos de `.section`, así que el valor de móvil vive en
+    `40-prose.css` o no existe. Lo fija `geometry.spec.ts` («todos los huecos verticales miden lo
+    mismo»), que afirma la aritmética **término a término** —los dos márgenes de los cantos y los del
+    primer bloque y su h2— porque un residuo de 10px no se ve a ojo.
+  - **El ámbar va por tamaño, no por gusto.** Negritas y enlaces en `--gold-ink` (#8A5A06, 5,92:1
+    sobre blanco); la raya bajo cada titular en `--gold-line`, de 2px y a la **medida completa del
+    carril** (con 56px era una marca junto al titular; a 1170 cierra su banda, que es lo que hace
+    legible una jerarquía de ocho secciones a esta anchura). Consecuencia directa: la lista de
+    preguntas frecuentes pierde su `border-top`, que con la raya completa era una segunda línea a
+    todo lo ancho 18px más abajo en otro color y otro grosor. La firma del cierre en
+    `--gold-display` a 26px, que **no baja de 24px ni en móvil** porque ahí dejaría de cumplir
+    AA-large. Lo fija `paginas.spec.ts` («los temas del catálogo van en negrita y en el ámbar de
+    texto», que afirma el `rgb(138, 90, 6)` exacto) y lo audita axe en `a11y.spec.ts`.
+  - **Los enlaces dentro de la prosa heredan el tamaño del párrafo y van subrayados.** El `a` global
+    es de 20px e `inline-block`: dentro de un párrafo de 19px desalineaba la línea base.
+  - **El texto va a la medida completa del carril, no a la de lectura.** `.prose--wide`
+    (`styles/40-prose.css`) quita el tope de 720px: tanto `/sobre-nosotros` como `/aviso-legal`
+    ocupan los 1170px útiles del `.container` en desktop y el viewport menos 30px por debajo. El
+    ancho no está escrito dos veces: sale del contenedor. `geometry.spec.ts` compara las cajas reales
+    de ambas páginas en los ocho anchos y comprueba además que `.prose` no se encoja dentro de él.
+- `/aviso-legal` — cabecera y cuerpo separados en dos secciones, carril y ritmo compartidos con
+  `/sobre-nosotros`, raya de 2px bajo cada `h2` y `robots: noindex, follow`. Por petición expresa del
+  cliente se retiraron la frase fiscal provisional y la sección «Servicios de terceros»; las seis
+  secciones restantes conservan su orden y contenido. Ver D-37.
 - `app/not-found.tsx` sugiere **3 productos del catálogo servido**, porque los enlaces viejos de
   Instagram van a aterrizar ahí.
 - `app/error.tsx` y `app/global-error.tsx`. El global emite sus propios `<html>/<body>` con estilos
@@ -355,7 +632,7 @@ Nada de esto es código. Detalle completo en `docs/CONTENT_TODO.md`.
 
 | | Qué falta | Dónde |
 | --- | --- | --- |
-| 1 | **Los 6 testimonios reales**, con nombre/rol/texto. El consentimiento está aprobado, pero falta el texto fuente: Instagram no es legible desde el PDF ni desde este entorno sin login | `CONTENT_TODO.md §3` |
+| 1 | **Los 6 testimonios reales**, con nombre/ocasión/texto. El consentimiento está aprobado, pero falta el texto fuente: Instagram no es legible desde el PDF ni desde este entorno sin login. **Ojo, cambió de forma:** la sección ya no está oculta — se publica con 6 textos de andamio marcados `todo: true`, y lo que impide colarlos como reales es un test que exige que las 6 marcas sigan puestas | `CONTENT_TODO.md §3` |
 | 2 | **La métrica nº 1** («2.400+ pedidos desde 2019») necesita un número real y defendible | `CONTENT_TODO.md §4` |
 | 3 | **La panorámica del mostrador a resolución original** (mín. 2340px de ancho). La del PDF se usa para v1, pero no verifica 2× | `CONTENT_TODO.md §5` |
 
@@ -369,8 +646,12 @@ de un blog ajeno y se le recortó la marca de agua. Detalle en `CONTENT_TODO.md 
 
 ✅ Cerrado en P2: contacto público, WhatsApp `+506 7132 2355`, dirección de retiro, Instagram
 `@boquita_cr`, logo transparente y variante clara generados desde `assets/logo-boquita.jpg`.
-Las reseñas ficticias se retiraron del render público: la sección queda oculta hasta recibir textos
-reales.
+⚠ **Lo de las reseñas se revirtió el 13 ago, a propósito.** Se habían retirado del render y la
+sección quedaba oculta; ahora se publica con las 6 de andamio marcadas `todo: true`. El motivo: una
+portada que termina en la galería y salta al pie no tiene prueba social en ninguna parte, y el bloque
+es normativo en el spec §6.7. Lo que sostiene la decisión es que la marca ya no es decorativa —hay un
+test que exige que las 6 sigan puestas—, así que publicar el andamio como real requiere un acto
+deliberado.
 
 ### 🟠 Bloquea operar el sitio
 
@@ -379,17 +660,17 @@ como tag en la línea 127, pero **`revalidateTag` y `revalidatePath` no se llama
 repo** — sólo se mencionan en dos comentarios (`app/layout.tsx:77`, `lib/db/catalog.ts:76`).
 Consecuencia real: un precio corregido tarda **hasta 1 hora** en verse.
 
-**Cero superficie de escritura.** No existe ningún `route.ts`, ninguna Server Action (`"use server"`
-no aparece en el repo) ni `/admin`, aunque `app/robots.ts` y `vercel.json` ya los reservan. Hoy la
-única vía de escritura es `npm run db:seed` o un `UPDATE` en el SQL Editor de Neon — y `db:seed`
-**pisa** la tabla, así que revierte cualquier corrección hecha por SQL.
+**El catálogo sigue sin superficie de escritura.** Ya existe `POST /api/orders`, pero está limitado
+a registrar intentos de pedido, clientes consentidos e ítems (`app/api/orders/route.ts`). No existe
+ninguna Server Action ni `/admin`; los productos sólo cambian con `npm run db:seed` o SQL directo.
+`db:seed` **pisa** las filas del catálogo, así que revierte cualquier corrección manual de precios.
 
 ### ⏳ Desarrollo por hacer
 
 | Bloque | Qué implica |
 | --- | --- |
 | **Panel de administración** | La pieza que cierra las dos anteriores. Auth: `.env.example` reserva `AUTH_SECRET`, `ADMIN_PASSWORD_HASH`, `ADMIN_SESSION_TTL_HOURS`, `ADMIN_TOKEN_VERSION` — y **el script que genera el hash no existe todavía**. Los 8 `CHECK` de la tabla ya están puestos precisamente para proteger este borde de escritura |
-| **Newsletter** | El formulario está maquetado y **no envía** (`components/layout/Footer.tsx`). Reserva `FORM_HMAC_SECRET`, `IP_SALT`, `RATE_LIMIT_NEWSLETTER_PER_DAY`. **Ojo: `/aviso-legal` promete hoy que no se guardan datos en servidor propio. Esa página se reescribe ANTES de insertar la primera fila** |
+| **Campañas de correo** | El carrito ya captura correo con consentimiento y lo relaciona con pedidos en Neon. Falta elegir una plataforma o exportación para enviar campañas; esta entrega no manda correos. La baja y el borrado se operan con `npm run customer:privacy` |
 | **Despliegue** | Nunca se ha desplegado. El remoto git ya existe, pero falta elegir dominio/hosting. Aviso: **Vercel Hobby es de uso no comercial** y una tienda que vende es comercial; puede exigir el paso a Pro. Por eso todo el acceso a base de datos está detrás de `lib/db` y la cuenta de Neon es propia, no del marketplace: migrar a Cloudflare Pages es cuestión de días |
 | **Fotos de producto en Blob** | `next.config.ts:13` deja pendiente `remotePatterns`. `next/image` está reservado para estas fotos (es la única excepción a D-9) y `eslint.config.mjs:46` lo documenta |
 | **D-11 · `100svh`** | Condicional: sólo si el salto de la barra de direcciones de Safari en iOS se juzga inaceptable en un pase con dispositivo real. En escritorio son idénticos |
@@ -398,10 +679,9 @@ no aparece en el repo) ni `/admin`, aunque `app/robots.ts` y `vercel.json` ya lo
 
 Cosas que hoy están bien pero conviene saber antes de tocarlas:
 
-- **Sólo el catálogo está migrado** (`products` + `product_variants`). Todo el resto del contenido
-  sigue siendo estático: el copy de la portada y los 6 testimonios en `content/home.ts`, `about` y
-  `legal` en `content/pages.ts`. No hay tablas para nada de eso, y probablemente no deba haberlas hasta
-  que alguien las necesite editar.
+- **Catálogo y pedidos están migrados.** `products` + `product_variants` sirven el catálogo;
+  `customers` + `orders` + `order_items` + `form_rate_limits` reciben el checkout. El copy de la
+  portada, los 6 testimonios, `about` y `legal` siguen siendo estáticos y no necesitan tablas.
 - **El panel de administración, cuando exista, tiene que editar DOS tablas.** Un formulario que sólo
   toque `products` puede dejar el precio de entrada sin corresponder con ninguna presentación; Zod lo
   rechazará al leer y la fila caerá al fallback, que es el comportamiento correcto pero se vive como
@@ -552,7 +832,9 @@ Decisiones deliberadas. Están aquí para que nadie las «arregle» por iniciati
 - **No hay pasarela de pago.** Se pide por WhatsApp, que es el canal que la tienda ya usa.
 - **No se usa `next/image` para las 15 imágenes del layout** (desvío D-9, descartado por medición: son
   assets fijos con recortes pre-generados). Se reserva para las fotos de producto en Blob.
-- **Los avatares de reseñas son SVG con iniciales**, no fotos de stock: inventar caras de clientes
-  para un negocio real sería deshonesto.
+- **La tarjeta de reseña no lleva retrato de ninguna clase.** No hay fotos de clientes reales, y
+  usar caras de stock para un negocio que existe sería deshonesto. El SVG con iniciales que hacía de
+  sustituto **también se retiró** (desvío D-34): ocupaba los 70px de una foto sin aportar nada de lo
+  que una foto aporta.
 - **No hay tests de componentes con jsdom.** La geometría se verifica en un navegador de verdad a los
   8 anchos, que es donde fallan las cosas que fallan aquí.

@@ -24,11 +24,25 @@ const CREAM = light["--primary-light"]!;
 const { AA_NORMAL, AA_LARGE, NON_TEXT } = THRESHOLD;
 
 /**
- * `--text-ghost` es translúcido, así que hay que aplanarlo contra el crema ANTES
+ * El fondo contra el que se mide TODO lo del statement.
+ *
+ * Es `--white` y no `--primary-light`, que es lo que hubo aquí hasta ahora y era
+ * un error de bulto: `.statement-section` tiene `background: var(--white)`
+ * (`styles/12-statement.css:9`, y lo afirma `geometry.spec.ts:113`). El crema es
+ * el fondo del bloque del catálogo, que está debajo y es otra sección.
+ *
+ * Importa porque `--text-ghost` es TRANSLÚCIDO: aplanarlo contra el crema
+ * producía `rgb(208,200,190)`, un color que no aparece en pantalla en ningún
+ * momento. El que se ve es `rgb(212,208,205)`. Los saltos salían ~8% cortos.
+ */
+const STATEMENT_BG = WHITE;
+
+/**
+ * `--text-ghost` es translúcido, así que hay que aplanarlo contra el fondo ANTES
  * de compararlo con el color revelado. Pasárselo a `contrastRatio` en crudo lo
  * compondría sobre el color revelado, que no es lo que ve nadie.
  */
-const ghostFlat = flatten(parseColor(light["--text-ghost"]!), parseColor(CREAM));
+const ghostFlat = flatten(parseColor(light["--text-ghost"]!), parseColor(STATEMENT_BG));
 const GHOST = `rgb(${Math.round(ghostFlat.r)}, ${Math.round(ghostFlat.g)}, ${Math.round(ghostFlat.b)})`;
 
 describe("tokens: sanidad", () => {
@@ -94,33 +108,58 @@ describe("statement: el revelado por scroll tiene que VERSE (desvío D-26)", () 
    * animación) es una decisión tomada y documentada en D-26, no un descuido: el
    * estado final sí cumple —lo comprueban los dos últimos casos—, con
    * `prefers-reduced-motion` todo nace revelado, y sin JS `--reveal` vale 100%.
+   *
+   * ── Por qué el mínimo del TITULAR es más bajo que el del cuerpo ────────────
+   * No es un umbral relajado para que pasara el test. El titular dejó de teñirse
+   * a `--gold-ink` y pasa a `--gold-display`, que es el token que le toca por
+   * tamaño (≥24px) y el que usan los demás `h2` de la portada; era el único del
+   * sitio pintado con el de <24px y se notaba en pantalla.
+   *
+   * `--gold-display` es MÁS CLARO, así que el par se acorta, y aquí no hay
+   * margen que rascar: contra este fantasma el salto es el que es, y el techo
+   * absoluto con `--gold-display` son ~4,0× — el que daría un fantasma blanco
+   * puro, o sea invisible. 3,5× es inalcanzable por construcción, no por
+   * descuido. 2,5× sigue MUY por encima del 1,65× con el que UI-060 mató el
+   * efecto, que es el número que importa. El cuerpo no cambia de token y
+   * conserva su 3,5×: no hay razón para desprotegerlo de propina.
    */
-  const MIN_DELTA = 3.5;
+  const MIN_DELTA_TITULAR = 2.5;
+  const MIN_DELTA_CUERPO = 3.5;
 
-  it(`titular: fantasma → --gold-ink ≥ ${MIN_DELTA}:1`, () => {
-    expect(contrastRatio(GHOST, light["--gold-ink"]!)).toBeGreaterThanOrEqual(MIN_DELTA);
+  it(`titular: fantasma → --gold-display ≥ ${MIN_DELTA_TITULAR}:1`, () => {
+    expect(contrastRatio(GHOST, light["--gold-display"]!)).toBeGreaterThanOrEqual(
+      MIN_DELTA_TITULAR,
+    );
   });
 
-  it(`cuerpo: fantasma → --body-text ≥ ${MIN_DELTA}:1`, () => {
-    expect(contrastRatio(GHOST, light["--body-text"]!)).toBeGreaterThanOrEqual(MIN_DELTA);
+  it(`cuerpo: fantasma → --body-text ≥ ${MIN_DELTA_CUERPO}:1`, () => {
+    expect(contrastRatio(GHOST, light["--body-text"]!)).toBeGreaterThanOrEqual(MIN_DELTA_CUERPO);
   });
 
   it("el fantasma es más claro que los dos estados revelados, no más oscuro", () => {
     // Sin esto, el par podría cumplir el mínimo yendo en la dirección contraria
     // (fantasma oscuro → revelado claro), que no es el efecto que se busca.
     const luz = (color: string) => contrastRatio(color, "#000000");
-    expect(luz(GHOST)).toBeGreaterThan(luz(light["--gold-ink"]!));
+    expect(luz(GHOST)).toBeGreaterThan(luz(light["--gold-display"]!));
     expect(luz(GHOST)).toBeGreaterThan(luz(light["--body-text"]!));
   });
 
-  it("el estado FINAL del titular cumple AA sobre crema", () => {
-    // 50/42/34px → le bastaría AA-large, pero --gold-ink llega a AA normal.
-    expect(contrastRatio(light["--gold-ink"]!, CREAM)).toBeGreaterThanOrEqual(AA_NORMAL);
+  it("el estado FINAL del titular cumple AA-large sobre el blanco de la sección", () => {
+    // AA-large y no AA normal, y es un cambio real respecto a `--gold-ink`:
+    // 50/42/34px es texto grande, así que el umbral aplicable son 3:1, pero
+    // `--gold-ink` llegaba a 4.5:1 y `--gold-display` no — se queda en 4.00:1
+    // sobre el blanco de esta sección (3.68:1 sobre crema, donde no está).
+    // Cumple lo que le toca por tamaño; el margen de sobra que había antes se
+    // gastó en alinear el titular con los demás `h2` (ver arriba y D-26).
+    expect(contrastRatio(light["--gold-display"]!, STATEMENT_BG)).toBeGreaterThanOrEqual(AA_LARGE);
   });
 
-  it("el estado FINAL del cuerpo cumple AA sobre crema", () => {
-    // 20px, igual que el lead del hero → AA normal, sin excusas de tamaño.
-    expect(contrastRatio(light["--body-text"]!, CREAM)).toBeGreaterThanOrEqual(AA_NORMAL);
+  it("el estado FINAL del cuerpo cumple AA sobre el blanco de la sección", () => {
+    // 22-26px a ≥992 (llena la banda de la foto, D-35) y 18px apilado. Por
+    // tamaño le bastaría AA-large a partir de 24px, pero se le exige AA normal.
+    // (Este comentario decía «20px, igual que el lead del hero», que nunca fue
+    //  cierto: el cuerpo del statement estaba en 18px.)
+    expect(contrastRatio(light["--body-text"]!, STATEMENT_BG)).toBeGreaterThanOrEqual(AA_NORMAL);
   });
 });
 

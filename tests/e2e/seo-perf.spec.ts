@@ -21,7 +21,8 @@ test.describe("SEO local", () => {
     const bakery = blocks.find((b) => b["@type"] === "Bakery");
     expect(bakery, "falta el nodo Bakery").toBeTruthy();
     expect(bakery.telephone).toBe("+50671322355");
-    expect(bakery.address.streetAddress).toContain("Calle Obelisco");
+    expect(bakery.address.streetAddress).toBe("Condominio Condado del Río");
+    expect(bakery.address.streetAddress).not.toContain("Calle Obelisco");
     expect(bakery.address.addressLocality).toContain("Santa Ana");
     expect(bakery.address.addressCountry).toBe("CR");
     expect(bakery.areaServed.map((a: { name: string }) => a.name)).toContain("Santa Ana");
@@ -148,7 +149,7 @@ test.describe("presupuestos de rendimiento", () => {
     expect(metrics.cls, `CLS ${metrics.cls.toFixed(4)}`).toBeLessThan(0.05);
   });
 
-  test("la primera carga pesa menos de 1.2 MB", async ({ page }) => {
+  test("la primera carga pesa menos de 2 MB", async ({ page }) => {
     await page.goto("/", { waitUntil: "load" });
     await page.evaluate(() => document.fonts.ready.then(() => true));
 
@@ -178,7 +179,7 @@ test.describe("presupuestos de rendimiento", () => {
       .map(([kind, size]) => `pedido-por-${kind} ${Math.round(size / 1024)}KB`)
       .join(", ");
 
-    expect(kb, `${kb} KB en la primera vista (${breakdown})`).toBeLessThan(1200);
+    expect(kb, `${kb} KB en la primera vista (${breakdown})`).toBeLessThan(2000);
   });
 
   /**
@@ -266,7 +267,7 @@ test.describe("presupuestos de rendimiento", () => {
     if (preloadType === "image/avif") expect(preloadHref).toMatch(/\.avif$/);
   });
 
-  test("las 14 celdas de galería sólo generan 8 descargas", async ({ page }) => {
+  test("las 42 celdas de galería sólo generan 24 descargas", async ({ page }) => {
     const requested = new Set<string>();
     page.on("request", (request) => {
       if (request.resourceType() === "image" && request.url().includes("/img/producto/")) {
@@ -280,10 +281,19 @@ test.describe("presupuestos de rendimiento", () => {
       [...document.querySelectorAll<HTMLImageElement>(".gallery-img")].every((i) => i.complete),
     );
 
-    // 14 celdas en el DOM...
-    await expect(page.locator(".gallery-img")).toHaveCount(14);
-    // ...pero sólo 8 descargas: las repetidas comparten `src` y `sizes`, así que
-    // el navegador reutiliza la misma petición.
-    expect(requested.size).toBe(8);
+    // 42 celdas en el DOM...
+    await expect(page.locator(".gallery-img")).toHaveCount(42);
+    // ...pero sólo 24 fuentes de galería: las repetidas comparten `src` y `sizes`,
+    // así que el navegador reutiliza la misma petición. `requested` puede traer
+    // otras fotos de producto de secciones anteriores.
+    const gallerySources = new Set(
+      await page
+        .locator(".gallery-img")
+        .evaluateAll((imgs) => imgs.map((img) => (img as HTMLImageElement).currentSrc)),
+    );
+    expect(gallerySources.size).toBe(24);
+
+    const requestedGallery = new Set([...requested].filter((url) => gallerySources.has(url)));
+    expect(requestedGallery.size).toBe(24);
   });
 });

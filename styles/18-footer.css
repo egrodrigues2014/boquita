@@ -115,7 +115,7 @@
 .footer-contact-link {
   display: inline-flex;
   gap: 8px;
-  align-items: baseline;
+  align-items: center;
   padding-block: 4px;
   transition: color 0.2s ease;
   white-space: nowrap;
@@ -126,10 +126,12 @@
   color: var(--gold-ink);
 }
 
-.footer-contact-link span {
-  min-width: 72px;
+.footer-contact-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   color: var(--gold-ink);
-  font-weight: 700;
+  fill: currentColor;
 }
 
 .footer-address {
@@ -150,14 +152,24 @@
   text-align: center;
 }
 
-.footer-copy a {
-  color: var(--white);
+.footer-legal-link {
+  color: inherit;
   display: inline;
-  transition: color 0.2s ease;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
 }
 
-.footer-copy a:hover {
-  color: var(--gold-ink);
+.footer-legal-link:hover,
+.footer-legal-link:focus-visible {
+  color: inherit;
+  text-decoration-color: currentColor;
 }
 
 @media (max-width: 991px) {

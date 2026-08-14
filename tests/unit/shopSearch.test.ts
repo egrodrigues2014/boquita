@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { products } from "@/content/products";
-import { filterShopProducts } from "@/lib/shopSearch";
+import {
+  filterShopProducts,
+  getShopSearchSuggestions,
+  toShopSearchSources,
+  type ShopSearchSource,
+} from "@/lib/shopSearch";
 
 describe("filterShopProducts", () => {
   it("filtra por nombre desde q", () => {
@@ -58,6 +63,30 @@ describe("filterShopProducts", () => {
     expect(result.map((p) => p.slug)).toEqual(["brigadeiros"]);
   });
 
+  it("filtra por subcategoria", () => {
+    const result = filterShopProducts(products, { subcategoria: "cupcake" });
+
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((product) => product.subcategoria === "cupcake")).toBe(true);
+  });
+
+  it("filtra productos que no llevan un alergeno", () => {
+    const result = filterShopProducts(products, { sinAlergeno: "huevo" });
+
+    expect(result.length).toBeGreaterThan(0);
+    expect(result.every((product) => !product.allergens.includes("huevo"))).toBe(true);
+  });
+
+  it("combina q con filtros nuevos", () => {
+    const result = filterShopProducts(products, {
+      categoria: "dulces",
+      sinAlergeno: "huevo",
+      q: "brigadeiros",
+    });
+
+    expect(result.map((p) => p.slug)).toEqual(["brigadeiros"]);
+  });
+
   it("una categoría que ya no existe no devuelve nada en vez de romper", () => {
     // Un enlace viejo con `?categoria=bocaditos` sigue llegando: la página ignora
     // el valor inválido antes de llamar aquí, pero el filtro tampoco debe inventar.
@@ -65,5 +94,50 @@ describe("filterShopProducts", () => {
       categoria: "bocaditos" as never,
     });
     expect(result).toEqual([]);
+  });
+});
+
+describe("getShopSearchSuggestions", () => {
+  it("sugiere categoria y productos por nombre", () => {
+    const labels = getShopSearchSuggestions(toShopSearchSources(products), "Queq").map(
+      (suggestion) => suggestion.label,
+    );
+
+    expect(labels).toContain("Queques");
+    expect(labels).toContain("Queque de zanahoria");
+  });
+
+  it("sugiere subcategoria y productos por nombre", () => {
+    const labels = getShopSearchSuggestions(toShopSearchSources(products), "cupcake").map(
+      (suggestion) => suggestion.label,
+    );
+
+    expect(labels).toContain("Cupcakes");
+    expect(labels).toContain("Cupcakes de zanahoria");
+  });
+
+  it("sugiere filtro sin alergeno y conserva productos que coincidan por nombre", () => {
+    const extraProduct: ShopSearchSource = {
+      slug: "pan-con-huevo",
+      name: "Pan con huevo",
+      categoria: "dulces",
+      ocasiones: ["regalos"],
+      allergens: [],
+    };
+    const labels = getShopSearchSuggestions(
+      [...toShopSearchSources(products), extraProduct],
+      "huevo",
+    ).map((suggestion) => suggestion.label);
+
+    expect(labels).toContain("Sin huevo");
+    expect(labels).toContain("Pan con huevo");
+  });
+
+  it("sugiere sin depender de acentos o mayusculas", () => {
+    const labels = getShopSearchSuggestions(toShopSearchSources(products), "cumpleanos").map(
+      (suggestion) => suggestion.label,
+    );
+
+    expect(labels).toContain("Cumpleaños");
   });
 });

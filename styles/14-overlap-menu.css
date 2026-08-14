@@ -44,7 +44,9 @@
   background: var(--primary-light);
   margin-top: clamp(-170px, -12vw, -116px);
   padding-top: clamp(210px, 18vw, 270px);
-  padding-bottom: 130px;
+  /* La otra mitad vive en `.section--overlap-up`: juntas forman exactamente
+     un solo `--home-section-gap`, aunque cambie el color del fondo en medio. */
+  padding-bottom: calc(var(--home-section-gap) / 2);
 }
 
 .menu-layout {
@@ -136,7 +138,6 @@
   .cream-block {
     margin-top: -190px;
     padding-top: 290px;
-    padding-bottom: 170px;
   }
   .menu-layout {
     gap: 80px;

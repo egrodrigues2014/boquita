@@ -1,9 +1,9 @@
 /* ══════════════════════════════════════════════════════════════════════════
    15-service.css — Servicio / sobre nosotros (spec §6.5).
 
-   La imagen izquierda SUBE 130/170px invadiendo el bloque crema anterior, y la
-   sección compensa con un margin-bottom negativo del mismo valor para que el
-   flujo siguiente no se desplace. Punto 6 del checklist.
+   El cambio de fondo desde el catálogo divide un único `--home-section-gap`
+   entre crema y blanco. La salida no suma otro padding: Gallery reserva el
+   siguiente hueco completo. Punto 6 del checklist y D-38.
 
    ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
 
@@ -13,7 +13,9 @@
 .section--overlap-up {
   background: var(--white);
   margin-top: 0;
-  padding-block: clamp(72px, 8vw, 112px) clamp(38px, 5vw, 64px);
+  /* Completa la mitad que deja el catálogo. Abajo no añade otro hueco: la
+     galería siguiente ya reserva el ritmo entero. */
+  padding-block: calc(var(--home-section-gap) / 2) 0;
   margin-bottom: 0;
 }
 

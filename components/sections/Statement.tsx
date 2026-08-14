@@ -11,9 +11,19 @@ import type { HomeContent } from "@/types/content";
  * original quedaba sin usar: dos copias del mismo contenido, libres de
  * desincronizarse sin que nada avisara.
  *
- * `ScrollColorText` es quien reparte el titular y el cuerpo en dos elementos
- * (<h2> + <p>), y su raíz es `display: contents`, así que ambos son celdas
- * directas de `.statement-grid` y el titular puede ocupar la fila completa.
+ * `ScrollColorText` reparte el titular y el cuerpo en dos elementos (<h2> + <p>)
+ * y no se ocupa de la entrada: eso lo hace el <Reveal> que lo envuelve.
+ *
+ * ── Las DOS celdas suben a la vez, y no por casualidad ─────────────────────
+ * Los dos <Reveal> comparten `delay={100}` y la transición de 0.6s de
+ * `05-components.css`. Lo que sincroniza el DISPARO es la geometría: a ≥992 la
+ * columna de texto se estira a la altura de la foto (`align-items: stretch` en
+ * 12-statement.css), así que ambas celdas tienen el mismo borde superior y la
+ * misma altura, y cruzan el `threshold: 0.15` del observer compartido en el
+ * mismo tick.
+ *
+ * Antes no era así: la foto subía con <Reveal>, el <p> subía por su cuenta con
+ * un timing propio (0.95s/120ms) y el <h2> no subía en absoluto.
  */
 export function Statement({ mediaText }: { mediaText: HomeContent["mediaText"] }) {
   return (
@@ -24,12 +34,16 @@ export function Statement({ mediaText }: { mediaText: HomeContent["mediaText"] }
             <Picture image={mediaText.poster} className="statement-photo-img" />
           </Reveal>
 
-          <ScrollColorText
-            id="statement-title"
-            title={`${mediaText.titleTop} ${mediaText.titleBottom}`}
-            body={mediaText.body}
-            className="statement-story"
-          />
+          <Reveal className="statement-story" delay={100}>
+            {/* `fitTo`: el párrafo reparte su interlineado para llenar la banda
+                que queda bajo el titular, hasta el pie de la foto. */}
+            <ScrollColorText
+              id="statement-title"
+              title={`${mediaText.titleTop} ${mediaText.titleBottom}`}
+              body={mediaText.body}
+              fitTo=".statement-photo"
+            />
+          </Reveal>
         </div>
       </div>
     </section>

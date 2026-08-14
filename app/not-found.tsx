@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { getCatalog } from "@/lib/db/catalog";
 import { getHomeContent } from "@/lib/homeContent";
+import { toShopSearchSources } from "@/lib/shopSearch";
 
 /**
  * 404 propia.
@@ -33,7 +34,7 @@ export default async function NotFound() {
 
   return (
     <>
-      <Navbar nav={home.nav} />
+      <Navbar nav={home.nav} searchProducts={toShopSearchSources(products)} />
 
       <main id="contenido">
         <section className="section">

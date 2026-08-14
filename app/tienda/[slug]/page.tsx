@@ -10,6 +10,7 @@ import { getCatalog, getProduct } from "@/lib/db/catalog";
 import { formatCRCShort } from "@/lib/format";
 import { getHomeContent } from "@/lib/homeContent";
 import { SITE_URL } from "@/lib/seo";
+import { toShopSearchSources } from "@/lib/shopSearch";
 import { variantsLabel } from "@/lib/variants";
 import { CATEGORIAS, OCASIONES, SUBCATEGORIAS } from "@/types/shop";
 
@@ -67,7 +68,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [product, home] = await Promise.all([getProduct(slug), getHomeContent()]);
+  const [catalog, product, home] = await Promise.all([getCatalog(), getProduct(slug), getHomeContent()]);
   if (!product) notFound();
 
   const prices = product.variants.map((variant) => variant.price);
@@ -120,7 +121,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   return (
     <>
       <JsonLd data={productJsonLd} />
-      <Navbar nav={home.nav} />
+      <Navbar nav={home.nav} searchProducts={toShopSearchSources(catalog)} />
 
       <main id="contenido">
         <section className="section">

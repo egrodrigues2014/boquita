@@ -100,7 +100,8 @@
      cae entero. El realce sigue existiendo por el color del nombre y por el
      anillo de foco, que son información. Hay que enumerarlo a mano — el `*` de
      abajo sólo apaga `animation-*`, no `transition`. */
-  .shop-card-img {
+  .shop-card-img,
+  .gallery-img {
     transform: none !important;
     transition: none !important;
   }

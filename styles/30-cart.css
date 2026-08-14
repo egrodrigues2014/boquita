@@ -312,8 +312,92 @@
   border-color: var(--gold-line);
 }
 
+.cart-input[aria-invalid="true"] {
+  border-color: var(--gold-ink);
+}
+
 .cart-hint {
   margin-top: -8px;
+}
+
+.cart-marketing {
+  position: relative;
+  min-width: 0;
+  margin-top: 4px;
+  padding: 14px;
+  border: 1px solid var(--gray);
+  border-radius: 5px;
+  background: var(--primary-light);
+}
+
+.cart-marketing legend {
+  padding-inline: 5px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.cart-marketing-intro {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--body-text);
+}
+
+.cart-marketing .cart-input {
+  width: 100%;
+  margin-bottom: 12px;
+  background: var(--white);
+}
+
+.cart-consent {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-dark);
+}
+
+.cart-consent input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--gold-line);
+}
+
+.cart-consent label {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 500;
+}
+
+.cart-consent a {
+  display: inline;
+  font-size: inherit;
+  color: var(--link);
+  text-decoration: underline;
+}
+
+.cart-marketing-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--gold-ink);
+}
+
+.cart-honeypot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .cart-actions {
@@ -340,6 +424,17 @@
 .cart-sent p {
   margin: 0;
   font-size: 15px;
+}
+
+.cart-discard {
+  align-self: center;
+  border: 0;
+  background: transparent;
+  color: var(--link);
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /* ── Añadir al carrito, en la ficha ────────────────────────────────────── */
