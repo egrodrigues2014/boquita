@@ -27,7 +27,7 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 
 | | |
 | --- | --- |
-| Rama | `deploy/boquitacostarica`, creada desde `main` para preparar Vercel y el dominio definitivo |
+| Rama | `main`, con la preparación de Vercel y el dominio definitivo integrada desde `deploy/boquitacostarica` |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
 | Sin commitear | **Ninguno al cerrar el bloque.** La preparación de Vercel, dominio, guardia de indexación, documentación y pruebas queda en un solo commit; verificar con `git status --short`. |
 | Bloque preparación de despliegue | Dominio humano `boquitacostarica.com` en `lib/contact.ts`; URL canónica por `NEXT_PUBLIC_SITE_URL`; guardia privada `SITE_LAUNCHED` centralizada en `lib/seo.ts` y consumida por `app/layout.tsx` y `app/robots.ts`. Preview y producción permanecen en `noindex` hasta `VERCEL_ENV=production` + `SITE_LAUNCHED=true`. No cambia rutas, pedidos ni base de datos. |
