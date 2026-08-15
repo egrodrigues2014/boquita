@@ -97,12 +97,10 @@ marcadores obsoletos conocidos están listados en su sección «Deuda de etiquet
 
 ## Idioma
 
-Copy, documentación, comentarios y mensajes de commit **en español**. El registro del sitio es
-es-CR con voseo suave («escribinos», «pedí»).
+Copy, documentación, comentarios y mensajes de commit **en español**. El contenido visible usa
+español latinoamericano neutro, natural y profesional, siempre con **tuteo**. Se evitan tanto el
+voseo («podés», «escribinos») como los giros propios de España y los localismos costarricenses que no
+sean datos reales del negocio.
 
-**Única excepción, y es deliberada:** el bloque de cierre de `/sobre-nosotros` va en **tuteo**
-(«Escríbeme», «Cuéntame qué necesitas», «También puedes escribirme a»). Son `about.closing` en
-`content/pages.ts` y dos cadenas de `app/sobre-nosotros/page.tsx` — el «o mira el catálogo completo si
-ya sabes lo que quieres» y la etiqueta del botón de WhatsApp. Lo pidió el cliente para el cierre y
-sólo para el cierre: el resto de la página, la FAQ incluida, sigue voseando. No lo unifiques en
-ninguna de las dos direcciones; `tests/unit/pages.test.ts` lo afirma.
+Por decisión comercial, el contenido visible usa «queque»/«queques». También se conservan los slugs
+`queque-*` y la clave interna `queques`.

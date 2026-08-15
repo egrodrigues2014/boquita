@@ -350,7 +350,7 @@ test.describe("ficha de producto", () => {
 
     // No hay botón de añadir, hay enlace a WhatsApp: su precio es «desde» y
     // sumarlo daría un total que no es el que se va a pagar.
-    await expect(page.getByRole("button", { name: "Añadir al carrito" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Agregar al carrito" })).toHaveCount(0);
     const link = page.getByRole("link", { name: /Pedir cotización por WhatsApp/ });
     await expect(link).toHaveAttribute("href", /api\.whatsapp\.com\/send\?phone=50671322355/);
     await expect(page.locator(".product-price")).toContainText("desde");
@@ -361,9 +361,9 @@ test.describe("carrito", () => {
   test("añade, actualiza la cantidad y refleja el total", async ({ page }) => {
     await page.goto("/tienda/queque-de-zanahoria");
 
-    await page.getByRole("button", { name: "Añadir una unidad de Queque de zanahoria" }).click();
+    await page.getByRole("button", { name: "Agregar una unidad de Queque de zanahoria" }).click();
     await expect(page.locator(".add-to-cart .qty-value")).toHaveText("2");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
 
     // El conteo va en el aria-label, no sólo en el badge visual.
     await expect(page.getByRole("button", { name: "Carrito, 2 productos" })).toBeVisible();
@@ -379,7 +379,7 @@ test.describe("carrito", () => {
     // presentación, porque es lo que identifica la línea.
     const drawer = page.locator(".cart-drawer");
     await drawer
-      .getByRole("button", { name: "Añadir una unidad de Queque de zanahoria (pequeño" })
+      .getByRole("button", { name: "Agregar una unidad de Queque de zanahoria (pequeño" })
       .click();
     await expect(page.locator(".cart-total strong")).toHaveText("₡ 7.500");
 
@@ -399,9 +399,9 @@ test.describe("carrito", () => {
   test("dos presentaciones del mismo producto son dos líneas", async ({ page }) => {
     await page.goto("/tienda/queque-de-zanahoria");
 
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await page.getByRole("radio", { name: /grande \(20 personas\)/ }).check();
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
 
     await openCart(page);
     await expect(page.locator(".cart-line")).toHaveCount(2);
@@ -412,8 +412,8 @@ test.describe("carrito", () => {
 
   test("volver a añadir la MISMA presentación suma en la línea que ya existe", async ({ page }) => {
     await page.goto("/tienda/queque-de-zanahoria");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
 
     await openCart(page);
     await expect(page.locator(".cart-line")).toHaveCount(1);
@@ -422,7 +422,7 @@ test.describe("carrito", () => {
 
   test("el carrito sobrevive a la navegación", async ({ page }) => {
     await page.goto("/tienda/brigadeiros");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await expect(page.getByRole("button", { name: "Carrito, 1 producto" })).toBeVisible();
 
     // Persistido en localStorage con clave versionada.
@@ -437,7 +437,7 @@ test.describe("carrito", () => {
     page,
   }) => {
     await page.goto("/tienda/brigadeiros");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await page.reload();
 
     // El HTML servido no lleva badge: el primer render del cliente debe coincidir.
@@ -449,7 +449,7 @@ test.describe("carrito", () => {
 
   test("no mezcla el precio a convenir en el total", async ({ page }) => {
     await page.goto("/tienda/queque-de-zanahoria");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
 
     // Sólo el de precio fijo entra en el total.
@@ -489,7 +489,7 @@ test.describe("carrito", () => {
 test.describe("checkout por WhatsApp", () => {
   test("el enlace lleva el pedido completo codificado", async ({ page }) => {
     await page.goto("/tienda/polvorones-espanoles");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
 
     await page.locator("#cart-name").fill("María Rodríguez");
@@ -529,7 +529,7 @@ test.describe("checkout por WhatsApp", () => {
 
   test("la fecha mínima respeta el horneado por encargo", async ({ page }) => {
     await page.goto("/tienda/queque-de-zanahoria");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
 
     const min = await page.locator("#cart-date").getAttribute("min");
@@ -543,7 +543,7 @@ test.describe("checkout por WhatsApp", () => {
     // WhatsApp puede no abrirse o el cliente puede cerrarlo sin enviar: vaciar
     // ahí perdería el pedido sin que nadie lo haya recibido.
     await page.goto("/tienda/brigadeiros");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
 
     // Se intercepta la apertura de la pestaña para no salir a WhatsApp.
@@ -558,7 +558,7 @@ test.describe("checkout por WhatsApp", () => {
 
   test("el botón explícito sí vacía el carrito", async ({ page, context }) => {
     await page.goto("/tienda/brigadeiros");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
 
     await mockOrderSave(page);
@@ -571,7 +571,7 @@ test.describe("checkout por WhatsApp", () => {
 
   test("guarda un pedido sin correo sin bloquear WhatsApp", async ({ page, context }) => {
     await page.goto("/tienda/brigadeiros");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
     await page.locator("#cart-name").fill("Ana");
 
@@ -583,7 +583,7 @@ test.describe("checkout por WhatsApp", () => {
     await context.route("**api.whatsapp.com**", (route) => route.abort());
 
     await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
-    await expect(page.getByText("Pedido guardado.")).toBeVisible();
+    await expect(page.getByText("Solicitud guardada.")).toBeVisible();
     expect(payload).toMatchObject({ name: "Ana", website: "" });
     expect(payload).not.toHaveProperty("marketing");
     expect(payload?.items).toEqual([
@@ -593,7 +593,7 @@ test.describe("checkout por WhatsApp", () => {
 
   test("un correo empezado exige consentimiento antes de abrir WhatsApp", async ({ page }) => {
     await page.goto("/tienda/brigadeiros");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
     await page.locator("#cart-email").fill("ana@example.com");
 
@@ -604,7 +604,7 @@ test.describe("checkout por WhatsApp", () => {
     });
     await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click();
 
-    await expect(page.locator("#cart-marketing-error")).toContainText("Marcá la casilla");
+    await expect(page.locator("#cart-marketing-error")).toContainText("Marca la casilla");
     await expect(page.locator("#cart-marketing-consent")).toBeFocused();
     expect(requests).toBe(0);
   });
@@ -614,7 +614,7 @@ test.describe("checkout por WhatsApp", () => {
     context,
   }) => {
     await page.goto("/tienda/polvorones-espanoles");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
     await page.locator("#cart-name").fill("María");
     await page.locator("#cart-zone").fill("Santa Ana");
@@ -629,7 +629,7 @@ test.describe("checkout por WhatsApp", () => {
     });
     await context.route("**api.whatsapp.com**", (route) => route.abort());
     await page.getByRole("link", { name: /Finalizar por WhatsApp/ }).click({ force: true });
-    await expect(page.getByText("Pedido guardado.")).toBeVisible();
+    await expect(page.getByText("Solicitud guardada.")).toBeVisible();
 
     expect(payload).toMatchObject({
       name: "María",
@@ -647,7 +647,7 @@ test.describe("checkout por WhatsApp", () => {
 
   test("permite reintentar con el mismo UUID cuando Neon falla", async ({ page, context }) => {
     await page.goto("/tienda/brigadeiros");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await openCart(page);
 
     const ids: string[] = [];
@@ -666,7 +666,7 @@ test.describe("checkout por WhatsApp", () => {
 
     await expect(page.getByRole("button", { name: "Reintentar guardado" })).toBeVisible();
     await page.getByRole("button", { name: "Reintentar guardado" }).click();
-    await expect(page.getByText("Pedido guardado.")).toBeVisible();
+    await expect(page.getByText("Solicitud guardada.")).toBeVisible();
     expect(ids).toHaveLength(2);
     expect(ids[1]).toBe(ids[0]);
   });

@@ -40,7 +40,7 @@ export default async function NotFound() {
         <section className="section">
           <div className="container container--start">
             <p className="h6-sans primary">Error 404</p>
-            <h1>Esta página se nos quemó</h1>
+            <h1>No encontramos esta página</h1>
             <p className="lead mt-20 prose-narrow">
               El enlace que seguiste no existe o cambió de sitio. Puede que venga de una
               publicación vieja de Instagram.

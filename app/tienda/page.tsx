@@ -74,7 +74,7 @@ export async function generateMetadata({
       description:
         encontrados > 0
           ? `${encontrados} ${encontrados === 1 ? "producto" : "productos"} de Boquita para «${q}».`
-          : `Ningún producto de Boquita coincide con «${q}». Mirá el catálogo completo.`,
+           : `Ningún producto de Boquita coincide con «${q}». Consulta el catálogo completo.`,
       robots: { index: false, follow: true },
       alternates: { canonical: "/tienda" },
     };

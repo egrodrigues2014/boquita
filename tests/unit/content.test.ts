@@ -84,7 +84,7 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(home.hero.tagline).toBe("Pequeños bocados. Grandes momentos.");
     expect(home.hero.lead).toBe(
       "Dulce o salado, preparamos cada encargo con ingredientes de verdad y lo " +
-        "horneamos para que lo recibás recién hecho.",
+        "horneamos para que lo recibas recién hecho.",
     );
   });
 

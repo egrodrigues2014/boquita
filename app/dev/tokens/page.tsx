@@ -292,7 +292,7 @@ export default function TokensSpecimenPage() {
       on: BROWN,
       onLabel: "marrón",
       size: "large",
-      usedFor: "h4 de la newsletter (30/26px)",
+      usedFor: "h4 del boletín (30/26px)",
     },
     {
       token: "--text-dark",
@@ -337,7 +337,7 @@ export default function TokensSpecimenPage() {
       <h1 style={{ fontSize: 46, margin: "0 0 10px" }}>Especímenes de tokens</h1>
       <p style={note}>
         Página de desarrollo. Revisar a 1920 · 1440 · 1280 · 1100 · 991 · 767 · 479 · 390 px, y con{" "}
-        <code>prefers-reduced-motion: reduce</code> activado. Los ratios se recalculan en build
+        <code>prefers-reduced-motion: reduce</code> activado. Los ratios se recalculan durante la compilación
         desde <code>styles/01-tokens.css</code> con <code>lib/color.ts</code>; no hay ni un número
         escrito a mano.
       </p>
@@ -346,7 +346,7 @@ export default function TokensSpecimenPage() {
       <hr style={rule} />
       <p style={caption}>1 · Escala tipográfica (spec §2.3)</p>
 
-      <h1>Heading 1 · queque de zanahoria</h1>
+      <h1>Encabezado 1 · queque de zanahoria</h1>
       <p style={note}>
         <code>h1</code> — 70px base · 52 ≤991 · 46 ≤767
       </p>
@@ -362,32 +362,32 @@ export default function TokensSpecimenPage() {
         swap de fuente cambia anchos pero nunca el número de líneas.
       </p>
 
-      <h2>Heading 2 · lo que sale del horno</h2>
+      <h2>Encabezado 2 · lo que sale del horno</h2>
       <p style={note}>
         <code>h2</code> — 50 base · 42 ≤991 · 34 ≤767. Color <code>--gold-display</code>.
       </p>
 
-      <h3>Heading 3 · polvorones de almendra</h3>
+      <h3>Encabezado 3 · polvorones de almendra</h3>
       <p style={note}>
         <code>h3</code> — 32 base · 34 ≥1280 · 36 ≥1440 · 30 ≤767
       </p>
 
-      <h4>Heading 4 · suscribite a la newsletter</h4>
+      <h4>Encabezado 4 · suscríbete al boletín</h4>
       <p style={note}>
         <code>h4</code> — 30 base · 26 ≤767. Color <code>--gold-display</code>.
       </p>
 
-      <h5>Heading 5 · galletas de granola</h5>
+      <h5>Encabezado 5 · galletas de granola</h5>
       <p style={note}>
         <code>h5</code> — 22px en todos los anchos
       </p>
 
-      <h6>Heading 6 · cachitos de jamón</h6>
+      <h6>Encabezado 6 · bocaditos de jamón</h6>
       <p style={note}>
         <code>h6</code> — 20 base · 18 ≤991. Fuente display.
       </p>
 
-      <p className="h6-sans">Eyebrow neutro</p>
+      <p className="h6-sans">Antetítulo neutro</p>
       <p className="h6-sans primary">Repostería artesanal en Santa Ana</p>
       <p style={note}>
         <code>.h6-sans</code> — cambia la fuente a Libre Franklin, 20px/500, letter-spacing .1em. Se
@@ -415,7 +415,7 @@ export default function TokensSpecimenPage() {
         <li>Pedidos con 48 horas de anticipación</li>
       </ul>
       <p style={note}>
-        <code>ul</code> / <code>li</code> — bullet SVG en <code>/icons/list-bullet.svg</code>,
+        <code>ul</code> / <code>li</code> — viñeta SVG en <code>/icons/list-bullet.svg</code>,
         posicionado a <code>0 7px</code>.
       </p>
 
@@ -497,17 +497,17 @@ export default function TokensSpecimenPage() {
       <p style={note}>
         Altura ≈60px (14px de padding vertical + 20px/1.5em). Relleno{" "}
         <code>--gold</code> con etiqueta <code>--text-dark</code> (6.58) y borde{" "}
-        <code>--gold-line</code> (4.00) para garantizar el límite del control sobre blanco. Pasar el
-        ratón y tabular para ver hover y anillo de foco. <code>.btn-group</code> pasa a columna a
+        <code>--gold-line</code> (4.00) para garantizar el límite del control sobre blanco. Mueve el
+        cursor o usa el tabulador para ver el estado interactivo y el anillo de foco. <code>.btn-group</code> pasa a columna a
         ≤479px.
       </p>
 
       {/* ── Input + play, sobre oscuro ─────────────────────────────────── */}
       <hr style={rule} />
-      <p style={caption}>6 · Input y play button sobre fondo oscuro</p>
+      <p style={caption}>6 · Campo y botón de reproducción sobre fondo oscuro</p>
       <div className="footer-dark" style={{ background: "var(--text-dark)", padding: "50px 30px" }}>
         <h2 className="as-h4" style={{ textAlign: "center" }}>
-          Suscribite a la newsletter
+          Suscríbete al boletín
         </h2>
         <form
           style={{
@@ -529,7 +529,7 @@ export default function TokensSpecimenPage() {
             className="input"
             id="specimen-email"
             type="email"
-            placeholder="Email"
+            placeholder="Correo electrónico"
             style={{ flex: 1 }}
           />
           <button className="btn" type="button">
@@ -567,7 +567,7 @@ export default function TokensSpecimenPage() {
         El <code>h4</code> se renderiza como <code>&lt;h2 class=&quot;as-h4&quot;&gt;</code> para no
         saltar un nivel de encabezado (desvío D-7), y el input lleva un{" "}
         <code>&lt;label&gt;</code> oculto porque un placeholder no es una etiqueta (D-8). El anillo
-        exterior del play escala de .85 a 1 al pasar el ratón, y queda quieto con reduced-motion.
+        exterior del botón de reproducción escala de .85 a 1 al mover el cursor y queda quieto con movimiento reducido.
       </p>
 
       {/* ── Reveal ─────────────────────────────────────────────────────── */}

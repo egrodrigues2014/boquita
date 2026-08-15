@@ -42,7 +42,7 @@ export default function GlobalError({
             Boquita
           </h1>
           <p style={{ fontSize: 18, lineHeight: 1.6, margin: "0 0 28px", color: "#6b5b4d" }}>
-            El sitio no pudo cargarse. Escribinos por WhatsApp al{" "}
+            El sitio no pudo cargarse. Escríbenos por WhatsApp al{" "}
             <strong>{CONTACT.whatsappDisplay}</strong> y te atendemos directamente.
           </p>
           <a
@@ -58,7 +58,7 @@ export default function GlobalError({
               textDecoration: "none",
             }}
           >
-            Escribinos por WhatsApp
+            Escríbenos por WhatsApp
           </a>
         </div>
       </body>

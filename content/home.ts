@@ -16,7 +16,7 @@ import { CATEGORIAS, type ShopProduct } from "@/types/shop";
  *
  * Convenciones:
  *  · Los titulares van en capitalización normal — el CSS los pone en mayúsculas.
- *  · Registro: profesional e informal, con voseo suave («escribinos», «pedí»).
+ *  · Registro: profesional, cercano y en tuteo, con español latinoamericano neutro.
  *  · Todo lo marcado ⚠ TODO está listado en docs/CONTENT_TODO.md y BLOQUEA el
  *    lanzamiento, aunque no el desarrollo.
  *
@@ -141,7 +141,7 @@ const hero: ImageRef = {
   sizes: "100vw",
   width: 1050,
   height: 1400,
-  alt: "Queque de manzana recién horneado, espolvoreado con azúcar glas, sobre un plato blanco en la terraza",
+  alt: "Queque de manzana recién horneado, espolvoreado con azúcar en polvo, sobre un plato blanco en la terraza",
 };
 
 const wideImage: ImageRef = {
@@ -153,7 +153,7 @@ const wideImage: ImageRef = {
   sizes: "(min-width: 1200px) 1170px, calc(100vw - 30px)",
   width: 1170,
   height: 403,
-  alt: "Biscotti de almendra en un plato alargado, con fresas laminadas y una taza de café, sobre una mesa de madera",
+  alt: "Biscotti de almendra en un plato alargado, con fresas en láminas y una taza de café, sobre una mesa de madera",
 };
 
 const serviceImage: ImageRef = {
@@ -166,7 +166,7 @@ const serviceImage: ImageRef = {
   sizes: "(min-width: 992px) 540px, (max-width: 479px) calc(100vw - 30px), 65vw",
   width: 540,
   height: 624,
-  alt: "Bandeja de horno con polvorones de almendra recién hechos, cubiertos de azúcar glas, en la cocina",
+  alt: "Bandeja de horno con polvorones de almendra recién hechos, cubiertos de azúcar en polvo, en la cocina",
 };
 
 const mediaPoster: ImageRef = {
@@ -179,7 +179,7 @@ const mediaPoster: ImageRef = {
   sizes: "(min-width: 992px) 500px, calc(100vw - 30px)",
   width: 800,
   height: 600,
-  alt: "Queque de zanahoria entero con frosting de queso crema y pecanas, sobre un pie de cristal en el jardín",
+  alt: "Queque de zanahoria entero con cobertura de queso crema y nueces pecanas, sobre una base de cristal en el jardín",
 };
 
 const ctaImage: ImageRef = {
@@ -223,7 +223,7 @@ export const home: HomeContent = {
         ],
       },
       {
-        label: "Sobre Nosotros",
+        label: "Sobre nosotros",
         // El `href` NO es decorativo: sin él, `Dropdown` renderiza la etiqueta
         // como <button> y el clic sólo abre el panel. La página existía y
         // respondía 200, pero era inalcanzable desde su propia etiqueta del nav.
@@ -259,7 +259,7 @@ export const home: HomeContent = {
     tagline: "Pequeños bocados. Grandes momentos.",
     lead:
       "Dulce o salado, preparamos cada encargo con ingredientes de verdad y lo " +
-      "horneamos para que lo recibás recién hecho.",
+      "horneamos para que lo recibas recién hecho.",
     ctas: [
       { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
       { label: "Ver el catálogo", href: "/tienda" },
@@ -284,8 +284,8 @@ export const home: HomeContent = {
     eyebrow: "Nuestro catálogo",
     title: "Lo que sale del horno",
     body:
-      "Pedidos con 48 horas de anticipación. Entregamos en Santa Ana, Escazú y " +
-      "alrededores, y coordinamos todo por WhatsApp.",
+      "Pedidos con 48 horas de anticipación. Entregamos en toda la Gran Área Metropolitana " +
+      "y coordinamos todo por WhatsApp.",
     // Derivados del catálogo: los precios y nombres no pueden desincronizarse.
     products: featuredProducts(),
     more: { label: "Ver los 23 productos", href: "/tienda" },
@@ -360,7 +360,7 @@ export const home: HomeContent = {
         name: "Laura Céspedes Mora",
         role: "Baby shower en Ciudad Colón",
         quote:
-          "Le mandé una foto de lo que tenía en la cabeza y me devolvió algo mejor. " +
+          "Le envié una foto de lo que tenía en mente y me entregó algo aún mejor. " +
           "Coordinamos color, tamaño y fecha por WhatsApp en un solo día, y no tuve que " +
           "explicar nada dos veces.",
         todo: true,
@@ -381,8 +381,8 @@ export const home: HomeContent = {
         role: "Graduación en Pozos",
         quote:
           "Necesitaba algo sin azúcar para mi papá y sin gluten para mi hermana, en el " +
-          "mismo pedido. Ale me armó las dos opciones sin poner ninguna cara y sin " +
-          "cobrarme recargo por complicarle la vida.",
+          "mismo pedido. Ale preparó las dos opciones con muy buena disposición y sin " +
+          "cobrarme un recargo por el trabajo adicional.",
         todo: true,
       },
       {
@@ -402,13 +402,13 @@ export const home: HomeContent = {
     cta: {
       titleTop: "¿Listo para pedir",
       titleBottom: "tu próximo antojo?",
-      body: "Escribinos por WhatsApp y coordinamos sabor, tamaño y fecha de entrega.",
+      body: "Escríbenos por WhatsApp y coordinamos el sabor, el tamaño y la fecha de entrega.",
       button: { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
       image: ctaImage,
     },
     newsletter: {
-      title: "Suscribite a la newsletter",
-      placeholder: "Email",
+      title: "Suscríbete al boletín",
+      placeholder: "Correo electrónico",
       label: "Tu correo electrónico",
       button: "Enviar",
     },
@@ -441,11 +441,11 @@ export const home: HomeContent = {
       { label: "Inicio", href: "/" },
       { label: "Catálogo", href: "/tienda" },
       { label: "Galería", href: "/#galeria" },
-      { label: "Sobre Nosotros", href: "/sobre-nosotros" },
+      { label: "Sobre nosotros", href: "/sobre-nosotros" },
     ],
     address: CONTACT.address,
     copyright: "© 2026 Boquita — Sweet & Salty.",
-    legal: { label: "Aviso Legal", href: "/aviso-legal" },
+    legal: { label: "Aviso legal", href: "/aviso-legal" },
   },
 };
 

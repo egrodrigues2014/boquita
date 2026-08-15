@@ -58,7 +58,7 @@ export function CartButton() {
 
       {/* Región viva aparte: anuncia el cambio sin que el foco salga del botón. */}
       <p className="sr-only" aria-live="polite">
-        {ready && count > 0 ? `${count} en el carrito` : ""}
+        {ready && count > 0 ? `${count} ${count === 1 ? "producto" : "productos"} en el carrito` : ""}
       </p>
 
       <CartDrawer open={open} onClose={() => setOpen(false)} />

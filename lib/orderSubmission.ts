@@ -91,16 +91,16 @@ export function validateMarketingChoice(emailValue: string, consent: boolean): M
   const email = normalizeEmail(emailValue);
   if (!email && !consent) return { valid: true };
   if (!email) {
-    return { valid: false, field: "email", message: "Ingresá el correo que querés suscribir." };
+    return { valid: false, field: "email", message: "Ingresa el correo que quieres suscribir." };
   }
   if (!z.string().email().max(254).safeParse(email).success) {
-    return { valid: false, field: "email", message: "Ingresá un correo electrónico válido." };
+    return { valid: false, field: "email", message: "Ingresa un correo electrónico válido." };
   }
   if (!consent) {
     return {
       valid: false,
       field: "consent",
-      message: "Marcá la casilla para autorizar el envío de promociones.",
+      message: "Marca la casilla para autorizar el envío de promociones.",
     };
   }
   return {

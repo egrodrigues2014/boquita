@@ -121,7 +121,7 @@ export function ProductPurchase({
             <button
               type="button"
               className="qty-button"
-              aria-label={`Añadir una unidad de ${product.name}`}
+              aria-label={`Agregar una unidad de ${product.name}`}
               onClick={() => setQty((current) => Math.min(MAX_QTY, current + 1))}
               aria-disabled={qty >= MAX_QTY}
             >
@@ -157,12 +157,12 @@ export function ProductPurchase({
               window.setTimeout(() => setJustAdded(false), 2500);
             }}
           >
-            Añadir al carrito
+            Agregar al carrito
           </button>
 
           <p className="add-to-cart-note" role="status" aria-live="polite">
             {justAdded && selected
-              ? `Añadido: ${qty} × ${product.name} (${selected.unit}).`
+              ? `Agregado: ${qty} × ${product.name} (${selected.unit}).`
               : leadTimeNote}
           </p>
         </div>

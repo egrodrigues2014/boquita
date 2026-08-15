@@ -1,7 +1,7 @@
 # Contenido pendiente de Ale
 
 Nada de esta lista bloquea el desarrollo: el sitio se construye con placeholders realistas en
-español de Costa Rica, todos marcados `TODO` en el código. Pero **sí bloquea el lanzamiento**: no se
+español latinoamericano neutro, todos marcados `TODO` en el código. Pero **sí bloquea el lanzamiento**: no se
 puede publicar un sitio con testimonios inventados ni con precios que no son los reales.
 
 Ordenado por urgencia real, no por sección.
@@ -125,7 +125,7 @@ donde harían falta 2×. No se va a fabricar un upscale: sería desenfoque a tri
 - ✅ Dirección pública: Calle Obelisco, condominio Condado del Río, Santa Ana.
 - ✅ WhatsApp/pedidos: +506 7132 2355.
 - ✅ Instagram publicado: @boquita_cr.
-- ✅ Voz: profesional e informal, con voseo suave. En `/sobre-nosotros` es **primera persona del
+- ✅ Voz: profesional y cercana, en español latinoamericano neutro y con tuteo. En `/sobre-nosotros` es **primera persona del
   singular** —ahí habla Ale—, mientras el resto del sitio va en plural.
 - ✅ Correo público: `ticaboquita@gmail.com`, en `CONTACT.email` (`lib/contact.ts`). Se muestra en el
   cierre de «Sobre Nosotros» y, desde que el pie pasó de `social` a `contacts`, también en su columna

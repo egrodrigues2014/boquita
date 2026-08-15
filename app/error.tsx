@@ -33,7 +33,7 @@ export default function Error({
           <p className="h6-sans primary">Algo salió mal</p>
           <h1>Se nos cayó la bandeja</h1>
           <p className="lead mt-20 prose-narrow">
-            Hubo un error al cargar esta parte del sitio. Podés intentarlo de nuevo, o
+            Hubo un error al cargar esta parte del sitio. Puedes intentarlo de nuevo o
             escribirnos por WhatsApp y te atendemos directamente.
           </p>
 
@@ -47,7 +47,7 @@ export default function Error({
               target="_blank"
               rel="noopener noreferrer"
             >
-              Escribinos por WhatsApp
+              Escríbenos por WhatsApp
               <span className="sr-only"> (abre una pestaña nueva)</span>
             </a>
           </div>

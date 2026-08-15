@@ -182,8 +182,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
                   <dt>Entrega</dt>
                   <dd>
-                    Retiro en Condado del Río, Santa Ana, o entrega en Santa Ana, Escazú y
-                    alrededores coordinada por WhatsApp.
+                    Retiro en Condado del Río, Santa Ana, o entrega dentro de la Gran Área
+                    Metropolitana, coordinada por WhatsApp.
                   </dd>
                 </dl>
               </div>

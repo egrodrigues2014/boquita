@@ -21,7 +21,7 @@ import {
   type FaqItem,
 } from "@/content/pages";
 
-const sobreNosotros = home.nav.dropdowns.find((d) => d.label === "Sobre Nosotros");
+const sobreNosotros = home.nav.dropdowns.find((d) => d.label === "Sobre nosotros");
 
 describe("el aviso legal publica sólo el contenido aprobado", () => {
   it("retira el texto provisional y documenta la captura promocional", () => {
@@ -119,7 +119,7 @@ describe("el texto es el de Ale, no el de andamio", () => {
     // distingue, porque la frontera es justo donde salen las erratas:
     //
     //   · entradilla  → «Queques.» + «Zanahoria con coco…»  (frase nueva)
-    //   · frase suelta → «Podés retirar el pedido» + «en Santa Ana…» (sigue)
+    //   · frase suelta → «Puedes retirar el pedido» + «en Santa Ana…» (sigue)
     //
     // Lo que no vale: un `text` que empiece por coma o punto (sale « ,»), un
     // espacio colgando en cualquiera de los dos, o una entradilla sin punto
@@ -181,11 +181,7 @@ describe("el texto es el de Ale, no el de andamio", () => {
     }
   });
 
-  it("el bloque de cierre va en tuteo y su cuerpo lo termina el enlace", () => {
-    // Decisión del cliente: TODO el cierre tutea aunque el resto de la página
-    // vosee (CLAUDE.md §Idioma lo registra como la única excepción). Se afirma
-    // porque es exactamente lo que alguien «normaliza» de vuelta al registro del
-    // sitio en una pasada de estilo, sin saber que se pidió así.
+  it("todo el contenido editorial mantiene el tuteo y el cuerpo del cierre lo termina el enlace", () => {
     const { title, body, emailIntro } = about.closing;
     expect(title).toBe("Escríbeme");
     expect(emailIntro).toBe("También puedes escribirme a");
@@ -198,8 +194,13 @@ describe("el texto es el de Ale, no el de andamio", () => {
     const voseo = /\b(escribime|escribinos|contame|mandame|necesitás|querés|podés|mirá|sabés)\b/i;
     expect(
       [title, body, emailIntro].filter((cadena) => voseo.test(cadena)),
-      "el bloque de cierre volvió al voseo del resto del sitio",
+      "el bloque de cierre contiene formas de voseo",
     ).toEqual([]);
+
+    const contenido = JSON.stringify({ home, about, legal });
+    expect(contenido).not.toMatch(
+      /\b(escribime|escribinos|contame|contanos|mandame|mandanos|necesitás|querés|podés|tenés|recibás|ingresá|marcá|avisanos|abrís|preparás|borrás|completás|solicités|suscribite|mirá|sabés)\b/i,
+    );
   });
 
   it("ninguna respuesta de la FAQ queda pendiente de confirmar", () => {

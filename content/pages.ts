@@ -79,11 +79,11 @@ export const about = {
   // Dos párrafos, no uno: el primero dice a qué vino Boquita y el segundo a qué
   // saben sus recetas. Partirlos es lo que evita una entradilla de seis líneas.
   lead: [
-    "Boquita nace de una idea sencilla: aportar soluciones prácticas para todo tipo de " +
+    "Boquita nace de una idea sencilla: ofrecer opciones prácticas para todo tipo de " +
       "ocasiones, con productos apetitosos e ingredientes de buena calidad.",
-    "Son recetas delicadas, suaves y originales. Un bocado de gusto y frescura con un " +
-      "balance natural que inspira confort y placer, y que nos transporta a nuestras raíces " +
-      "u orígenes porque son caseros.",
+    "Son recetas delicadas, suaves y originales. Un bocado de sabor y frescura con un " +
+      "equilibrio natural que transmite bienestar y placer, y nos transporta a nuestras raíces " +
+      "porque tienen el sabor de lo hecho en casa.",
   ],
 
   sections: [
@@ -92,13 +92,13 @@ export const about = {
       title: "Quién está detrás",
       paragraphs: [
         "Soy Ale Budowski y Boquita es mi cocina.",
-        "Empecé horneando para los grupos a los que pertenezco —amigos, colegio, club, las " +
-          "actividades deportivas de la semana— y de ahí llegaron los primeros pedidos, por " +
+        "Empecé horneando para mis círculos cercanos —amistades, colegio, club y actividades " +
+          "deportivas— y de ahí llegaron los primeros pedidos, por " +
           "boca a boca y por referencia de quienes ya habían probado. En abril de 2022 vendí " +
           "el primer pedido y ese es el arranque oficial de Boquita.",
-        "Las recetas son propias y originales, probadas por distintos grupos sociales y " +
-          "nacionalidades. Eso es lo que me dice que son de amplio paladar: gustan a gente " +
-          "que come cosas muy distintas.",
+        "Las recetas son propias y originales, y las han probado personas con gustos y " +
+          "nacionalidades diferentes. Esa variedad de opiniones me ha ayudado a crear sabores " +
+          "que disfrutan paladares muy distintos.",
         // «Diecisiete recetas base» y no «diecisiete recetas» a secas: la portada
         // anuncia una métrica que cuenta PRODUCTOS del catálogo (hoy 23, la
         // calcula `lib/homeContent.ts`), y los cupcakes son la misma receta en
@@ -116,14 +116,14 @@ export const about = {
         "Empieza en el mercado. Una vez por semana visito ferias y mercados mayoristas para " +
           "seleccionar productos frescos y de buena calidad: mantequilla, queso crema, crema " +
           "de leche, huevos, nueces y almendras, coco, chocolate oscuro, dulce de leche, " +
-          "dátiles, fresas, limón y banano naturales.",
-        "Después viene el trabajo largo. Se pesa cada ingrediente, se tuestan las harinas y " +
-          "las nueces, se tritura y se tamiza, se amasa, la masa reposa su hora, y cada lote " +
-          "pasa dos horas y media en el horno. Son unas seis horas de trabajo al día y tres " +
+          "dátiles, fresas, limón y bananas naturales.",
+        "Después viene la preparación. Peso cada ingrediente, tuesto las harinas y las nueces, " +
+          "trituro, tamizo y amaso; luego dejo reposar la masa durante una hora. Cada lote " +
+          "requiere dos horas y media de horneado. Son unas seis horas de trabajo al día y tres " +
           "tandas de horno como máximo.",
-        "Mis dulces no pretenden ser una bomba de azúcar como la mayoría de los que se venden. " +
-          "Son de gusto balanceado, con ingredientes de alta calidad, y reivindican el placer " +
-          "de comer bien. Salen livianos, no demasiado dulces, y eso es a propósito.",
+        "Mis dulces no buscan tener un exceso de azúcar. Tienen un sabor equilibrado, se preparan " +
+          "con ingredientes de alta calidad y celebran el placer de comer bien. Son ligeros, no " +
+          "demasiado dulces, y eso es intencional.",
       ],
     },
     {
@@ -133,11 +133,11 @@ export const about = {
         {
           lead: "Queques:",
           text:
-            "Zanahoria con coco y nueces bajo un frosting de queso crema; limón con jugo " +
+            "Zanahoria con coco y nueces bajo una cobertura de queso crema; limón con jugo " +
             "y ralladura natural; Devil's Food, explosión de chocolate rellena y cubierta de " +
             "brigadeiro; Coffee Cake, de vainilla con nueces, dulce de leche y canela; Chocolate " +
-            "Chip Cookie, crocante por fuera y suave por dentro; vainilla, mi mejor versión de un " +
-            "pound cake; y Banana Bread con bananos naturales y azúcar nevada. Cada uno va en " +
+            "Chip Cookie, crujiente por fuera y suave por dentro; vainilla, mi mejor versión de un " +
+            "bizcocho de mantequilla; y Banana Bread con bananas naturales y azúcar en polvo. Cada uno se ofrece en " +
             "tamaño pequeño, mediano o grande, y varios también en moldes de cupcake de 6, 12 o " +
             "24 porciones.",
         },
@@ -152,9 +152,9 @@ export const about = {
           lead: "Postres:",
           text:
             "Brigadeiros, que son trufas de chocolate cubiertas de hormiguitas: un bocado " +
-            "de amor y felicidad. Pie de brigadeiro con crust de galleta de mantequilla y flecos " +
+            "de amor y felicidad. Pie de brigadeiro con base de galleta de mantequilla y un toque " +
             "de sal marina. Key Lime Pie con merengue italiano. Cheese cake con fresas naturales " +
-            "en láminas. Quesillo cremoso con caramelo. Barra de dátiles, crocante y suave a la " +
+            "en láminas. Quesillo cremoso con caramelo. Barra de dátiles, crujiente y suave a la " +
             "vez. Y mousse de chocolate oscuro, que se hace sólo con chocolate y huevo, así que " +
             "sirve para quien no puede tomar gluten ni lácteos, con una versión endulzada con " +
             "monk fruit sin azúcar añadida.",
@@ -163,8 +163,8 @@ export const about = {
           lead: "Queques personalizados:",
           text:
             "Se hacen por encargo: el precio depende del tamaño, los pisos " +
-            "y la decoración. Mandame una foto de referencia o contame la idea y te digo si se " +
-            "puede hacer y cuánto sale.",
+            "y la decoración. Envíame una foto de referencia o cuéntame la idea y te digo si se " +
+            "puede hacer y cuánto cuesta.",
         },
         "Los precios de cada tamaño, la lista completa de ingredientes y los alérgenos están " +
           "en la ficha de cada producto del catálogo.",
@@ -174,13 +174,14 @@ export const about = {
       id: "presentaciones",
       title: "Presentaciones",
       paragraphs: [
-        "La presentación es parte del producto: honrar el paladar y agradar con la presentación.",
+        "Para mí, la presentación es parte del producto: cada detalle debe resultar tan agradable " +
+          "a la vista como al paladar.",
         "Hay flexibilidad de tamaños y formatos, incluidos los individuales, para que cada " +
           "quien encuentre su bocado. Los cupcakes se acomodan en una caja armados en forma de " +
-          "queque, que resalta la individualidad de las porciones y resulta práctico para un " +
+          "queque, lo que resalta la individualidad de las porciones y resulta práctico para un " +
           "cumpleaños. Los queques van en su caja, con etiqueta, lazo y un mensaje, como si " +
           "fueran un regalo. Las galletas y los polvorones salen en cajas y bolsas según la fecha.",
-        "Los diseños son propios y las presentaciones se pueden personalizar. Si tenés una idea " +
+        "Los diseños son propios y las presentaciones se pueden personalizar. Si tienes una idea " +
           "para una fecha concreta, se puede armar.",
       ],
     },
@@ -191,7 +192,7 @@ export const about = {
         "Cumpleaños, bodas y bautizos, baby showers, regalos y Navidad. También pedidos para " +
           "oficinas: reuniones de equipo, almuerzos y celebraciones, en porciones individuales " +
           "o en cajas para compartir.",
-        "Para las fechas fuertes conviene avisar con tiempo, porque el horno es uno.",
+        "Para las fechas de mayor demanda conviene avisar con tiempo, porque trabajo con un solo horno.",
       ],
     },
     {
@@ -211,7 +212,7 @@ export const about = {
         {
           lead: "Cómo hacer tu pedido:",
           text:
-            "Todo se coordina por WhatsApp. Ahí acordamos qué querés, para cuándo y dónde, y " +
+            "Todo se coordina por WhatsApp. Ahí acordamos qué quieres, para cuándo y dónde, y " +
             "te confirmo todo al momento.",
         },
         { lead: "Tiempo de anticipación:", text: "Todo se hornea por encargo:" },
@@ -223,7 +224,7 @@ export const about = {
         },
         {
           lead: "Retiro en punto de entrega:",
-          text: `Podés retirar tu pedido en ${CONTACT.address}.`,
+          text: `Puedes retirar tu pedido en ${CONTACT.address}.`,
         },
         {
           lead: "Entrega a domicilio:",
@@ -235,7 +236,7 @@ export const about = {
         {
           lead: "Formas de pago:",
           text:
-            "Podés pagar en efectivo o por SINPE. La forma de pago se acuerda al confirmar el " +
+            "Puedes pagar en efectivo o por SINPE. La forma de pago se acuerda al confirmar el " +
             "pedido.",
         },
         {
@@ -252,7 +253,7 @@ export const about = {
     {
       question: "¿Cómo hago un pedido?",
       answer:
-        "Escribime por WhatsApp con lo que querés, la fecha y la zona. Te confirmo si se puede " +
+        "Escríbeme por WhatsApp con lo que quieres, la fecha y la zona. Te confirmo si se puede " +
         "para ese día y cerramos ahí los detalles.",
     },
     {
@@ -264,33 +265,33 @@ export const about = {
     {
       question: "¿Hacen entregas o tengo que ir a buscarlo?",
       answer:
-        `Las dos cosas. Podés retirar en ${CONTACT.address}, o coordinamos la entrega dentro ` +
+        `Las dos cosas. Puedes retirar en ${CONTACT.address}, o coordinamos la entrega dentro ` +
         "del Gran Área Metropolitana. En los sectores cercanos la entrega la hago yo; para el " +
         "resto vamos con mensajería.",
     },
     {
       question: "¿Cómo se paga?",
       // Ya no es un TODO: Ale confirmó los medios reales (efectivo o SINPE).
-      answer: "En efectivo o por SINPE, al confirmar el pedido. No hay pago online en el sitio: " +
-        "el carrito sólo arma el mensaje de WhatsApp con lo que querés.",
+      answer: "En efectivo o por SINPE, al confirmar el pedido. No hay pagos en línea en el sitio: " +
+        "el carrito solo prepara el mensaje de WhatsApp con lo que quieres.",
     },
     {
-      question: "¿Cuánto me dura?",
+      question: "¿Cuánto tiempo se conserva?",
       answer:
-        "Los queques aguantan de cinco a siete días en la nevera. Como no llevan conservantes, " +
+        "Los queques se conservan de cinco a siete días en el refrigerador. Como no llevan conservantes, " +
         "mejor sacarlos un rato antes de servir.",
     },
     {
-      question: "¿Puedo pedir un queque con un diseño concreto?",
+      question: "¿Puedo pedir un queque con un diseño específico?",
       answer:
-        "Sí, el queque personalizado es un producto del catálogo. Mandame una foto de " +
-        "referencia o contame la idea y te digo si se puede y cuánto sale: el precio depende " +
+        "Sí, el queque personalizado es un producto del catálogo. Envíame una foto de " +
+        "referencia o cuéntame la idea y te digo si se puede y cuánto cuesta: el precio depende " +
         "del tamaño, los pisos y la decoración. Necesito una semana.",
     },
     {
       question: "¿Puedo pedir porciones individuales?",
       answer:
-        "Sí. Los queques se hacen también en molde de cupcake, en paquetes de 6, 12 o 24, y " +
+        "Sí. Los queques también se preparan como cupcakes, en paquetes de 6, 12 o 24, y " +
         "varios postres tienen presentación individual. Para una oficina o un evento suele ser " +
         "la opción más práctica.",
     },
@@ -308,20 +309,20 @@ export const about = {
       question: "¿Y sin azúcar?",
       answer:
         "El mousse de chocolate tiene una versión endulzada con monk fruit, sin azúcar añadida. " +
-        "Es la opción para quien no puede tomar azúcar.",
+        "Es una opción para quienes deben evitar el azúcar.",
     },
     {
       question: "¿Puedo avisar de una alergia?",
       answer:
         "Sí, y conviene hacerlo. Cada ficha del catálogo lista sus ingredientes y sus alérgenos. " +
-        "Ojo: todo se hornea en la misma cocina, así que no puedo garantizar que no haya trazas " +
+        "Ten en cuenta que todo se hornea en la misma cocina, así que no puedo garantizar que no haya trazas " +
         "de gluten, huevo, lácteos o frutos secos.",
     },
     {
       question: "¿Hacen pedidos para oficinas y eventos?",
       answer:
         "Sí. Se puede armar el pedido en porciones individuales o en cajas para compartir, y " +
-        "coordinamos la entrega en el lugar. Contame cuántas personas son y para cuándo.",
+        "coordinamos la entrega en el lugar. Cuéntame para cuántas personas es y para cuándo.",
     },
   ] satisfies FaqItem[],
 
@@ -341,7 +342,7 @@ export const about = {
   closing: {
     title: "Escríbeme",
     body:
-      "Cuéntame qué necesitas y para cuándo, y lo cuadramos por WhatsApp. Si quieres ver antes " +
+      "Cuéntame qué necesitas y para cuándo, y lo coordinamos por WhatsApp. Si quieres ver antes " +
       "lo que va saliendo del horno, está todo en",
     emailIntro: "También puedes escribirme a",
     signature: "La felicidad comienza desde el primer bocado.",
@@ -365,13 +366,13 @@ export const legal = {
       id: "datos",
       title: "Qué datos recogemos",
       paragraphs: [
-        "Este sitio no tiene cuentas de usuario ni cobra pagos. Cuando abrís WhatsApp desde " +
+        "Este sitio no tiene cuentas de usuario ni procesa pagos. Cuando abres WhatsApp desde " +
           "el carrito guardamos un intento de pedido con los productos, cantidades y precios " +
           "mostrados en ese momento, además del nombre, la fecha, la zona y las notas que hayas " +
           "escrito. Abrir WhatsApp no significa que el pedido esté enviado ni confirmado.",
         "El carrito se guarda ÚNICAMENTE en tu navegador (en el almacenamiento local del " +
-          "dispositivo) mientras lo preparás. Boquita no puede verlo antes de que pulses " +
-          "«Finalizar por WhatsApp». Si borrás los datos del navegador, el carrito desaparece.",
+          "dispositivo) mientras lo preparas. Boquita no puede verlo antes de que selecciones " +
+          "«Finalizar por WhatsApp». Si borras los datos del navegador, el carrito desaparece.",
         "Los intentos de pedido se almacenan en una base de datos de Neon durante 24 meses " +
           "para dar seguimiento a solicitudes y entender qué productos interesan. El sitio " +
           "elimina los que superan ese plazo al procesar nuevas solicitudes. Para limitar envíos " +
@@ -385,13 +386,13 @@ export const legal = {
       id: "promociones",
       title: "Promociones por correo",
       paragraphs: [
-        "El correo es opcional y sólo se guarda si completás la dirección y marcás la casilla " +
+        "El correo es opcional y solo se guarda si completas la dirección y marcas la casilla " +
           "de consentimiento. Lo relacionamos con tu nombre y tus intentos de pedido para poder " +
           "enviarte en el futuro novedades, productos de temporada y promociones de Boquita.",
         "Aceptar promociones no es necesario para pedir por WhatsApp. Conservamos el correo y " +
-          "el registro del consentimiento hasta que solicités la baja. Todavía no hay envíos " +
+          "el registro del consentimiento hasta que solicites la baja. Todavía no hay envíos " +
           "automatizados ni se comparte la lista con una plataforma de campañas.",
-        `Podés retirar el consentimiento o pedir que eliminemos tus datos escribiendo a ` +
+        `Puedes retirar el consentimiento o pedir que eliminemos tus datos escribiendo a ` +
           `${CONTACT.email}. La baja no afecta a los pedidos que ya hayas coordinado por WhatsApp.`,
       ],
     },
@@ -413,7 +414,7 @@ export const legal = {
           "pedido es el que se confirma por WhatsApp antes de hornear.",
         "Los productos se elaboran por encargo, así que un pedido confirmado no se puede " +
           "cancelar una vez empezada la producción. Si algo no salió como esperabas, " +
-          "escribinos y lo resolvemos.",
+          "escríbenos y lo resolvemos.",
         "El resumen que genera el carrito NO es una factura ni un documento fiscal: es " +
           "sólo un mensaje para pedir.",
       ],
@@ -425,7 +426,7 @@ export const legal = {
         "Cada ficha del catálogo indica los alérgenos que el producto contiene de forma " +
           "intencionada. Todo se elabora en una cocina doméstica donde se manipulan gluten, " +
           "huevo, lácteos y frutos secos, así que no podemos garantizar la ausencia de trazas.",
-        "Si tenés una alergia severa, avisanos antes de pedir.",
+        "Si tienes una alergia grave, avísanos antes de pedir.",
       ],
     },
     {

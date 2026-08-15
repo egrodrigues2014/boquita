@@ -175,7 +175,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
         {lines.length === 0 ? (
           <div className="cart-empty">
-            <p>Todavía no has añadido nada.</p>
+            <p>Todavía no has agregado productos.</p>
             <Link className="btn btn--ghost" href="/tienda" onClick={onClose}>
               Ver el catálogo
             </Link>
@@ -223,7 +223,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                         <button
                           type="button"
                           className="qty-button"
-                          aria-label={`Añadir una unidad de ${line.name} (${line.unit})`}
+                          aria-label={`Agregar una unidad de ${line.name} (${line.unit})`}
                           aria-disabled={line.qty >= MAX_QTY}
                           onClick={() => setQty(line.slug, line.unit, line.qty + 1)}
                         >
@@ -271,7 +271,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                   onChange={(event) => setFields((f) => ({ ...f, name: event.target.value }))}
                 />
 
-                <label htmlFor="cart-date">Fecha en que lo querés</label>
+                <label htmlFor="cart-date">Fecha en que lo quieres</label>
                 <input
                   id="cart-date"
                   className="cart-input"
@@ -308,7 +308,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                 <fieldset className="cart-marketing">
                   <legend>Promociones por correo</legend>
                   <p className="cart-marketing-intro" id="cart-email-hint">
-                    Recibí novedades, productos de temporada y promociones de Boquita.
+                    Recibe novedades, productos de temporada y promociones de Boquita.
                   </p>
 
                   <label htmlFor="cart-email">Correo para recibir promociones (opcional)</label>
@@ -401,10 +401,10 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
               {sent && (
                 <div className={`cart-sent cart-sent--${saveState}`} aria-live="polite">
-                  {saveState === "saving" && <p>Guardando el intento de pedido…</p>}
+                  {saveState === "saving" && <p>Guardando tu solicitud…</p>}
                   {saveState === "saved" && (
                     <>
-                      <p>Pedido guardado. ¿Ya enviaste el mensaje?</p>
+                      <p>Solicitud guardada. ¿Ya enviaste el mensaje?</p>
                       <button type="button" className="btn btn--ghost" onClick={resetCompletedCart}>
                         Sí, vaciar el carrito
                       </button>
@@ -413,7 +413,7 @@ export function CartDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                   {saveState === "error" && (
                     <>
                       <p>
-                        WhatsApp sigue funcionando, pero no pudimos guardar el pedido en el sitio.
+                         WhatsApp sigue funcionando, pero no pudimos guardar la solicitud en el sitio.
                       </p>
                       <button
                         type="button"
