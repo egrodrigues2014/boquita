@@ -35,7 +35,18 @@ export function Hero({ hero }: { hero: HomeContent["hero"] }) {
             {hero.eyebrow}
           </Reveal>
           <Reveal as="h1" className="h1-hero hero-brand" index={1}>
-            {hero.brand}
+            <span className="sr-only">{hero.brand}</span>
+            {/* El wordmark no es una ilustración intercambiable: son los
+                contornos exactos del SVG maestro de la marca. Un <img> plano
+                evita que el optimizador rasterice o reinterprete el vector. */}
+            <img
+              className="hero-brand__art"
+              src="/img/brand/wordmark-boquita-white.svg"
+              width={770}
+              height={340}
+              alt=""
+              aria-hidden="true"
+            />
           </Reveal>
           <Reveal as="p" className="hero-tagline" index={2}>
             {hero.tagline}

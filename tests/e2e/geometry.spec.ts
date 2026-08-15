@@ -88,6 +88,12 @@ test("marca, promesa y CTA permanecen dentro del primer viewport", async ({ page
   await expect(tagline).toHaveText("Pequeños bocados. Grandes momentos.");
   await expect(actions).toHaveCSS("transform", "none");
 
+  const wordmark = heading.locator(".hero-brand__art");
+  await expect(wordmark).toHaveAttribute("src", "/img/brand/wordmark-boquita-white.svg");
+  await expect(wordmark).toHaveAttribute("alt", "");
+  await expect(wordmark).toHaveAttribute("aria-hidden", "true");
+  expect(await style(page, ".hero-brand", "text-transform")).toBe("none");
+
   const hero = await box(page, ".hero");
   const content = await box(page, ".hero-content");
   expect(content.y).toBeGreaterThanOrEqual(hero.y);

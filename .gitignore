@@ -26,6 +26,8 @@ next-env.d.ts
 # con scripts/extract-pdf-images.py; estas no: son fotos del negocio, tomadas una
 # vez, y si se pierden no hay de dónde sacarlas. 6,1 MB bien gastados.
 !/assets/products/
+# El SVG maestro del logo sí se versiona: es la fuente de verdad del wordmark.
+!/assets/logo-boquita.svg
 
 # tests
 /coverage
