@@ -29,10 +29,14 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 | --- | --- |
 | Rama | `main`, en sincronía con `origin` (`https://github.com/egrodrigues2014/boquita.git`). `ui/quick-wins` ya está fusionada y se puede borrar |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
-| Sin commitear | **Ocho bloques a la vez, no commitear el árbol entero.** (0) **Los testimonios encendidos** (este bloque): `content/home.ts` (sólo la clave `testimonials`), `components/sections/Testimonials.tsx`, `styles/17-testimonials.css`, `app/page.tsx` (docstring), `components/ui/Avatar.tsx` (**borrado**), `tests/unit/content.test.ts`, `tests/e2e/geometry.spec.ts`, `tests/e2e/interactions.spec.ts` y los docs. (0b) **La galería de 2 a 6 filas**, en vuelo por otra vía: `types/content.ts`, `content/schema.ts`, `content/home.ts` (claves `gallery`/`GALLERY_*`) y el bucle de filas de `geometry.spec.ts`. Los dos comparten tres ficheros —`content/home.ts`, `geometry.spec.ts` y `content.test.ts`— tocando claves y bloques distintos en cada uno. (1) **El statement, cerrado** (este bloque): `components/sections/Statement.tsx`, `components/ui/ScrollColorText.tsx`, `styles/12-statement.css`, `app/page.tsx` (docstring), `tests/e2e/geometry.spec.ts`, `tests/e2e/interactions.spec.ts` y los docs (`ESTADO`, `DEVIATIONS` con D-35, `HOME_CINEMATIC`). `styles/14-overlap-menu.css` **ya no está tocado**: entró en el commit anterior, y esta fila se había quedado atrás. Comparte `app/page.tsx`, `geometry.spec.ts` e `interactions.spec.ts` con el bloque (0), tocando bloques distintos de cada uno. (2) El drawer móvil: `components/layout/Navbar.tsx`, `styles/10-navbar.css`, `styles/99-a11y.css`. (3) **El catálogo real de Ale**, que es el bloque grande: `types/shop.ts`, `content/products.ts`, `content/home.ts`, `content/shopSchema.ts`, `content/pages.ts`, `lib/variants.ts`, `lib/cart.ts`, `lib/shopSearch.ts`, `lib/productImage.ts`, `lib/db/*`, `components/cart/ProductPurchase.tsx` (nuevo, sustituye a `AddToCartButton.tsx`), `components/cart/CartDrawer.tsx`, `components/shop/ProductCard.tsx` (nuevo, la tarjeta del catálogo rediseñada — D-33), `app/tienda/**`, `app/layout.tsx`, `app/not-found.tsx`, `app/opengraph-image.tsx`, `styles/05-components.css` (`.btn--sm`), `styles/30-cart.css`, `scripts/build-images.mjs`, `scripts/seed-catalog.ts`, `drizzle/0001_*`, `assets/products/` (24 fotos), `data/`, `public/img/producto/` y los tests. (4) **Los derivados del logo, rehechos**: `scripts/build-images.mjs`, `components/layout/Footer.tsx` (una línea de `srcSet`), `tests/unit/logo.test.ts` (nuevo), los 8 PNG de `public/img/brand/` regenerados, `public/img/brand/logo-light-216x216.png` (nuevo) y `app/icon.png`. No comparte fichero con ningún otro bloque salvo `scripts/build-images.mjs`, que el bloque (3) toca en los *jobs* de producto y este sólo en las funciones del logo. (5) **«Sobre Nosotros»: enlace del nav, texto real de Ale, medida completa, ritmo único de 64px y la raya del titular a todo el carril** (este bloque): `content/home.ts` (sólo las claves `nav` y `footer.links`, y el `mediaText`/`metrics` de la fecha), `content/pages.ts` (la clave `about` entera), `lib/contact.ts` (`email`), `app/sobre-nosotros/page.tsx`, `styles/40-prose.css`, `tests/unit/pages.test.ts` (nuevo), `tests/unit/icons.test.ts` (nuevo), `tests/unit/content.test.ts`, `tests/e2e/geometry.spec.ts`, `tests/e2e/interactions.spec.ts`, `tests/e2e/paginas.spec.ts`, `public/icons/list-bullet.svg` y `public/icons/quote-icon.svg` (los dos, mal formados desde siempre), `CLAUDE.md` (§Idioma, la excepción del tuteo) y los docs. Comparte `content/pages.ts`, `app/sobre-nosotros/page.tsx`, `styles/40-prose.css` y los tres specs con el bloque del carrusel, que entró en la misma página mientras este estaba en vuelo: el carrusel sustituyó la foto del obrador y `geometry.spec.ts` pasó a medir el texto contra el contenedor. Comparte `content/home.ts` con (0) y (0b), y los tres ficheros de tests con (0) y (1), tocando claves y bloques distintos en cada uno. (6) **El titular del statement alineado con los demás `h2`** (este bloque): `styles/12-statement.css` (sólo la regla del `__fill` del titular y su comentario), `styles/01-tokens.css` (sólo el comentario de `--text-ghost`), `tests/unit/contrast.test.ts` y los docs (`ESTADO`, `DEVIATIONS` con D-26 reescrito, `README`). Comparte `styles/12-statement.css` con el bloque (1), tocando reglas distintas: (1) es geometría y entrada, este es sólo color. No comparte ningún otro fichero. Verificar con `git status --short` |
+| Sin commitear | **Ninguno al cerrar esta serie.** Wordmark, navegación móvil, sinónimos de búsqueda, tuteo editorial y ajuste del pie quedan separados en cinco commits. Los únicos ficheros locales ignorados son dependencias, entorno y originales de trabajo; verificar con `git status --short --ignored`. |
 | Bloque Aviso Legal | `app/aviso-legal/page.tsx`, la clase compartida añadida a `app/sobre-nosotros/page.tsx`, `styles/40-prose.css`, el test nuevo al final de `tests/e2e/geometry.spec.ts` y D-37. Comparte tres ficheros con el bloque de “Sobre Nosotros”; el copy de privacidad sí se amplió al activar pedidos y consentimiento en Neon (`content/pages.ts`). |
 | Bloque clientes y pedidos | `app/api/orders/route.ts`, `components/cart/CartDrawer.tsx`, `lib/orderSubmission.ts`, `lib/db/orderSubmissions.ts`, las cuatro tablas de `lib/db/schema.ts`, migraciones `0002_nervous_sprite.sql` y `0003_curvy_cerise.sql`, `scripts/customer-privacy.ts`, `styles/30-cart.css` y pruebas. Las migraciones aditivas se aplicaron a Neon el 14 ago. Escritura, limpieza e idempotencia reales verificadas: `write-ok`, `cleanup-ok`, `rate-cleanup-ok`, `idempotency-ok` e `idempotency-cleanup-ok`. |
-| Tests unitarios | **319 en verde**, 16 ficheros (`npm test`, medido el 14 ago). `npm run lint` y `npm run typecheck` limpios; el build aislado `.next-order-capture` compila e incluye `/api/orders`. |
+| Bloque sidebar móvil | `app/fonts.ts`, la clase de fuente en `app/layout.tsx`, `components/layout/Navbar.tsx`, `styles/01-tokens.css`, `styles/10-navbar.css`, `styles/99-a11y.css`, `playwright.config.ts`, pruebas de geometría/interacción/captura y D-28/D-29. No cambia `content/home.ts`, tipos ni destinos. Comparte navbar, tokens y specs con el bloque (2), al que actualiza visualmente sin deshacer la cabecera de una fila. |
+| Tests unitarios | **330 en verde**, 17 ficheros (`npm test`, medido el 15 ago). `npm run lint` y `npm run typecheck` limpios; el build aislado `.next-commit-check` compila las 37 páginas e incluye `/api/orders`. |
+| Tests e2e (15 ago, cierre del árbol) | Suite completa contra `.next-commit-check`: **1.238 en verde + 112 skipped + 10 en rojo** de 1.360 en 23,9 min. Nueve rojos coinciden con la línea base documentada: `paginas.spec.ts:271` ×8 y `seo-perf.spec.ts:152` ×1. El décimo era un falso negativo nuevo del test de foco a w390: el caso mezclaba un `click({ force:true })` con `hasTouch`, donde un tap no conserva foco por diseño; se separó la cobertura de puntero (el test anterior) de la de teclado (`Enter`) y se espera la hidratación. Resultado final: caso repetido **8/8** y `tienda.spec.ts` completo **396 en verde + 44 skipped, cero rojos** a los ocho anchos (6,7 min). |
+| Tests sidebar móvil (14 ago) | Build aislado `.next-sidebar-nav` compilado. Selección final de `geometry + interactions + a11y`: **40 en verde** a 991/767/479/390; incluye axe con drawer abierto, tamaño/scroll hasta el último enlace, foco, Escape, scrim, iconos, chevron y movimiento reducido. Captura `drawer-navegacion-390.png` generada y revisada a ojo. `npm test`: **330 en verde**; lint y typecheck limpios. El primer intento reutilizó un servidor anterior en 3100: `PLAYWRIGHT_PORT=3101` evita ese falso negativo y queda soportado en `playwright.config.ts`. |
+| Tests e2e (14 ago, el buscador entiende «torta») | Contra `NEXT_DIST_DIR=.next-verify` y build nuevo, la **suite entera**: **1.199 en verde + 100 skipped + 13 en rojo** de 1.312 a los 8 anchos (23,7 min). **Ninguno de los 13 es de este bloque**, y los tres grupos ya estaban documentados: `a11y.spec.ts:156` ×4 (la violación de modo estricto de `.nav-search-input`, **reproducida y confirmada** —`locator('.nav-search-input') resolved to 2 elements`— porque `Navbar.tsx` monta el buscador dos veces; el bloque del drawer), `paginas.spec.ts:271` ×8 (los `.prose-block` del aviso legal) y `seo-perf.spec.ts:152` ×1 a w1920 (peso de imágenes). `tienda.spec.ts` aparte, a los 8 anchos: **396 en verde + 44 skipped, cero rojos** (7,6 min). Los **tres tests nuevos siguen verdes** a w1440; la categoría y los productos se muestran como «Queques» y «Queque de zanahoria» |
 | Tests e2e (14 ago, titular del statement) | Contra `NEXT_DIST_DIR=.next-verify` y build nuevo, la **suite entera** en dos tandas: **1.098 en verde + 88 skipped + 14 en rojo** (8,5 min + 9,5 min). **Ninguno de los 14 es del statement**, y los cuatro están diagnosticados. (1) `a11y.spec.ts:156` ×4 (w1920/1440/1280/1100), **determinista**: violación de modo estricto — `.nav-search-input` resuelve a **2 elementos** porque `Navbar.tsx` monta `ProductSearchAutocomplete` dos veces, en `:280` (barra de escritorio) y `:304` (drawer). Es del bloque (2) sin commitear; el test necesita desambiguar el localizador, o el navbar no debería montar los dos a la vez. (2) `paginas.spec.ts:284` ×8, **determinista**: `/aviso-legal` renderiza **7** `.prose-block` y el test espera **6** — del bloque «Aviso Legal». (3) `seo-perf.spec.ts:182` ×1 (w1920): **2398 KB** en la primera vista contra un presupuesto de 2000, y **1909 KB son imágenes** (link 240, script 138, css 89) — del bloque del catálogo, no del CSS. (4) `lightbox.spec.ts:36` ×1 (w1920): **flake bajo carga**, pasa **3/3** aislado con `--repeat-each=3`. Comprobado además en navegador a w1440: el titular del statement y el del catálogo computan **idénticos** en color (`rgb(176, 114, 8)`), familia (Cormorant Infant), peso (400) y tamaño (50px) |
 | Tests e2e (14 ago, clientes y pedidos) | Contra `.next-order-capture`: **48 escenarios** del checkout a 8 anchos; 40 pasaron en la primera corrida y los 8 del consentimiento pasaron tras acotar un selector de test que también encontraba el anunciador de rutas de Next. Auditoría axe del carrito: **8 en verde** y pasada final móvil: **7 en verde**. Persistencia real incluida idempotencia, sin restos temporales, detallada en la fila del bloque. |
 | Tests e2e (14 ago, ritmo vertical de Home) | Contra build nuevo en `.next-home-spacing`: el test nuevo compara las **6 transiciones reales** entre contenidos y pasa a los **8 anchos**; `geometry.spec.ts` completo da **200 en verde + 8 skipped, cero rojos** en 4,2 min. Tras mover el último hueco al fondo blanco, el test específico volvió a pasar **8 de 8** y se regeneraron/revisaron las capturas finales a 1920 y 390px. |
@@ -46,7 +50,7 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 | Tests e2e (13 ago, `geometry paginas interactions`) | Repasada tras ensanchar el texto de «Sobre Nosotros», sobre build nuevo: **455 en verde + 40 skipped + 1 en rojo** (9,9 min). El test nuevo, «en sobre nosotros el texto mide lo mismo que la foto», pasa **a los 8 anchos**. El único rojo es `geometry.spec.ts:341` a w390 (`.footer-social` esperaba 0 y encontró 1) y **es del bloque del pie, que se estaba editando en paralelo en este mismo árbol**: el fichero de tests ya exige el pie nuevo —sin `social`, con `contacts`— mientras el build servido traía el viejo. Falló sólo en w390 porque ese worker cargó la versión nueva del spec a mitad de pasada. Se vuelve a medir al cerrar el bloque del pie |
 | Tests e2e (12 ago, previo) | **Suite completa medida el 12 ago tras el rediseño de la tarjeta**, contra `NEXT_DIST_DIR=.next-verify` y build nuevo: **1.003 en verde + 64 skipped + 5 en rojo** de 1.072 casos (15,1 min). Los 5 rojos son de **otros dos bloques en vuelo, ninguno de la tarjeta**: (1) cuatro son `geometry.spec.ts:36` (statement) a 991, 767, 479 y 390 — el titular queda por encima del fondo de la foto, no por debajo; (2) el quinto es `seo-perf.spec.ts:151` a 1920, «la primera carga pesa menos de 1.2 MB»: mide **1.294 KB, de los que 831 KB son imágenes de la portada**. La causa es que la galería de la portada pasó a servir fotos de `/img/producto/` (ver el diff de `tests/e2e/seo-perf.spec.ts` y `components/sections/Gallery.tsx`). **No es atribuible a la tarjeta**: la portada no renderiza `ProductCard`, y el bundle de CSS entero mide 45 KB en disco contra los 94 KB de exceso. Los tests de la tarjeta se volvieron a correr aislados: **57 en verde + 7 skipped** (los skips son los ≤479 con `hasTouch` y los de una columna). Verificar con `NEXT_DIST_DIR=.next-verify npm run e2e -- --reporter=line`; ojo con encauzar la salida a `tail` o a `Select-Object -Last`, que se traga el principio del resumen |
 | ⚠ Intermitentes | Dos, **anteriores a este bloque**, y son los 2 rojos de la fila de arriba. (1) `paginas.spec.ts:51` (el ancla `#entregas` de sobre-nosotros no queda tapada por el navbar). Medido con una sonda: cuando falla, `scroll-margin-top: 131px` **no se aplica** y el titular queda a 12px del borde en vez de a 131px, con `scrollY` 1861 de un máximo de 3481 — así que no es que la página se quede corta para desplazarse. Es una carrera entre el desplazamiento al fragmento y el que hace el router; es un bug real de navegación, no del test. **Corrección del 13 ago sobre lo que decía esta fila:** no falla «~6 de 24 a anchos distintos», falla **mucho más suelto que en la suite** — dentro de la suite entera cayó 1 de 8 (w1280), y aislado 7 de 8. Encaja con la carrera: sin contención, el desplazamiento del router gana más veces. **Medición del 14 ago, con sonda propia:** cayó en **conjuntos de anchos distintos en dos pasadas seguidas** —{1280, 1100, 767} en la suite de tres ficheros y {1920, 1440, 1280, 1100} aislado—, o sea que **no es determinista**, que es lo que descarta que lo cause un cambio de contenido (ese día «Pedidos y entregas» cambió de forma dos veces y la longitud de la página con ella). Y sobra recorrido: a 1920, `scrollY` 3.479 de un máximo de 5.771 con el titular en el offset 3.510. Cuando falla, el titular queda a **31px** del canto con `scroll-margin-top: 131px` computado — el mismo síntoma de siempre, con el número de hoy. **A/B medido, no deducido**, para descartar que lo cause el statement: se guardaron en `stash` los cuatro ficheros del bloque (`Statement.tsx`, `ScrollColorText.tsx`, `12-statement.css`, `app/page.tsx`), se reconstruyó y el test **sigue cayendo 5 de 8** — misma banda de ruido, y `/sobre-nosotros` no renderiza el statement. (2) `tienda.spec.ts:532` (el control `aria-disabled` conserva el foco) falla suelto bajo carga y pasa **4 de 4** al repetirlo aislado. **Pista nueva del 13 ago:** el test hermano de los testimonios daba exactamente el mismo síntoma, y la causa medida era el `click({ force: true })` — `force` desactiva la comprobación de blanco, así que bajo un desplazamiento de layout el clic aterriza en otro elemento y navega fuera de la página. Cambiarlo por `dispatchEvent("click")` lo dejó en 40 de 40 tres veces seguidas. `tienda.spec.ts:670` usa el mismo `force`; **no se ha tocado**, pero es el primer sitio donde mirar |
-| ⚠ Sin cobertura | Seis cosas. (0b) **Las capturas de `screenshots.spec.ts` pueden salir con media página en blanco.** `page.screenshot({fullPage:true})` no dispara el `IntersectionObserver` de los `Reveal` que están fuera del viewport, así que lo que se ve depende de si la captura llega después del failsafe de 2.500ms que añade `.reveal-all` (`app/layout.tsx`). Medido el 14 ago: en `sobre-nosotros-1920.png` salió todo y en `sobre-nosotros-390.png` **el contenido se corta en y=5.384** de 11.097 — la mitad inferior en blanco. No es un fallo del sitio (con scroll real, y a los 2,5s pase lo que pase, el contenido se revela), pero **invalida la revisión visual de las capturas altas**: para mirar una sección de la mitad de abajo hay que capturarla con `scrollIntoViewIfNeeded` + esperar `is-in`. Se arregla en el propio spec forzando `.reveal-all` antes de disparar. (0) **El color de los dos iconos SVG.** `list-bullet.svg` y `quote-icon.svg` llevan `#b07208` **quemado dentro del fichero**: no siguen a `--gold-line`/`--gold-display`, así que donde el token se invierta (`.footer-dark`) el icono seguiría siendo el oscuro. El acoplamiento existía desde siempre y daba igual porque **ninguno de los dos se pintaba** (ver el bloque de `/sobre-nosotros`); desde el 14 ago el bullet sí se ve, así que ahora importa. `tests/unit/icons.test.ts` ya lee esos ficheros y `contrast.test.ts` ya parsea `01-tokens.css`: comparar el `fill` con el token son seis líneas. (1) El statement bajo `prefers-reduced-motion`: el test existe y **pasa** (`interactions.spec.ts`, «la frase editorial queda revelada sin animación»), pero sólo mira la **primera** palabra a `--reveal: 100%`, no las 36, y no comprueba el camino **sin JS** (donde `--reveal` vale 100% por defecto y es `.js` quien lo baja a 0%). Comprobado a mano el 7 ago; el hueco que queda es el de las 35 palabras restantes y el de no-JS. Tampoco vigila nadie que el recorte óptico decaiga bien si la webfont no llega y entra el fallback de `adjustFontFallback`. **Y con el relleno del párrafo (punto 4) hay dos huecos nuevos:** el camino **sin JS** —comprobado a mano el 13 ago a 1440 (26px, 4 líneas, línea base a ras, hueco de 66px), pero ningún test lo corre con JavaScript desactivado— y el comportamiento **cuando saltan los topes** de interlineado (1,15-2,8em): hoy el test sólo afirma que `data-fit` **no** existe con el copy actual, así que nadie comprueba que el tope haga lo correcto si Ale escribe 40 o 280 caracteres. La forma barata de cubrirlo sería un test que reemplace el copy por los dos extremos y afirme el `data-fit`. (2) El **aspecto** del realce del drawer: el test mide caja, sangrías, alto y navegación, pero nadie comprueba el color del fondo, la barra de 3px ni el `transform` del `.nav-label`, ni que decaigan bajo `prefers-reduced-motion`. (3) El **aspecto** del selector de presentación: los e2e comprueban que cambia el precio, que hay 3 opciones y que con una sola no se dibuja, pero nadie mira el realce de `:has(input:checked)` ni los 44px de alto de la fila. (4) **El anillo de foco del buscador se ha quedado sin comprobar.** `a11y.spec.ts:156` es el único test que lo afirma —axe no lo detecta: un `outline:0` deja el elemento perfectamente accesible en el árbol, sólo invisible con teclado— y desde el bloque del drawer **no llega a ejecutarse**: `.nav-search-input` resuelve a 2 elementos (`Navbar.tsx:280` y `:304` montan `ProductSearchAutocomplete` dos veces) y Playwright aborta por modo estricto antes de mirar el anillo. O sea que `.nav-search:has(:focus-visible)` (`10-navbar.css:201`) lleva sin vigilancia desde entonces. Al cerrar el bloque del drawer: desambiguar el localizador y comprobar que el segundo buscador no duplica un combobox en el árbol de accesibilidad |
+| ⚠ Sin cobertura | Cinco y media. (0b) **Las capturas de `screenshots.spec.ts` pueden salir con media página en blanco.** `page.screenshot({fullPage:true})` no dispara el `IntersectionObserver` de los `Reveal` que están fuera del viewport, así que lo que se ve depende de si la captura llega después del failsafe de 2.500ms que añade `.reveal-all` (`app/layout.tsx`). Medido el 14 ago: en `sobre-nosotros-1920.png` salió todo y en `sobre-nosotros-390.png` **el contenido se corta en y=5.384** de 11.097 — la mitad inferior en blanco. No es un fallo del sitio (con scroll real, y a los 2,5s pase lo que pase, el contenido se revela), pero **invalida la revisión visual de las capturas altas**: para mirar una sección de la mitad de abajo hay que capturarla con `scrollIntoViewIfNeeded` + esperar `is-in`. Se arregla en el propio spec forzando `.reveal-all` antes de disparar. (0) **El color de los dos iconos SVG.** `list-bullet.svg` y `quote-icon.svg` llevan `#b07208` **quemado dentro del fichero**: no siguen a `--gold-line`/`--gold-display`, así que donde el token se invierta (`.footer-dark`) el icono seguiría siendo el oscuro. El acoplamiento existía desde siempre y daba igual porque **ninguno de los dos se pintaba** (ver el bloque de `/sobre-nosotros`); desde el 14 ago el bullet sí se ve, así que ahora importa. `tests/unit/icons.test.ts` ya lee esos ficheros y `contrast.test.ts` ya parsea `01-tokens.css`: comparar el `fill` con el token son seis líneas. (1) El statement bajo `prefers-reduced-motion`: el test existe y **pasa** (`interactions.spec.ts`, «la frase editorial queda revelada sin animación»), pero sólo mira la **primera** palabra a `--reveal: 100%`, no las 36, y no comprueba el camino **sin JS** (donde `--reveal` vale 100% por defecto y es `.js` quien lo baja a 0%). Comprobado a mano el 7 ago; el hueco que queda es el de las 35 palabras restantes y el de no-JS. Tampoco vigila nadie que el recorte óptico decaiga bien si la webfont no llega y entra el fallback de `adjustFontFallback`. **Y con el relleno del párrafo (punto 4) hay dos huecos nuevos:** el camino **sin JS** —comprobado a mano el 13 ago a 1440 (26px, 4 líneas, línea base a ras, hueco de 66px), pero ningún test lo corre con JavaScript desactivado— y el comportamiento **cuando saltan los topes** de interlineado (1,15-2,8em): hoy el test sólo afirma que `data-fit` **no** existe con el copy actual, así que nadie comprueba que el tope haga lo correcto si Ale escribe 40 o 280 caracteres. La forma barata de cubrirlo sería un test que reemplace el copy por los dos extremos y afirme el `data-fit`. (2) El **aspecto** del realce del drawer: el test mide caja, sangrías, alto y navegación, pero nadie comprueba el color del fondo, la barra de 3px ni el `transform` del `.nav-label`, ni que decaigan bajo `prefers-reduced-motion`. (3) El **aspecto** del selector de presentación: los e2e comprueban que cambia el precio, que hay 3 opciones y que con una sola no se dibuja, pero nadie mira el realce de `:has(input:checked)` ni los 44px de alto de la fila. (4) ~~**El anillo de foco del buscador se ha quedado sin comprobar.**~~ **Cerrado el 14 ago** con la cabecera de una sola fila: `Navbar.tsx` monta un único `ProductSearchAutocomplete`, `.nav-search-input` vuelve a resolver a un elemento y `a11y.spec.ts:156` —que llevaba sin ejecutarse desde el bloque del drawer, abortado por modo estricto antes de mirar nada— pasa **a los 8 anchos**, también por debajo de 992, donde antes se saltaba con un motivo que ya era falso. Así que `.nav-search:has(:focus-visible)` (`10-navbar.css`) vuelve a estar vigilado, y «el header monta un unico buscador» (`geometry.spec.ts`) impide que el duplicado vuelva. Queda un resto del apunte original: **nadie comprueba el árbol de accesibilidad del combobox** (`aria-expanded`/`aria-controls` del `.nav-search-control` contra la lista de sugerencias) |
 | Desplegado | **no.** Nunca se ha desplegado. No hay proyecto de Vercel creado |
 | Base de datos | Neon Postgres migrada y sembrada con el catálogo real: **23 filas en `products` y 60 en `product_variants`**. El 14 ago se aplicaron `0002_nervous_sprite.sql` (cuatro tablas del checkout) y `0003_curvy_cerise.sql` (índices); escrituras y limpiezas reales verificadas con UUID temporales |
 | Lanzable | **no**: faltan testimonios reales, métrica defendible, panorámica original y dominio/hosting. Los precios ya **no** bloquean. Ver [🔴](#-bloquea-el-lanzamiento) |
@@ -81,9 +85,12 @@ y el pipeline de imágenes.
   `tests/unit/logo.test.ts` (32 casos: tamaño, crema, disco y esquina de cada variante).
   El pie gana un escalón `logo-light-216x216.png` para el 3x de los móviles densos.
 - `/dev/tokens` es la página de especímenes (`force-static`, `noindex`).
-- `--header-h` (101px, 115px a ≥1280) es la altura de la cabecera. La navbar es `position: fixed` y
-  no ocupa sitio en el flujo, así que todo lo que empiece por debajo de ella depende de este token.
-  Si cambia el tamaño del logo en `10-navbar.css`, cambia aquí.
+- `--header-h` (101px, 115px a ≥1280, **71px a ≤991**) es la altura de la cabecera. La navbar es
+  `position: fixed` y no ocupa sitio en el flujo, así que todo lo que empiece por debajo de ella
+  depende de este token. Los tres valores son 12px de padding + la fila + 1px de borde, y la fila la
+  marca el logo **más los 2+2 que 03-base.css da a todo `a`**: 12+76+12+1=101, 12+90+12+1=115,
+  12+46+12+1=71. Si cambia el tamaño del logo en `10-navbar.css`, cambia aquí; lo verifica
+  `geometry.spec.ts` comparando el token con la caja real.
 - `--text-ghost` es el estado «aún no revelado» del `ScrollColorText`.
 
 Verificado por `tests/unit/contrast.test.ts` (33), `tests/unit/format.test.ts` (8) y
@@ -130,17 +137,31 @@ Las 9 secciones del spec §6 en orden fijo, en `app/page.tsx`.
   sumaba **170 + 112 = 282px**. Lo fija
   `geometry.spec.ts` midiendo seis pares de cajas reales a los ocho anchos. Desvío D-38.
 - Nav con patrón *disclosure* (no `role="menu"`), 3 dropdowns + 1 enlace, `Catálogo` como enlace real
-  a `/tienda`, búsqueda GET a `/tienda?q=...`, carrito estable y CTA de WhatsApp. A ≤991 mantiene
-  drawer de 320px con focus trap y scroll lock.
-- **Las opciones del drawer son filas pulsables enteras, a sangre** (`styles/10-navbar.css`, bloque de
-  ≤991). Fila de 320px con el texto a **16px** del canto en el primer nivel; fila de 304px sangrada con
-  el texto a **34px** en el subítem; ≥44px de alto los dos, por `min-height` y no por la suma de línea y
-  padding. La jerarquía la llevan la tipografía (18px/600 vs 16px/500) y la sangría de la propia barra,
-  no el espacio en blanco. Hover y `:focus-visible` añaden fondo `--primary-light`, tinta `--gold-ink` y
-  una barra de 3px `--gold-line`, con el texto desplazado por `transform` sobre un `.nav-label`. Desvíos
-  D-27, D-28 y D-29. Medido a los 8 anchos por `interactions.spec.ts`. El ✕ de cerrar va en el mismo
-  carril de 16px por el otro lado: las filas van a sangre y el `space-between` del `.close-button-wrap`
-  lo empujaba hasta pegarlo al canto del panel.
+  a `/tienda`, búsqueda GET a `/tienda?q=...`, carrito estable y CTA de WhatsApp. A ≤991 mantiene un
+  único drawer de `min(325px,100vw)` con focus trap y scroll lock.
+- **La cabecera móvil va en una sola fila** (14 ago): logo, buscador, cesta y hamburguesa alineados a
+  46px de alto, con los **tres huecos iguales** —12px, 8 a ≤479—. El logo baja de 72 a **42px** (46
+  con el padding del `a`) y `--header-h` de **155 a 71px**: 84px devueltos a la primera pantalla del
+  teléfono. Los huecos iguales salen de un único `gap` repetido en `.nav-container` y
+  `.navbar-actions`, y de sacar `.nav-menu-wrapper` de flujo con `position:absolute` — con
+  `width:0` seguía siendo ítem flex y **generaba su hueco a los dos lados**, así que el primer tramo
+  salía doble. `display:none` no vale ahí: dentro cuelga el drawer, y un `position:fixed` en un
+  subárbol oculto no se renderiza. Desvío D-40, medido por `geometry.spec.ts` a los cuatro anchos
+  móviles.
+- **Un solo `ProductSearchAutocomplete` para todos los anchos.** El navbar montaba dos —escritorio y
+  segunda fila móvil—, con una copia siempre en `display:none`. Eso duplicaba `.nav-search-input` en
+  el DOM y hacía que Playwright abortara por modo estricto: es la causa de los **4 rojos** que
+  arrastraba `a11y.spec.ts:156`, que ahora pasa a los 8 anchos. Lo vigila «el header monta un unico
+  buscador» en `geometry.spec.ts`.
+- **El drawer móvil adopta el starter kit con identidad Boquita** (`Navbar.tsx` y
+  `styles/10-navbar.css`): fondo chocolate, Poppins 600/500 autohospedada, cuatro iconos principales de
+  32px, 18 secundarios de 20px y chevron sólo en Ocasiones. El panel lleva 32/24px de padding; filas de
+  48px y subfilas táctiles de ≥44px, ambas con la etiqueta a **64px del borde del ítem**. Hover, foco y
+  pulsación usan superficies translúcidas y barra dorada sin mover el texto. El cierre mide 48×48px y
+  `prefers-reduced-motion` elimina entrada lateral, fundido y giro. Se conservan los 22 destinos y la
+  conducta de los grupos; Catálogo y Sobre nosotros anuncian `aria-expanded="true"` porque sus ramas
+  ya eran persistentemente visibles en móvil. Desvíos D-28/D-29; `geometry`, `interactions` y axe pasan
+  a 991/767/479/390.
 - **Tres bugs del drawer corregidos por el camino**, los tres silenciosos:
   1. `.nav-menu` no anulaba el `align-items: center` de la base al girar a columna en ≤991, así que
      `.nav-overlay-mobile` se dimensionaba al contenido y **quedaba centrado** en el panel: las filas
@@ -150,7 +171,7 @@ Las 9 secciones del spec §6 en orden fijo, en `app/page.tsx`.
      horizontal dentro del panel.
   3. `99-a11y.css` forzaba `transition: color 0.3s` sobre `.nav-dropdown-link` justificándolo por un
      `margin-left` que ya no existe: recortaba el fundido del fondo y dejaba el del texto.
-  El ancho del panel **no** cambia: sigue en 320px, que es lo que afirma `interactions.spec.ts`.
+  El ancho final es el del kit (325px), acotado al viewport; `interactions.spec.ts` afirma ambos casos.
 - **El statement reparte el texto en la altura de la foto, y las dos columnas suben juntas**
   (`components/sections/Statement.tsx`, `components/ui/ScrollColorText.tsx`,
   `styles/12-statement.css`). Tres cosas, las tres pedidas por el cliente sobre capturas:
@@ -294,7 +315,7 @@ Lo que el modelo anterior no sabía representar, y ahora sí:
 - El titular es **«Catálogo de productos»**, y con él el enlace de vuelta de la ficha.
 
 Verificado por `tests/unit/variants.test.ts` (13), `shop.test.ts` (41), `catalog.test.ts` (22),
-`shopSearch.test.ts` (7) y `whatsapp.test.ts` (29), más los e2e de `tienda.spec.ts` — que ahora
+`shopSearch.test.ts` (22, ampliado con los sinónimos del buscador) y `whatsapp.test.ts` (29), más los e2e de `tienda.spec.ts` — que ahora
 incluyen que el selector cambia el precio, que dos presentaciones del mismo producto son dos líneas
 del carrito, que volver a añadir la misma suma en la que ya existe, que las tarjetas de una fila
 alinean descripción, etiquetas y fila de precio, que la fila de precio es el suelo de las 23, que el
@@ -403,6 +424,47 @@ probablemente misma causa. **No se ha tocado**: es de otro bloque y hay que medi
 Verificado por `tests/unit/whatsapp.test.ts` (18), `tests/unit/shop.test.ts` (17) y
 `tests/e2e/tienda.spec.ts` (37 casos por ancho).
 
+### El buscador entiende «torta»
+
+Quien busca escribe la palabra de su casa, no la del catálogo. **«torta» no aparece en ningún nombre,
+ingrediente ni etiqueta**, así que hasta ahora el desplegable salía vacío y `?q=torta` mostraba el
+estado sin resultados sobre los trece productos de `queques`. Es una venta perdida por vocabulario, no por catálogo.
+
+- **`SINONIMOS_CATEGORIA` y `SINONIMOS_SUBCATEGORIA`** (`types/shop.ts`, junto a los diccionarios que
+  amplían) son `Record<Categoria, string[]>`: una categoría nueva **no compila** hasta decidir sus
+  sinónimos, aunque la decisión sea `[]`. Son **sólo búsqueda** — no crean chips en `/tienda`, ni
+  entradas de nav, ni tocan el `pgEnum` de `lib/db/schema.ts`, así que **no piden migración**.
+- `cake` queda **fuera a propósito**: «Coffee cake» va en `queques` y «Cheesecake» en `dulces`, así que la
+  palabra no decide categoría. Como texto libre ya encuentra a los dos por nombre.
+- **Los sinónimos entran por los dos lados a la vez** (`lib/shopSearch.ts`): las sugerencias del
+  desplegable y el blob `searchable` del filtro de servidor tiran del mismo `searchTerms()`. Si sólo
+  se hubiera tocado el desplegable, `?q=torta` —el enlace que alguien pega en WhatsApp— seguiría
+  dando cero mientras el combobox promete la categoría.
+- **Enter y la lupa desembocan en un único `onSubmit`** (`components/shop/ProductSearchAutocomplete.tsx`).
+  Manda la sugerencia marcada con las flechas; si no hay ninguna, `resolveShopSearchTarget()` mira si
+  lo escrito **es** un término de la taxonomía y devuelve su filtro; y si tampoco, se deja pasar el
+  submit nativo a `/tienda?q=`. Desaparece `chooseActive()` y la rama de `Enter` del `onKeyDown`.
+- **La coincidencia de `resolveShopSearchTarget` es exacta, no subcadena, y ahí está toda la gracia:**
+  `torta` abre `?categoria=queques`, pero `tort` y `brigadeiros` siguen siendo búsqueda de texto. Con
+  subcadena, teclear una «c» a medio escribir un nombre secuestraría la búsqueda hacia Cupcakes.
+  No mira productos ni alérgenos: un producto ya resuelve a `?q=`, y nadie escribe «huevo» esperando
+  que le escondan lo que lleva huevo.
+- El `<form action="/tienda" method="get">` del spec **se conserva intacto**: sin JavaScript el
+  buscador sigue siendo un GET normal. No hay desvío que anotar en `DEVIATIONS`.
+
+Verificado por `tests/unit/shopSearch.test.ts` (**22**, incluida la regresión de que «queque» —que
+casa a la vez con la etiqueta y con el sinónimo— **no duplica la opción**, que daría dos `key` de
+React y dos `id` de `aria-activedescendant` iguales) y por **tres e2e nuevos** en `tienda.spec.ts`:
+que «torta» sugiere la categoría y Enter deja la misma vista que pulsar su chip (13 tarjetas,
+`aria-current` y el `h1` con la etiqueta), que ArrowDown + Enter hace lo mismo —**el camino de teclado del
+autocompletado no tenía ninguna cobertura**— y que `tort` sigue yendo a `?q=tort`.
+
+⚠ **Los tres e2e localizan la opción y el chip por su `href`, no por su texto**, y los unitarios leen
+la etiqueta de `CATEGORIAS`. Es a propósito: la categoría visible se mantiene como «Queques» y este
+bloque en vuelo, y una prueba que afirme la copia se rompe en el siguiente cambio de nombre sin que
+nada del comportamiento haya cambiado. Por eso `queque` y `queques` figuran **explícitos** en los
+sinónimos: dejaron de estar cubiertos por la etiqueta el día del renombrado.
+
 ### Páginas de texto y límites de error
 
 - `/sobre-nosotros` — **el texto real de Ale** (13 ago), tomado de `docs/boquita-sobre-nosotros.md`:
@@ -487,12 +549,11 @@ Verificado por `tests/unit/whatsapp.test.ts` (18), `tests/unit/shop.test.ts` (17
     fichero completo y etiquetas cuadradas) y una aserción nueva del e2e que **decodifica** el SVG en
     el navegador: el `background-image` computado no demuestra nada, con la URL rota vale igual, y por
     eso el test de la lista pasó en verde con las viñetas invisibles.
-  - **El bloque de cierre va en tuteo** (14 ago, decisión del cliente): «Escríbeme», «Cuéntame qué
-    necesitas», «También puedes escribirme a» y el botón «Escríbeme por WhatsApp». Es la **única
-    excepción** al voseo del sitio y está registrada en `CLAUDE.md` §Idioma: el resto de la página, la
-    FAQ incluida, sigue voseando —«Escribime por WhatsApp» sigue siendo la primera respuesta de la
-    FAQ—. Lo afirma `tests/unit/pages.test.ts` con un regex de voseo, porque es justo lo que alguien
-    «normaliza» de vuelta en una pasada de estilo.
+  - **Todo el sitio usa tuteo en español latinoamericano neutro** (14 ago, decisión del cliente):
+    desaparece la antigua excepción que dejaba el cierre en tuteo y el resto en voseo. El contenido
+    visible usa «queque»/«queques»; los slugs `queque-*`, la clave interna `queques` y los sinónimos
+    de búsqueda se conservan para no romper enlaces ni búsquedas locales. Lo afirma
+    `tests/unit/pages.test.ts` con una lista de formas de voseo prohibidas.
   - **Un solo hueco vertical en toda la página: 64px, 48px en móvil** (`--editorial-rhythm` en
     `styles/40-prose.css`). Antes salían de tres sitios que no se hablaban entre sí —el
     `padding-block` de `.section`, el `margin-top` de `.prose-block` y los `margin: 10px 0` de la
@@ -699,25 +760,12 @@ Cosas que hoy están bien pero conviene saber antes de tocarlas:
 - **`lib/seo.ts` y `app/layout.tsx` leen el `home` estático** para el JSON-LD del negocio y el preload
   del hero. Correcto hoy; no son datos de la base.
 
-Aparecidos al rehacer las filas del drawer (11 ago), ninguno tocado:
+Aparecido al rehacer las filas del drawer (11 ago), fuera de este bloque:
 
 - **`styles/18-footer.css:101` y `:132` piden `font-weight: 700` de Libre Franklin, que no se descarga.**
   `app/fonts.ts:33-43` carga 400/500/600. D-1 documenta los pesos omitidos pero **no menciona éste**, así
   que `.footer-col-title` y el `span` de `.footer-contact-link` no rinden el 700 que piden. En el drawer
   se usó el 600 justamente por esto.
-- **El deslizamiento del drawer no está en el kill-switch de movimiento.** `styles/99-a11y.css` cubre
-  `.reveal`, `.track`, `.slider-mask`, `.play-ring--h`, `.navbar` y los enlaces del nav, pero el
-  `transform 0.3s` de `.nav-menu` no: con `prefers-reduced-motion` el panel de 320px **sigue
-  deslizándose**. El `*` de ese bloque sólo neutraliza `animation-*`, así que el scrim queda cubierto
-  y el panel no. Hueco real y previo a este cambio.
-- **`aria-expanded` miente en el drawer.** `components/layout/Navbar.tsx:58` hace
-  `const hidden = !isOpen && !(dropdown.href && !hoverEnabled)`: en móvil, `Catálogo` tiene `href`, así
-  que su lista sale desplegada de entrada mientras el toggle sigue anunciando `aria-expanded="false"`.
-  Desajuste aria↔visual. Axe no lo marca porque el atributo es válido; se ve a mano.
-- **`.close-button` no tiene hover propio ni área de 44px.** El SVG mide 20×20 y sólo hereda el anillo
-  de foco global. Es el único control del drawer que se quedó fuera de este pase, por no ser una opción
-  del menú.
-
 Aparecidos al rediseñar la tarjeta del catálogo (12 ago), ninguno tocado:
 
 - **`CARD_SIZES` miente en la banda 640-767px, y ahora se nota más.** `.shop-grid` pasa a UNA columna
@@ -735,6 +783,19 @@ Aparecidos al rediseñar la tarjeta del catálogo (12 ago), ninguno tocado:
 - **Dos tab stops por tarjeta**, 46 en `/tienda`: la foto+nombre y el «Pedir» llevan al mismo sitio.
   No es violación de WCAG y axe no lo mira (`identical-links-same-purpose` es `wcag2aaa`), pero es
   verbosidad real para quien navega con teclado. Registrado en D-33.
+
+**Contactos del pie, en una línea en móvil (12 ago).** A ≤479 el pie apilaba el icono ENCIMA del
+valor por una regla `flex-direction: column` en `styles/18-footer.css` que venía del commit y no
+llevaba comentario. Se quitó: el estilo base ya es `inline-flex` con `align-items: center`. Medido en
+el navegador antes de retirarla del camino del rediseño: los tres contactos pasan de apilados a **35px
+de alto** —una línea— a 390 y a 479, con el icono a la izquierda. No hacía falta apilar para que
+quepan: a 390px sobran 330px tras el icono y el valor más largo ocupa unos 185.
+
+⚠ El aserto que lo vigila está puesto en `geometry.spec.ts` (alto < 46px en los tres contactos, a los
+8 anchos, sin el `if (width >= 992)` que lo limitaba a escritorio) pero **no se ha podido ejecutar**:
+la portada está en pleno rediseño a barra lateral por otro proceso y ese fichero falla hoy en 144
+casos por motivos ajenos —el `.container` mide 1874px donde el test espera 1170—. Queda para quien
+cierre el rediseño.
 
 **Corregidos al alinear las tarjetas del catálogo (12 ago).** Dos no-ops silenciosos, los dos de la
 familia del bug del drawer:

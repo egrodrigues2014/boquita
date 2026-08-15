@@ -440,11 +440,22 @@ test("footer muestra 4 columnas editoriales sin CTA ni newsletter visibles", asy
     "href",
     "mailto:ticaboquita@gmail.com",
   );
-  if ((await page.viewportSize())!.width >= 992) {
-    const links = await page.locator(".footer-contact-link").evaluateAll((items) =>
-      items.slice(0, 2).map((item) => item.getBoundingClientRect().height),
-    );
-    expect(links.every((height) => height < 46)).toBe(true);
+  /**
+   * Cada contacto ocupa UNA línea: icono y valor al lado, no apilados.
+   *
+   * Esta comprobación existía pero iba envuelta en un `if (width >= 992)`, o sea
+   * que sólo corría donde el problema no estaba: a ≤479 el CSS apilaba el icono
+   * encima del valor y nadie se enteraba. Ahora corre a los 8 anchos y mide los
+   * TRES contactos —el correo es el más largo y el único candidato real a
+   * envolver—. El umbral discrimina bien: una línea son ~36px (18px × 1.55 más
+   * 8 de `padding-block`) y dos, ~64.
+   */
+  const alturas = await page
+    .locator(".footer-contact-link")
+    .evaluateAll((items) => items.map((item) => item.getBoundingClientRect().height));
+  expect(alturas).toHaveLength(3);
+  for (const [i, alto] of alturas.entries()) {
+    expect(alto, `el contacto ${i} ocupa más de una línea`).toBeLessThan(46);
   }
   await expect(page.locator(".footer-copy")).toContainText("© 2026 Boquita — Sweet & Salty");
 });

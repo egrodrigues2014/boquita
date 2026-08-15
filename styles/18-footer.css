@@ -203,9 +203,15 @@
   }
 }
 
-@media (max-width: 479px) {
-  .footer-contact-link {
-    flex-direction: column;
-    gap: 0;
-  }
-}
+/**
+ * A ≤479 el contacto apilaba el icono ENCIMA del valor (`flex-direction: column`).
+ * Se quitó: el estilo base ya es `inline-flex` con `align-items: center`, que es
+ * icono y valor en la misma línea, y no hacía falta apilarlos para que quepan —
+ * a 390px, la ventana más estrecha que se prueba, quedan 330px libres tras el
+ * icono y el valor más largo (`ticaboquita@gmail.com`) ocupa unos 185. Si algún
+ * día entra uno más largo, el `white-space: normal` de ≤991 lo envuelve al lado
+ * del icono en vez de desbordar.
+ *
+ * Lo vigila `geometry.spec.ts`, que mide el alto de los tres contactos a los 8
+ * anchos: una línea son ~36px y dos, ~64.
+ */
