@@ -752,6 +752,69 @@ test.describe("la portada enlaza bien con la tienda", () => {
     await expect(page.locator(".shop-card")).toHaveCount(3);
   });
 
+  test("una torta es un queque: el desplegable lo sugiere y Enter aplica el filtro", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(viewport!.width <= 991, "La busqueda visible vive en el header desktop");
+    await page.goto("/");
+
+    // «torta» no está en ningún nombre, ingrediente ni etiqueta del catálogo:
+    // llega hasta aquí por `SINONIMOS_CATEGORIA`. La opción se localiza por su
+    // destino y no por su texto, para que el test siga afirmando lo mismo si la
+    // categoría se renombra.
+    const searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
+    await searchbox.fill("torta");
+    await expect(
+      page.locator('[role="option"][href="/tienda?categoria=queques"]'),
+    ).toBeVisible();
+
+    // Enter sin flecha marcada: el término es exacto, así que va al filtro y no
+    // a `?q=`. La vista tiene que ser la misma que pulsar el chip de la categoría.
+    await searchbox.press("Enter");
+    await expect(page).toHaveURL(/\/tienda\?categoria=queques$/);
+    await expect(page.locator(".shop-card")).toHaveCount(13);
+
+    const chip = page.locator(
+      'nav[aria-label="Filtrar por categoría"] a[href="/tienda?categoria=queques"]',
+    );
+    await expect(chip).toHaveAttribute("aria-current", "true");
+    // El `h1` anuncia la categoría filtrada, se llame como se llame.
+    await expect(page.locator("h1")).toHaveText((await chip.innerText()).trim());
+  });
+
+  test("las flechas y Enter recorren el desplegable", async ({ page, viewport }) => {
+    test.skip(viewport!.width <= 991, "La busqueda visible vive en el header desktop");
+    await page.goto("/");
+
+    const searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
+    await searchbox.fill("torta");
+    await searchbox.press("ArrowDown");
+    await expect(
+      page.locator('[role="option"][href="/tienda?categoria=queques"]'),
+    ).toHaveAttribute("aria-selected", "true");
+
+    await searchbox.press("Enter");
+    await expect(page).toHaveURL(/\/tienda\?categoria=queques$/);
+  });
+
+  test("lo que no es un término del catálogo sigue siendo búsqueda de texto", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(viewport!.width <= 991, "La busqueda visible vive en el header desktop");
+    await page.goto("/");
+
+    // A medio escribir todavía no hay término exacto, así que Enter no secuestra
+    // la búsqueda hacia el filtro. Los sinónimos hacen que igual salgan queques.
+    const searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
+    await searchbox.fill("tort");
+    await searchbox.press("Enter");
+
+    await expect(page).toHaveURL(/\/tienda\?q=tort$/);
+    await expect(page.locator(".shop-card")).toHaveCount(13);
+  });
+
   test("la portada movil muestra buscador en el header", async ({ page, viewport }) => {
     test.skip(viewport!.width > 991, "El buscador movil vive en el header");
     await page.goto("/");
@@ -861,9 +924,17 @@ test.describe("los controles aria-disabled no hacen nada al pulsarlos", () => {
   test("el botón anunciado como no disponible conserva el foco", async ({ page }) => {
     await page.goto("/tienda/queque-de-zanahoria");
 
+    // El botón de compra se habilita al terminar la hidratación del carrito. Sin
+    // esta espera, un worker cargado puede pulsar el stepper servido por SSR antes
+    // de que React conecte el handler que conserva el foco en dispositivos táctiles.
+    await expect(page.locator(".add-to-cart > .btn")).toBeEnabled();
+
     const menos = page.getByRole("button", { name: /Quitar una unidad/ });
     await menos.focus();
-    await menos.click({ force: true });
+    // El test anterior ya cubre el clic forzado. Aquí se usa Enter porque el
+    // contrato que se verifica es conservar el punto de anclaje del teclado;
+    // un tap no mantiene foco por diseño en los proyectos `hasTouch`.
+    await menos.press("Enter");
 
     // Con `disabled` real el navegador habría mandado el foco al <body>: eso es
     // exactamente lo que la decisión documentada evita.

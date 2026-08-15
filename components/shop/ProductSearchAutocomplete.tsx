@@ -1,9 +1,10 @@
 "use client";
 
-import { useId, useMemo, useRef, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   getShopSearchSuggestions,
+  resolveShopSearchTarget,
   type ShopSearchSource,
 } from "@/lib/shopSearch";
 
@@ -11,7 +12,6 @@ export function ProductSearchAutocomplete({ products }: { products: ShopSearchSo
   const router = useRouter();
   const inputId = useId();
   const listboxId = useId();
-  const formRef = useRef<HTMLFormElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -24,20 +24,27 @@ export function ProductSearchAutocomplete({ products }: { products: ShopSearchSo
   const activeSuggestion =
     activeIndex >= 0 && activeIndex < suggestions.length ? suggestions[activeIndex] : undefined;
 
-  const chooseActive = () => {
-    if (!activeSuggestion) return false;
-    router.push(activeSuggestion.href);
-    setOpen(false);
-    return true;
-  };
-
   return (
     <form
-      ref={formRef}
       className="nav-search"
       action="/tienda"
       method="get"
       role="search"
+      /**
+       * Enter y la lupa desembocan los dos aquí, así que la decisión se toma una
+       * sola vez: la sugerencia marcada con las flechas manda; si no hay ninguna,
+       * lo escrito puede ser un término de la taxonomía («torta» → Queques) y
+       * entonces se va al filtro; y si tampoco, se deja pasar el submit nativo a
+       * `/tienda?q=`, que es la búsqueda de texto de siempre.
+       */
+      onSubmit={(event) => {
+        const href = activeSuggestion?.href ?? resolveShopSearchTarget(query);
+        if (!href) return;
+        event.preventDefault();
+        router.push(href);
+        setOpen(false);
+        setActiveIndex(-1);
+      }}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
           setOpen(false);
@@ -97,9 +104,8 @@ export function ProductSearchAutocomplete({ products }: { products: ShopSearchSo
               return;
             }
 
-            if (event.key === "Enter" && chooseActive()) {
-              event.preventDefault();
-            }
+            // Enter no se trata aquí: dispara el submit del formulario, y ahí
+            // está la única decisión de a dónde se navega.
           }}
         />
         <button className="nav-search-button" type="submit" aria-label="Buscar productos">

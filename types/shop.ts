@@ -37,6 +37,43 @@ export const SUBCATEGORIAS = {
 
 export type Subcategoria = keyof typeof SUBCATEGORIAS;
 
+/**
+ * Cómo llama la gente a cada categoría cuando escribe en el buscador, que no es
+ * como la llama el catálogo. Quien busca «torta» quiere un queque, y sin esto se
+ * llevaba cero resultados sobre trece productos.
+ *
+ * Es SÓLO búsqueda: no crea chips en `/tienda`, ni entradas de nav, ni toca el
+ * `pgEnum` de `lib/db/schema.ts`. Añadir sinónimos no pide migración de Drizzle.
+ *
+ * `cake` queda fuera a propósito: «Coffee cake» es un queque y «Cheesecake» un
+ * dulce, así que la palabra no decide categoría. Como texto libre ya los
+ * encuentra a los dos por nombre.
+ *
+ * El `Record<Categoria, …>` es deliberado: una categoría nueva no compila hasta
+ * decidir sus sinónimos, aunque la decisión sea `[]`.
+ */
+export const SINONIMOS_CATEGORIA: Record<Categoria, string[]> = {
+  queques: [
+    // Se conservan explícitos para reconocer tanto el singular como el plural.
+    "queque",
+    "queques",
+    "torta",
+    "tortas",
+    "bizcocho",
+    "bizcochos",
+    "keke",
+    "kekes",
+  ],
+  galletas: ["galleta", "cookie", "cookies"],
+  dulces: ["dulce", "postre", "postres", "reposteria"],
+};
+
+/** Lo mismo para el segundo nivel. Ver `SINONIMOS_CATEGORIA`. */
+export const SINONIMOS_SUBCATEGORIA: Record<Subcategoria, string[]> = {
+  cupcake: ["cupcake", "magdalena", "magdalenas", "quequitos"],
+  personalizado: ["personalizados", "a medida", "por encargo"],
+};
+
 /** Ocasiones del segundo dropdown. Un producto puede servir para varias. */
 export const OCASIONES = {
   cumpleanos: "Cumpleaños",

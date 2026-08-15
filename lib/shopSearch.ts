@@ -1,6 +1,8 @@
 import {
   CATEGORIAS,
   OCASIONES,
+  SINONIMOS_CATEGORIA,
+  SINONIMOS_SUBCATEGORIA,
   SUBCATEGORIAS,
   type Categoria,
   type Ocasion,
@@ -49,6 +51,20 @@ function normalizeSearch(value: string): string {
     .toLowerCase();
 }
 
+/**
+ * Todo lo que puede escribir alguien para referirse a un término de la
+ * taxonomía: su etiqueta más sus sinónimos, ya normalizados.
+ *
+ * Único sitio del que tiran el filtrado, las sugerencias y el destino de Enter.
+ * Si se desincronizan, el desplegable ofrece un filtro que luego sale vacío.
+ */
+function searchTerms(label: string, sinonimos: string[]): string[] {
+  return [label, ...sinonimos].map(normalizeSearch);
+}
+
+const CATEGORIA_ENTRIES = Object.entries(CATEGORIAS) as [Categoria, string][];
+const SUBCATEGORIA_ENTRIES = Object.entries(SUBCATEGORIAS) as [Subcategoria, string][];
+
 export function filterShopProducts(
   products: ShopProduct[],
   { categoria, ocasion, subcategoria, sinAlergeno, q = "" }: ShopSearchFilters,
@@ -71,6 +87,10 @@ export function filterShopProducts(
      * Se busca también en los INGREDIENTES y en las presentaciones: «monk fruit»,
      * «dátiles» o «24 unidades» son búsquedas que alguien va a escribir, y el
      * nombre del producto no las contiene.
+     *
+     * Y en los SINÓNIMOS de la categoría, o `?q=torta` —el enlace que alguien
+     * comparta por WhatsApp— daría cero resultados aunque el desplegable sí
+     * sugiera «Queques».
      */
     const searchable = normalizeSearch(
       [
@@ -79,7 +99,9 @@ export function filterShopProducts(
         ...product.variants.map((variant) => variant.unit),
         ...product.ingredients,
         CATEGORIAS[product.categoria],
+        ...SINONIMOS_CATEGORIA[product.categoria],
         product.subcategoria ? SUBCATEGORIAS[product.subcategoria] : "",
+        ...(product.subcategoria ? SINONIMOS_SUBCATEGORIA[product.subcategoria] : []),
         ...product.ocasiones.map((key) => OCASIONES[key]),
       ].join(" "),
     );
@@ -127,8 +149,12 @@ export function getShopSearchSuggestions(
 
   const suggestions: ShopSearchSuggestion[] = [];
 
-  for (const [key, label] of Object.entries(CATEGORIAS)) {
-    if (!normalizeSearch(label).includes(normalizedQuery)) continue;
+  // Un `some` y un solo `push` por clave: «queque» casa a la vez con la etiqueta
+  // y con el sinónimo, y dos pushes duplicarían la opción, su `key` de React y
+  // su `id` de `aria-activedescendant`.
+  for (const [key, label] of CATEGORIA_ENTRIES) {
+    const terms = searchTerms(label, SINONIMOS_CATEGORIA[key]);
+    if (!terms.some((term) => term.includes(normalizedQuery))) continue;
     suggestions.push({
       id: `categoria-${key}`,
       kind: "categoria",
@@ -137,8 +163,9 @@ export function getShopSearchSuggestions(
     });
   }
 
-  for (const [key, label] of Object.entries(SUBCATEGORIAS)) {
-    if (!normalizeSearch(label).includes(normalizedQuery)) continue;
+  for (const [key, label] of SUBCATEGORIA_ENTRIES) {
+    const terms = searchTerms(label, SINONIMOS_SUBCATEGORIA[key]);
+    if (!terms.some((term) => term.includes(normalizedQuery))) continue;
     suggestions.push({
       id: `subcategoria-${key}`,
       kind: "subcategoria",
@@ -178,4 +205,38 @@ export function getShopSearchSuggestions(
   }
 
   return suggestions;
+}
+
+/**
+ * A dónde lleva Enter en el buscador cuando no hay ninguna sugerencia marcada
+ * con las flechas: al filtro si lo escrito ES un término de la taxonomía,
+ * `undefined` si no —y entonces el formulario hace su submit de siempre a `?q=`.
+ *
+ * La coincidencia es EXACTA, no subcadena, y ahí está toda la gracia: «torta»
+ * abre `?categoria=queques`, pero «tort» y «brigadeiros» siguen siendo búsqueda
+ * de texto. Con subcadena, teclear una «c» secuestraría la búsqueda hacia
+ * Cupcakes antes de terminar de escribir.
+ *
+ * No mira productos ni alérgenos: un producto ya resuelve a `?q=`, y nadie
+ * escribe «huevo» esperando que le escondan lo que lleva huevo.
+ */
+export function resolveShopSearchTarget(query: string): string | undefined {
+  const normalizedQuery = normalizeSearch(query);
+  if (!normalizedQuery) return undefined;
+
+  // Categoría antes que subcategoría: el mismo orden de precedencia que emiten
+  // las sugerencias, para que Enter coincida con lo que se ve arriba del todo.
+  for (const [key, label] of CATEGORIA_ENTRIES) {
+    if (searchTerms(label, SINONIMOS_CATEGORIA[key]).includes(normalizedQuery)) {
+      return tiendaHref({ categoria: key });
+    }
+  }
+
+  for (const [key, label] of SUBCATEGORIA_ENTRIES) {
+    if (searchTerms(label, SINONIMOS_SUBCATEGORIA[key]).includes(normalizedQuery)) {
+      return tiendaHref({ subcategoria: key });
+    }
+  }
+
+  return undefined;
 }
