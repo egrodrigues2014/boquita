@@ -1,15 +1,15 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/seo";
+import { isSiteIndexable, SITE_URL } from "@/lib/seo";
 
 /**
- * En Vercel Hobby la protección de despliegues es de pago, así que las URL de
- * preview son públicas. Todo lo que no sea producción se marca `noindex` para que
- * no compita con el sitio real en los buscadores.
+ * Las URL temporales de Vercel son públicas. Preview y la producción previa al
+ * cambio de dominio se bloquean hasta que `SITE_LAUNCHED=true` confirme que el
+ * lanzamiento ya ocurrió.
  */
-const isProduction = process.env.VERCEL_ENV === "production";
+const shouldIndex = isSiteIndexable();
 
 export default function robots(): MetadataRoute.Robots {
-  if (!isProduction) {
+  if (!shouldIndex) {
     return { rules: [{ userAgent: "*", disallow: "/" }] };
   }
 

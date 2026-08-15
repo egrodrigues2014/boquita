@@ -2,16 +2,15 @@ import type { Metadata, Viewport } from "next";
 import { ImagePreload } from "@/components/ui/Picture";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { home } from "@/content/home";
+import { isSiteIndexable, SITE_URL } from "@/lib/seo";
 import { display, sans, sidebar } from "./fonts";
 
 // ⚠ EL ÚNICO import de CSS del proyecto. Ver la cabecera de styles/index.css:
 // el orden de la cascada del spec depende de que sea una sola cadena de @import.
 import "@/styles/index.css";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-/** Los despliegues que no son producción no se indexan (plan, riesgo R6). */
-const isProduction = process.env.VERCEL_ENV === "production";
+/** Preview y producción previa al lanzamiento permanecen fuera del índice. */
+const shouldIndex = isSiteIndexable();
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -46,7 +45,7 @@ export const metadata: Metadata = {
       "Pedidos por WhatsApp con 48 horas de anticipación.",
   },
   twitter: { card: "summary_large_image" },
-  robots: isProduction
+  robots: shouldIndex
     ? { index: true, follow: true }
     : { index: false, follow: false, nocache: true },
   // El sitio es sobre comida y se pide por WhatsApp: conviene que el teléfono sea

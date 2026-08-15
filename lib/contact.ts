@@ -18,7 +18,7 @@ export const CONTACT = {
    * No es `SITE_URL` (`lib/seo.ts`), que sale del entorno y en local vale
    * `http://localhost:3000` — eso no se le manda a nadie por WhatsApp.
    */
-  siteDomain: "boquita.cr",
+  siteDomain: "boquitacostarica.com",
   whatsappDigits: "50671322355",
   whatsappDisplay: "+506 7132 2355",
   /**

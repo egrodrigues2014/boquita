@@ -103,16 +103,23 @@ describe("protección de la ruta", () => {
   });
 
   it("acepta sólo el origen propio o el dominio configurado", () => {
-    expect(isAllowedOrderOrigin("https://boquita.cr", "https://boquita.cr/api/orders")).toBe(true);
     expect(
       isAllowedOrderOrigin(
-        "https://www.boquita.cr",
-        "https://preview.example/api/orders",
-        "https://www.boquita.cr",
+        "https://boquitacostarica.com",
+        "https://boquitacostarica.com/api/orders",
       ),
     ).toBe(true);
-    expect(isAllowedOrderOrigin("https://evil.example", "https://boquita.cr/api/orders")).toBe(false);
-    expect(isAllowedOrderOrigin(null, "https://boquita.cr/api/orders")).toBe(false);
+    expect(
+      isAllowedOrderOrigin(
+        "https://www.boquitacostarica.com",
+        "https://preview.example/api/orders",
+        "https://www.boquitacostarica.com",
+      ),
+    ).toBe(true);
+    expect(
+      isAllowedOrderOrigin("https://evil.example", "https://boquitacostarica.com/api/orders"),
+    ).toBe(false);
+    expect(isAllowedOrderOrigin(null, "https://boquitacostarica.com/api/orders")).toBe(false);
   });
 
   it("elige la cabecera de IP sin conservar listas de proxies", () => {

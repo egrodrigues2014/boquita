@@ -278,7 +278,7 @@ línea porque es lo que hay que hornear:
 ```text
 Hola, Ale 👋
 
-🛍️ *Nuevo pedido desde boquita.cr*
+🛍️ *Nuevo pedido desde boquitacostarica.com*
 
 📋 *Detalle del pedido*
 • 1 × Queque de limón
@@ -293,7 +293,7 @@ Hola, Ale 👋
 
 📌 *Solicitud:* Confirmar disponibilidad y detalles del pedido.
 
-🌐 Generado desde boquita.cr
+🌐 Generado desde boquitacostarica.com
 ```
 
 **Las etiquetas son un contrato.** Hoy contesta Ale, pero el mensaje está pensado para que más adelante

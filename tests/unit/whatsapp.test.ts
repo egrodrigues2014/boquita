@@ -44,7 +44,7 @@ describe("buildOrderMessage", () => {
       [
         "Hola, Ale 👋",
         "",
-        "🛍️ *Nuevo pedido desde boquita.cr*",
+        "🛍️ *Nuevo pedido desde boquitacostarica.com*",
         "",
         "📋 *Detalle del pedido*",
         "• 1 × Queque de limón",
@@ -59,7 +59,7 @@ describe("buildOrderMessage", () => {
         "",
         "📌 *Solicitud:* Confirmar disponibilidad y detalles del pedido.",
         "",
-        "🌐 Generado desde boquita.cr",
+        "🌐 Generado desde boquitacostarica.com",
       ].join("\n"),
     );
   });
@@ -169,7 +169,7 @@ describe("buildOrderMessage", () => {
   it("siempre cierra con la solicitud y la procedencia", () => {
     const message = buildOrderMessage([line()]);
     expect(message).toContain("📌 *Solicitud:* Confirmar disponibilidad y detalles del pedido.");
-    expect(message.endsWith("🌐 Generado desde boquita.cr")).toBe(true);
+    expect(message.endsWith("🌐 Generado desde boquitacostarica.com")).toBe(true);
   });
 
   it("usa saltos de línea reales, no literales escapados", () => {
@@ -297,11 +297,11 @@ describe("buildDirectWhatsAppMessage", () => {
       [
         "Hola, Ale 👋",
         "",
-        "🛍️ *Nuevo pedido desde boquita.cr*",
+        "🛍️ *Nuevo pedido desde boquitacostarica.com*",
         "",
         "📌 *Solicitud:* Quiero hacer un pedido y confirmar disponibilidad, fecha y entrega.",
         "",
-        "🌐 Generado desde boquita.cr",
+        "🌐 Generado desde boquitacostarica.com",
       ].join("\n"),
     );
   });
@@ -311,11 +311,11 @@ describe("buildDirectWhatsAppMessage", () => {
       [
         "Hola, Ale 👋",
         "",
-        "💬 *Nueva consulta desde boquita.cr*",
+        "💬 *Nueva consulta desde boquitacostarica.com*",
         "",
         "📌 *Solicitud:* Quiero hacer una consulta sobre un pedido.",
         "",
-        "🌐 Generado desde boquita.cr",
+        "🌐 Generado desde boquitacostarica.com",
       ].join("\n"),
     );
   });
@@ -325,7 +325,7 @@ describe("buildDirectWhatsAppMessage", () => {
       [
         "Hola, Ale 👋",
         "",
-        "🧁 *Cotización desde boquita.cr*",
+        "🧁 *Cotización desde boquitacostarica.com*",
         "",
         "📋 *Detalle de la solicitud*",
         "• Queque personalizado",
@@ -333,7 +333,7 @@ describe("buildDirectWhatsAppMessage", () => {
         "",
         "📌 *Solicitud:* Quiero cotizar este producto y contarles la idea para confirmar tamaño, diseño y fecha.",
         "",
-        "🌐 Generado desde boquita.cr",
+        "🌐 Generado desde boquitacostarica.com",
       ].join("\n"),
     );
   });
@@ -343,11 +343,11 @@ describe("buildDirectWhatsAppMessage", () => {
       [
         "Hola, Ale 👋",
         "",
-        "⚠️ *Ayuda desde boquita.cr*",
+        "⚠️ *Ayuda desde boquitacostarica.com*",
         "",
         "📌 *Solicitud:* La web me dio un error y quiero hacer un pedido por WhatsApp.",
         "",
-        "🌐 Generado desde boquita.cr",
+        "🌐 Generado desde boquitacostarica.com",
       ].join("\n"),
     );
   });

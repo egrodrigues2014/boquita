@@ -31,10 +31,10 @@ function payload() {
 }
 
 function request(body: unknown, headers: Record<string, string> = {}) {
-  return new NextRequest("https://boquita.cr/api/orders", {
+  return new NextRequest("https://boquitacostarica.com/api/orders", {
     method: "POST",
     headers: {
-      origin: "https://boquita.cr",
+      origin: "https://boquitacostarica.com",
       "content-type": "application/json",
       "x-forwarded-for": "203.0.113.9, 10.0.0.1",
       ...headers,
@@ -70,9 +70,9 @@ describe("POST /api/orders", () => {
     expect(
       (
         await POST(
-          new NextRequest("https://boquita.cr/api/orders", {
+          new NextRequest("https://boquitacostarica.com/api/orders", {
             method: "POST",
-            headers: { origin: "https://boquita.cr", "content-type": "text/plain" },
+            headers: { origin: "https://boquitacostarica.com", "content-type": "text/plain" },
             body: "x",
           }),
         )

@@ -18,6 +18,19 @@ import { CONTACT } from "@/lib/contact";
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
+/**
+ * La URL de producción de Vercel existe antes de que el dominio esté listo.
+ * Exigir esta segunda llave evita que esa URL temporal se indexe durante la
+ * validación interna o que un despliegue accidental anuncie el sitio antes del
+ * cambio de DNS.
+ */
+export function isSiteIndexable(
+  vercelEnv = process.env.VERCEL_ENV,
+  siteLaunched = process.env.SITE_LAUNCHED,
+): boolean {
+  return vercelEnv === "production" && siteLaunched === "true";
+}
+
 export function bakeryJsonLd() {
   const { footer, menu, service } = home;
 
