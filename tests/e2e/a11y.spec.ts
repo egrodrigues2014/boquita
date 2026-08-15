@@ -84,7 +84,7 @@ test.describe("accesibilidad", () => {
 
   test("carrito con productos dentro", async ({ page }) => {
     await page.goto("/tienda/queque-de-zanahoria");
-    await page.getByRole("button", { name: "Añadir al carrito" }).click();
+    await page.getByRole("button", { name: "Agregar al carrito" }).click();
     await page.getByRole("button", { name: /^Carrito/ }).click();
     await expect(page.locator(".cart-drawer")).toHaveClass(/cart-drawer--open/);
     await audit(page, "carrito abierto con productos");
@@ -153,12 +153,12 @@ test.describe("accesibilidad", () => {
   /* axe no detecta esto: un `outline:0` deja el elemento perfectamente
      accesible en el árbol, sólo invisible para quien navega con teclado. El
      buscador lo tuvo hasta UI-096, y hay que afirmarlo a mano. */
-  test("el buscador del header muestra anillo de foco al llegar por teclado", async ({
-    page,
-    viewport,
-  }) => {
-    test.skip((viewport?.width ?? 0) <= 991, "el buscador no se renderiza por debajo de 992");
-
+  test("el buscador del header muestra anillo de foco al llegar por teclado", async ({ page }) => {
+    // Sin `skip`: el buscador es el mismo elemento a los 8 anchos. Lo hubo
+    // —«el buscador no se renderiza por debajo de 992»— y era falso ya
+    // entonces: a ≤991 se renderizaba en una segunda fila. Ahora comparte fila
+    // con el logo, y el montaje doble que rompía este test por modo estricto ya
+    // no existe.
     await page.goto("/");
     await page.locator(".nav-search-input").focus();
 

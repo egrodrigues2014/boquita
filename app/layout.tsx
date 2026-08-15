@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { ImagePreload } from "@/components/ui/Picture";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { home } from "@/content/home";
-import { display, sans } from "./fonts";
+import { display, sans, sidebar } from "./fonts";
 
 // ⚠ EL ÚNICO import de CSS del proyecto. Ver la cabecera de styles/index.css:
 // el orden de la cascada del spec depende de que sea una sola cadena de @import.
@@ -102,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="es-CR"
-      className={`${display.variable} ${sans.variable}`}
+      className={`${display.variable} ${sans.variable} ${sidebar.variable}`}
       suppressHydrationWarning
     >
       <head>

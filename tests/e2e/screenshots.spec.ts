@@ -1,4 +1,4 @@
-import { type Page, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 /**
  * Capturas de revisión visual. No son aserciones: la verificación de medidas vive
@@ -24,9 +24,9 @@ import { type Page, test } from "@playwright/test";
  * concretas, o usar las páginas internas, que sí son estables. Un
  * `toHaveScreenshot` aquí sería intermitente desde el primer día.
  *
- * Cubre las 9 vistas que la convención 7 del backlog exige como baseline:
+ * Cubre las 10 vistas que la convención 7 del backlog exige como baseline:
  * portada, catálogo, catálogo filtrado, búsqueda sin resultados, ficha, carrito
- * abierto, sobre nosotros, aviso legal y 404.
+ * abierto, drawer de navegación, sobre nosotros, aviso legal y 404.
  */
 
 /** Deja la página quieta: fuentes listas, lazy-loading forzado, imágenes cargadas. */
@@ -97,11 +97,27 @@ test("captura de la ficha de producto", async ({ page }, testInfo) => {
 
 test("captura del carrito abierto", async ({ page }, testInfo) => {
   await page.goto("/tienda/queque-de-zanahoria");
-  await page.getByRole("button", { name: "Añadir al carrito" }).click();
+  await page.getByRole("button", { name: "Agregar al carrito" }).click();
   await page.getByRole("button", { name: /^Carrito/ }).click();
   // El drawer es fixed: fullPage lo capturaría sobre una página larga y en la
   // captura saldría flotando a media altura. Sólo el viewport.
   await shoot(page, "carrito", viewportWidth(testInfo), false);
+});
+
+test("captura del drawer de navegación", async ({ page, viewport }, testInfo) => {
+  test.skip(viewport!.width > 991, "El drawer sólo existe a ≤991");
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready.then(() => true));
+  await page.getByRole("button", { name: "Abrir menú" }).click();
+  const drawer = page.locator("#nav-menu");
+  await expect.poll(async () => (await drawer.boundingBox())!.x).toBeCloseTo(0, 0);
+  await drawer.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await page.screenshot({
+    path: `tests/e2e/__screenshots__/drawer-navegacion-${viewportWidth(testInfo)}.png`,
+    fullPage: false,
+  });
 });
 
 test("captura de sobre nosotros", async ({ page }, testInfo) => {

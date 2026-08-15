@@ -12,6 +12,9 @@ import { defineConfig, devices, type PlaywrightTestConfig } from "@playwright/te
  */
 
 const WIDTHS = [1920, 1440, 1280, 1100, 991, 767, 479, 390];
+/* Permite verificar builds aislados cuando otro `next start` ya ocupa el puerto
+   habitual; sin override se conserva exactamente el contrato de CI. */
+const PORT = Number.parseInt(process.env.PLAYWRIGHT_PORT ?? "3100", 10);
 
 /* Un proyecto por ancho, y nada más.
    El punto 12 del checklist (prefers-reduced-motion) NO se modela como proyecto:
@@ -52,15 +55,15 @@ export default defineConfig({
   timeout: 45_000,
 
   use: {
-    baseURL: "http://localhost:3100",
+    baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
   },
 
   // Se prueba contra el build de producción, no contra `next dev`: es lo que
   // realmente se despliega, y `dev` inyecta overlays que alteran el DOM.
   webServer: {
-    command: "npx next start --port 3100",
-    url: "http://localhost:3100",
+    command: `npx next start --port ${PORT}`,
+    url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },

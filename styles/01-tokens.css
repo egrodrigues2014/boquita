@@ -21,12 +21,13 @@
 
 :root {
   /* ── Tipografías ────────────────────────────────────────────────────────
-     next/font no permite fijar el nombre de familia, así que las tres
-     font-family literales del spec §2.2 se sustituyen por estas variables.
-     Es la ÚNICA modificación textual al CSS del spec, aparte de los colores.
+     next/font no permite fijar el nombre de familia, así que las familias del
+     spec editorial y la Poppins del drawer se exponen mediante variables.
+     Es la ÚNICA modificación textual al CSS de ambos specs, aparte de colores.
      (Desvío D-12 en docs/DEVIATIONS.md) */
   --ff-display: var(--font-display), Georgia, "Times New Roman", serif;
   --ff-sans: var(--font-sans), system-ui, "Segoe UI", Arial, sans-serif;
+  --ff-sidebar: var(--font-sidebar), system-ui, "Segoe UI", Arial, sans-serif;
   /* El fallback DENTRO del var() no es decorativo. `--font-quote` no lo declara
      nadie a propósito: Lato sólo la usa `blockquote` y no se carga hasta que
      algún componente la necesite (ver app/fonts.ts). Pero `var(--font-quote)` a
@@ -117,10 +118,12 @@
   --text-ghost: rgba(58, 42, 26, 0.22); /* #d4d0cd sobre el blanco del statement — ver D-26 */
 
   /* ── Cabecera ────────────────────────────────────────────────────────────
-     Altura real de `.navbar`, medida: 12px de padding arriba y abajo más la
-     altura del logo (72px, 86px a ≥1280) más 1px de borde inferior.
+     Altura real de `.navbar`, medida: 12px de padding arriba y abajo, más la
+     fila, más 1px de borde inferior. La fila la marca el logo: 72px (86 a
+     ≥1280) MÁS los 2+2 de `padding` que 03-base.css da a todo `a`, que es de
+     donde salen los 4px que no cuadran a ojo. 12 + 76 + 12 + 1 = 101.
 
-     Es un token y no un número repetido porque la navbar es `position:absolute`
+     Es un token y no un número repetido porque la navbar es `position: fixed`
      y NO ocupa sitio en el flujo: todo lo que tenga que empezar por debajo de
      ella necesita saber cuánto mide. Hoy lo necesitan el primer `.section` de
      cada página interna y el `scroll-margin-top` de las anclas de 40-prose.css,
@@ -140,7 +143,11 @@
 
 @media (max-width: 991px) {
   :root {
-    --header-h: 155px;
+    /* Una sola fila con los cuatro controles, todos a 46px: el logo baja a 42
+       (46 con el padding del `a`), y el buscador y la cesta ya medían 46.
+       12 + 46 + 12 + 1 = 71. Eran 155 cuando el buscador iba en una segunda
+       fila propia. */
+    --header-h: 71px;
   }
 }
 

@@ -1,4 +1,4 @@
-import { Cormorant_Infant, Libre_Franklin } from "next/font/google";
+import { Cormorant_Infant, Libre_Franklin, Poppins } from "next/font/google";
 
 /**
  * Tipografías del spec §2.2.
@@ -39,6 +39,23 @@ export const sans = Libre_Franklin({
   variable: "--font-sans",
   preload: true,
   fallback: ["system-ui", "Segoe UI", "Helvetica Neue", "Arial", "sans-serif"],
+  adjustFontFallback: true,
+});
+
+/**
+ * Poppins pertenece exclusivamente al drawer móvil. La referencia de navegación
+ * usa su dibujo geométrico para separar la interfaz del tono editorial del resto
+ * de la página; se autohospeda igual que las otras fuentes y no genera una
+ * petición a Google en runtime.
+ */
+export const sidebar = Poppins({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal"],
+  display: "swap",
+  variable: "--font-sidebar",
+  preload: true,
+  fallback: ["system-ui", "Segoe UI", "Arial", "sans-serif"],
   adjustFontFallback: true,
 });
 

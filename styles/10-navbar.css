@@ -69,6 +69,14 @@
   align-items: center;
 }
 
+/* La iconografía pertenece al drawer. El mismo árbol sirve a escritorio, donde
+   estos nodos decorativos no participan en el layout. */
+.nav-item-icon,
+.nav-subitem-icon,
+.nav-chevron {
+  display: none;
+}
+
 .nav-link,
 .nav-dropdown-toggle {
   font-family: var(--ff-sans);
@@ -155,10 +163,6 @@
   justify-content: flex-end;
   gap: 14px;
   min-width: 0;
-}
-
-.nav-mobile-search {
-  display: none;
 }
 
 .nav-search {
@@ -332,7 +336,7 @@
   position: fixed;
   inset: 0;
   z-index: 105;
-  background: rgba(58, 42, 26, 0.55);
+  background: rgba(58, 42, 26, 0.68);
   animation: nav-scrim-in 0.3s ease-out;
 }
 
@@ -395,28 +399,58 @@
 
 /* ══════════════════ max-width descendente ══════════════════ */
 
-/* ≤991: el MISMO .nav-menu se convierte en un panel fijo de 320px a la
+/* ≤991: el MISMO .nav-menu se convierte en un panel fijo de hasta 325px a la
    izquierda. No hay componente drawer aparte, sólo una clase de estado. */
 @media (max-width: 991px) {
+  /* Los cuatro controles —logo, buscador, cesta y menú— van en UNA fila, y los
+     tres huecos entre ellos miden lo mismo por construcción y no por
+     coincidencia: los pone un único `gap`, repetido en los dos contenedores que
+     participan (`.nav-container` y, para el hueco buscador↔cesta,
+     `.navbar-actions`). Cambiar uno sin el otro descuadra la fila.
+
+     La cuenta sólo sale si NADIE mete un ítem fantasma en medio: ver
+     `.nav-menu-wrapper` aquí abajo, y el `.btn--nav` que sigue en `display:none`
+     (un ítem en `display:none` no es ítem flex y no genera hueco). */
   .nav-container {
     justify-content: flex-start;
-    gap: 6px;
+    gap: 12px;
   }
 
+  /* El logo ya no empuja al resto: el ancho sobrante se lo queda el buscador.
+     Con `margin-right: auto` el primer hueco valdría `gap` + todo el espacio
+     libre, y los otros dos seguirían a 12. */
   .brand {
-    margin-right: auto;
+    flex: none;
   }
 
+  /* 42 + los 2+2 del `padding` que 03-base.css da a todo `a` = 46, la misma
+     altura que el buscador y que la cesta: los tres cantos coinciden.
+     ⚠ Si cambia, cambia `--header-h` en 01-tokens.css. */
+  .logo {
+    height: 42px;
+  }
+
+  /* `position: absolute`, no `width: 0`: un ítem flex de ancho cero SIGUE
+     generando su hueco a los dos lados, así que el espacio entre el logo y el
+     buscador saldría doble. Fuera de flujo deja de ser ítem flex y no cuenta
+     para el `gap`. Tampoco vale `display: none`: dentro vive el drawer, y un
+     `position: fixed` dentro de un subárbol oculto no se renderiza.
+     ⚠ Nada de `transform`, `filter` ni `contain` aquí: crearían bloque
+     contenedor y el drawer `fixed` de 320px quedaría preso de esta caja. */
   .nav-menu-wrapper {
+    position: absolute;
     width: 0;
-    flex-basis: 0;
+    height: 0;
   }
 
   .nav-menu {
     position: fixed;
     inset: 0 auto 0 0;
-    width: 320px;
-    background: #fff;
+    width: min(325px, 100vw);
+    padding: 32px 24px;
+    background: var(--surface-dark);
+    color: var(--white);
+    --focus: var(--gold-bright);
     display: flex;
     flex-direction: column;
     /* La base es `align-items: center`, pensada para la fila de escritorio. Al
@@ -434,6 +468,7 @@
     transition:
       transform 0.3s ease,
       visibility 0s linear 0.3s;
+    overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     z-index: 110;
@@ -447,169 +482,241 @@
       visibility 0s linear 0s;
   }
 
-  /* Las filas van a sangre: sin padding horizontal aquí, el realce de hover y
-     su barra de 3px se apoyan en el canto del panel. El aire lateral lo pone
-     cada fila. */
+  /* El panel pone el carril exterior de 24px. Dentro, la lista conserva la
+     geometría del starter kit sin añadir otro contenedor ni otro menú. */
   .nav-overlay-mobile {
-    background: #fff;
+    min-width: 0;
+    background: transparent;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    padding: 13px 0 24px;
+    padding: 0;
   }
 
-  /* Texto a 16px del canto del panel. `min-height` fija el área táctil por
-     contrato y no por la suma de línea y padding, que depende del tamaño de
-     fuente. `border-radius: 0` porque contra el canto un radio se ve torcido. */
+  .nav-dropdown,
+  .nav-link {
+    flex: none;
+    min-width: 0;
+  }
+
+  .nav-dropdown + .nav-dropdown,
+  .nav-dropdown + .nav-link,
+  .nav-link + .nav-dropdown {
+    margin-top: 16px;
+  }
+
+  /* 8px de padding + slot de icono de 48px + 8px de etiqueta: el texto cae a
+     64px del borde del ítem, igual que en la referencia. */
   .nav-link,
   .nav-dropdown-toggle {
-    display: flex;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    column-gap: 8px;
     align-items: center;
     width: 100%;
-    min-height: 44px;
-    padding: 12px 16px;
-    border-radius: 0;
+    min-height: 48px;
+    padding: 0 8px;
+    border-radius: 4px;
+    color: var(--primary-light);
+    font-family: var(--ff-sidebar);
+    font-size: 16px;
     font-weight: 600;
+    line-height: 24px;
+    letter-spacing: 0.01em;
+    text-align: left;
   }
 
-  /* La base transiciona sólo fondo y color, y sin easing declarado. Aquí entra
-     además la barra, a 0.18s ease-out. */
+  .nav-dropdown-toggle:not(.nav-dropdown-toggle--link) {
+    grid-template-columns: 48px minmax(0, 1fr) 24px;
+  }
+
+  .nav-item-icon,
+  .nav-subitem-icon,
+  .nav-chevron {
+    display: block;
+    flex: none;
+    color: currentColor;
+  }
+
+  .nav-item-icon {
+    width: 32px;
+    height: 32px;
+    justify-self: center;
+  }
+
+  .nav-chevron {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-dropdown-toggle[aria-expanded="true"] .nav-chevron {
+    transform: rotate(180deg);
+  }
+
+  .nav-link > .nav-label,
+  .nav-dropdown-toggle > .nav-label {
+    min-width: 0;
+  }
+
   .nav-link,
   .nav-dropdown-toggle,
   .nav-dropdown-link {
     transition:
-      background-color 0.18s ease-out,
-      color 0.18s ease-out,
-      box-shadow 0.18s ease-out;
+      background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .nav-dropdown-toggle {
-    justify-content: space-between;
-  }
-
-  /* `width: 320px` desbordaba la caja del contenedor y sacaba scroll horizontal
-     dentro del panel. Los 16px sangran el nivel entero —fila y barra, no sólo
-     el texto—, así la jerarquía también se lee en la barra. El canto derecho
-     queda alineado con el del primer nivel. */
+  /* El sublistado comparte ancho con su padre; el hueco de 4px separa la rama
+     del encabezado y cada subfila de la siguiente. */
   .nav-dropdown-list {
     position: static;
     width: 100%;
+    min-width: 0;
     border: 0;
     box-shadow: none;
-    padding: 0 0 6px 16px;
+    margin-top: 4px;
+    padding: 0;
+    background: transparent;
     display: flex;
     flex-direction: column;
+    gap: 4px;
   }
 
-  /* 16 del contenedor + 18 = texto a 34px. Un escalón de 18px sobre el primer
-     nivel: lo que antes daba la sangría ahora lo dan el peso y el tamaño. */
+  /* La guía propone 40px; se mantienen 44px para no reducir el área táctil que
+     ya cubren las pruebas. 40px de sangría + slot de 24px alinea la etiqueta a
+     los mismos 64px del nivel principal. */
   .nav-dropdown-link {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
     align-items: center;
     min-height: 44px;
-    padding: 12px 16px 12px 18px;
-    border-radius: 0;
-    font-size: 16px;
+    padding: 0 8px 0 40px;
+    border-radius: 4px;
+    color: var(--gray);
+    font-family: var(--ff-sidebar);
+    font-size: 13.33px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.02em;
+    text-transform: none;
   }
 
-  /* El hover de la base no está envuelto en ninguna media query, así que en
-     táctil se dispara con el toque y se queda pegado. Dentro del drawer se
-     anula aquí y se vuelve a aplicar más abajo sólo con puntero fino. El foco
-     no pasa por esta anulación: el teclado tiene que funcionar en todas partes. */
+  .nav-subitem-icon {
+    width: 20px;
+    height: 20px;
+    justify-self: start;
+  }
+
+  /* El hover de la base se anula en táctil para que no quede pegado tras un
+     toque. Foco, pulsación y el estado desplegado conservan feedback propio. */
   .nav-link:hover,
-  .nav-dropdown-toggle:hover,
+  .nav-dropdown-toggle:hover {
+    background: transparent;
+    color: var(--primary-light);
+    box-shadow: none;
+  }
+
   .nav-dropdown-link:hover {
-    background: none;
-    color: var(--link);
+    background: transparent;
+    color: var(--gray);
+    box-shadow: none;
   }
 
   .nav-link:focus-visible,
   .nav-dropdown-toggle:focus-visible,
   .nav-dropdown-link:focus-visible {
-    background: var(--primary-light);
-    color: var(--gold-ink);
+    background: rgba(232, 168, 27, 0.18);
+    color: var(--white);
     box-shadow: inset 3px 0 0 var(--gold-line);
   }
 
-  .nav-link:focus-visible .nav-label,
-  .nav-dropdown-toggle:focus-visible .nav-label,
-  .nav-dropdown-link:focus-visible .nav-label {
-    transform: translateX(5px) scale(1.04);
+  .nav-dropdown-toggle:not(.nav-dropdown-toggle--link)[aria-expanded="true"] {
+    background: rgba(232, 168, 27, 0.18);
+    color: var(--white);
+    box-shadow: inset 3px 0 0 var(--gold-line);
   }
 
-  /* El transform va en el <span> y no en la fila: si fuera en la fila se
-     moverían con él el fondo y la barra. Y al ser transform y no padding ni
-     font-size, no hay reflow: los ítems vecinos no se mueven. */
   .nav-label {
-    display: inline-block;
-    transform-origin: left center;
-    transition: transform 0.18s ease-out;
+    display: block;
+    min-width: 0;
   }
 
-  /* En táctil no hay hover: la pulsación es el único momento en que el usuario
-     puede confirmar que ha dado en la opción. Un paso por encima del crema. */
+  /* En táctil la pulsación es el instante de confirmación. */
   .nav-link:active,
   .nav-dropdown-toggle:active,
   .nav-dropdown-link:active {
-    background: var(--gray);
-    color: var(--gold-ink);
+    background: rgba(232, 168, 27, 0.28);
+    color: var(--white);
   }
 
-  /* Sólo ratón o lápiz. Va después de la anulación de arriba, así que gana por
-     orden de aparición con la misma especificidad. Ojo al revisar: el modo
-     dispositivo de DevTools declara `hover: none`, y ahí esto no se ve. */
+  /* Sólo ratón o lápiz; el modo táctil conserva el fondo transparente. */
   @media (hover: hover) and (pointer: fine) {
     .nav-link:hover,
     .nav-dropdown-toggle:hover,
     .nav-dropdown-link:hover {
-      background: var(--primary-light);
-      color: var(--gold-ink);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--white);
       box-shadow: inset 3px 0 0 var(--gold-line);
-    }
-
-    .nav-link:hover .nav-label,
-    .nav-dropdown-toggle:hover .nav-label,
-    .nav-dropdown-link:hover .nav-label {
-      transform: translateX(5px) scale(1.04);
     }
   }
 
-  /* Las filas van a sangre, pero la cabecera no: sin este carril el ✕ queda
-     pegado al canto del panel. Los 16px son los mismos a los que arranca el
-     texto del primer nivel, así el ojo lee un margen y no dos. */
+  /* Primer control del focus trap: 48px reales, no sólo el SVG de 20px. */
   .close-button-wrap {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    height: 60px;
-    padding: 0 16px;
-    margin-bottom: 10px;
+    min-height: 48px;
+    margin-bottom: 32px;
     flex: none;
+  }
+
+  .close-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    color: var(--white);
+    transition:
+      background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .close-button:hover,
+  .close-button:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--gold-bright);
+  }
+
+  .close-button:active {
+    background: rgba(232, 168, 27, 0.28);
+  }
+
+  .close-button-icon {
+    width: 24px;
+    height: 24px;
   }
 
   .btn--nav {
     display: none;
   }
 
+  /* Sólo el hueco: la base ya trae `flex: 1 1 auto` y `min-width: 0`, que es lo
+     que deja crecer al grupo y encoger al buscador de dentro. El mismo valor
+     que `.nav-container`, o el hueco buscador↔cesta dejaría de ser igual a los
+     otros dos. */
   .navbar-actions {
-    flex: 0 0 auto;
-    justify-content: flex-end;
-    margin-right: 0;
+    gap: 12px;
   }
 
+  /* El mismo buscador que en escritorio, ya no uno aparte para una segunda
+     fila. Pierde el tope de 430 y la base de 320 para quedarse exactamente con
+     lo que sobra de la fila: es el único elástico, así que es él quien absorbe
+     cada píxel de diferencia entre un móvil de 320 y uno de 991. */
   .nav-search {
-    display: none;
-  }
-
-  .nav-mobile-search {
-    display: block;
-    padding: 8px 15px 0;
-  }
-
-  .nav-mobile-search .nav-search {
-    display: block;
-    width: 100%;
-    max-width: none;
+    flex: 1 1 0;
     min-width: 0;
+    max-width: none;
   }
 
   .cart-icon {
@@ -621,6 +728,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    /* El ancho se queda en los 27px del svg: cualquier `padding` lateral sería
+       hueco invisible y el último tramo se vería más grande que los otros dos
+       midiendo lo mismo. El alto sí sube a la fila entera, que es área táctil
+       de balde y no mueve nada en horizontal. */
+    height: 46px;
   }
 
   /* A ≤991 el drawer se abre sobre la página y el header conserva fondo propio:
@@ -639,5 +751,17 @@
   .cart-icon {
     width: 30px;
     height: 30px;
+  }
+}
+
+/* El hueco baja a 8px para devolverle 12px al buscador, que en un teléfono de
+   320 es la diferencia entre leer el marcador de posición entero o cortado.
+   Siguen siendo los tres iguales entre sí, que es lo que se cuida aquí; el
+   número absoluto no. Los 15px de `padding-inline` no se tocan: son el carril
+   con el que se alinea todo lo que va debajo. */
+@media (max-width: 479px) {
+  .nav-container,
+  .navbar-actions {
+    gap: 8px;
   }
 }

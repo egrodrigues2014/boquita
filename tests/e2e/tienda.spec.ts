@@ -28,7 +28,7 @@ async function mockOrderSave(page: Page, status = 201) {
 
 test.describe("catálogo", () => {
   test("muestra buscador con autocomplete en la tienda movil", async ({ page, viewport }) => {
-    test.skip(viewport!.width > 991, "El buscador movil vive dentro del catalogo");
+    test.skip(viewport!.width > 991, "Aqui se afirma el buscador del header movil");
     await page.goto("/tienda");
 
     const searchbox = page.getByRole("searchbox", { name: "Buscar productos" });

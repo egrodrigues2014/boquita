@@ -96,6 +96,18 @@
     transition: none !important;
   }
 
+  /* El drawer y su chevron informan de estado, pero no necesitan recorrer una
+     distancia para hacerlo. El scrim tampoco debe fundirse en este modo. */
+  .nav-menu,
+  .nav-chevron,
+  .close-button {
+    transition: none !important;
+  }
+
+  .nav-scrim {
+    animation: none !important;
+  }
+
   /* El acercamiento de la foto de la tarjeta del catálogo es decoración pura: se
      cae entero. El realce sigue existiendo por el color del nombre y por el
      anillo de foco, que son información. Hay que enumerarlo a mano — el `*` de

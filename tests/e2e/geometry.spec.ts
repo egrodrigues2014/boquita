@@ -567,17 +567,101 @@ test.describe("la cabecera acompaña el scroll", () => {
   });
 });
 
-test("la cesta queda pegada al boton de menu en movil", async ({ page, viewport }) => {
+/**
+ * A ≤991 los cuatro controles van en UNA fila y los tres huecos entre ellos
+ * miden lo mismo. No es una preferencia estética que se pueda dejar caer: los
+ * huecos los ponen dos contenedores distintos —`.nav-container` para
+ * logo↔buscador y cesta↔menú, `.navbar-actions` para buscador↔cesta— y basta
+ * tocar el `gap` de uno para que el tramo del medio deje de coincidir. Se rompe
+ * también si alguien le devuelve a `.nav-menu-wrapper` una caja en flujo: un
+ * ítem flex de ancho cero sigue generando su hueco a los dos lados y el primer
+ * tramo sale doble.
+ *
+ * Sustituye a «la cesta queda pegada al boton de menu en movil», que exigía
+ * ≤8px entre cesta y menú: ese contrato describía el header de dos filas, donde
+ * la cesta y la hamburguesa eran un grupo suelto a la derecha.
+ */
+test("los cuatro controles del header movil comparten linea y distancia", async ({
+  page,
+  viewport,
+}) => {
   test.skip(viewport!.width > 991, "Solo aplica al header movil");
   await page.goto("/");
 
-  const gap = await page.evaluate(() => {
-    const cart = document.querySelector(".cart-button")!.getBoundingClientRect();
-    const menu = document.querySelector(".menu-button")!.getBoundingClientRect();
-    return Math.round(menu.left - cart.right);
+  const medidas = await page.evaluate(() => {
+    const caja = (sel: string) => document.querySelector(sel)!.getBoundingClientRect();
+    const cajas = [caja(".brand"), caja(".nav-search"), caja(".cart-button"), caja(".menu-button")];
+    return {
+      huecos: cajas.slice(1).map((c, i) => Math.round(c.left - cajas[i]!.right)),
+      centros: cajas.map((c) => Math.round(c.top + c.height / 2)),
+    };
   });
 
-  expect(gap).toBeLessThanOrEqual(8);
+  expect(
+    new Set(medidas.huecos).size,
+    `los huecos del header no son iguales: ${medidas.huecos.join(" / ")}`,
+  ).toBe(1);
+  expect(medidas.huecos[0], "el header movil no deja aire entre controles").toBeGreaterThan(0);
+  expect(
+    Math.max(...medidas.centros) - Math.min(...medidas.centros),
+    `los controles no van en la misma linea: centros en ${medidas.centros.join(" / ")}`,
+  ).toBeLessThanOrEqual(1);
+});
+
+/**
+ * El navbar montó `ProductSearchAutocomplete` dos veces durante un tiempo —uno
+ * para escritorio y otro para la segunda fila móvil—, con una copia siempre en
+ * `display:none`. El coste no era el peso: era que `.nav-search-input` resolvía
+ * a dos elementos y Playwright abortaba por modo estricto antes de medir nada,
+ * dejando el anillo de foco del buscador sin vigilancia (`a11y.spec.ts`).
+ */
+test("el header monta un unico buscador", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".nav-search")).toHaveCount(1);
+  await expect(page.locator(".nav-search-input")).toHaveCount(1);
+});
+
+test("el drawer móvil aplica la geometría y paleta de Boquita", async ({ page, viewport }) => {
+  test.skip(viewport!.width > 991, "Solo aplica al drawer móvil");
+  await page.goto("/");
+  await page.getByRole("button", { name: "Abrir menú" }).click();
+
+  const drawer = page.locator("#nav-menu");
+  await expect.poll(async () => (await drawer.boundingBox())!.x).toBeCloseTo(0, 0);
+
+  const medidas = await page.evaluate(() => {
+    const menu = document.querySelector<HTMLElement>("#nav-menu")!;
+    const padre = menu.querySelector<HTMLElement>(".nav-dropdown-toggle")!;
+    const subitems = [...menu.querySelectorAll<HTMLElement>(".nav-dropdown-link")].slice(0, 2);
+    const iconoPadre = padre.querySelector<HTMLElement>(".nav-item-icon")!;
+    const iconoSub = subitems[0]!.querySelector<HTMLElement>(".nav-subitem-icon")!;
+    const caja = (elemento: Element) => elemento.getBoundingClientRect();
+    const css = (elemento: Element) => getComputedStyle(elemento);
+
+    return {
+      fondo: css(menu).backgroundColor,
+      padding: [css(menu).paddingTop, css(menu).paddingRight, css(menu).paddingBottom, css(menu).paddingLeft],
+      fuentePadre: css(padre).fontFamily,
+      pesoPadre: css(padre).fontWeight,
+      altoPadre: caja(padre).height,
+      altoSub: caja(subitems[0]!).height,
+      huecoSub: caja(subitems[1]!).top - caja(subitems[0]!).bottom,
+      iconoPadre: [caja(iconoPadre).width, caja(iconoPadre).height],
+      iconoSub: [caja(iconoSub).width, caja(iconoSub).height],
+      desbordaX: menu.scrollWidth > menu.clientWidth,
+    };
+  });
+
+  expect(medidas.fondo).toBe("rgb(58, 42, 26)");
+  expect(medidas.padding).toEqual(["32px", "24px", "32px", "24px"]);
+  expect(medidas.fuentePadre).toMatch(/Poppins/i);
+  expect(medidas.pesoPadre).toBe("600");
+  expect(medidas.altoPadre).toBeCloseTo(48, 0);
+  expect(medidas.altoSub).toBeGreaterThanOrEqual(44);
+  expect(medidas.huecoSub).toBeCloseTo(4, 0);
+  expect(medidas.iconoPadre).toEqual([32, 32]);
+  expect(medidas.iconoSub).toEqual([20, 20]);
+  expect(medidas.desbordaX).toBe(false);
 });
 
 /**

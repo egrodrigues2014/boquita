@@ -31,7 +31,7 @@ const CODE_DIRS = ["app", "components", "lib"];
  * estar— declaradas en CSS: las emite el bundler con el nombre de familia
  * autohospedado. Ver app/fonts.ts.
  */
-const RUNTIME_FONT_VARS = new Set(["--font-display", "--font-sans"]);
+const RUNTIME_FONT_VARS = new Set(["--font-display", "--font-sans", "--font-sidebar"]);
 
 const stripComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
 

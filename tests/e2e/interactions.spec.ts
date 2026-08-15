@@ -268,6 +268,20 @@ test.describe("prefers-reduced-motion", () => {
     await expect(disc).toHaveCSS("animation-name", "none");
     await expect(disc).toHaveCSS("will-change", "auto");
   });
+
+  test("el drawer cambia de estado sin desplazarse", async ({ page, viewport }) => {
+    test.skip(viewport!.width > 991, "El drawer sólo existe a ≤991");
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.reload();
+
+    const menu = page.locator("#nav-menu");
+    const chevron = page.locator("#nav-menu .nav-chevron");
+    await expect(menu).toHaveCSS("transition-duration", "0s");
+    await expect(chevron).toHaveCSS("transition-duration", "0s");
+
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+    await expect(menu).toHaveClass(/nav-menu--open/);
+  });
 });
 
 // ── Punto 7 · parallax ─────────────────────────────────────────────────────
@@ -440,12 +454,13 @@ test.describe("navegación", () => {
     );
     expect(focusInside).toBe(true);
 
-    // El panel debe ocupar 320px de ancho y TODO el alto del viewport.
+    // El panel adopta los 325px de la guía, sin superar nunca el viewport, y
+    // ocupa TODO el alto disponible.
     // Se comprueba porque es fácil romperlo sin darse cuenta: cualquier
     // `filter`, `backdrop-filter` o `transform` en un ancestro crea un bloque
     // contenedor y confina este `position:fixed` a la caja del navbar.
     const panel = (await menu.boundingBox())!;
-    expect(panel.width).toBeCloseTo(320, 0);
+    expect(panel.width).toBeCloseTo(Math.min(325, viewport!.width), 0);
     expect(panel.height).toBeCloseTo(viewport!.height, 0);
     expect(panel.y).toBeCloseTo(0, 0);
     // Scroll bloqueado mientras el panel está abierto.
@@ -477,6 +492,7 @@ test.describe("navegación", () => {
     // niveles a la vez. Se toma el primero, que es Catálogo.
     const grupo = page.locator(".nav-dropdown-toggle--link").first();
     const subenlace = page.locator(".nav-dropdown-link").first();
+    await expect(grupo).toHaveAttribute("aria-expanded", "true");
 
     const panel = (await menu.boundingBox())!;
     const filaGrupo = (await grupo.boundingBox())!;
@@ -484,34 +500,32 @@ test.describe("navegación", () => {
 
     // Alto cómodo para el dedo en los dos niveles. Lo fija `min-height`, no la
     // suma de línea y padding, para que no dependa del tamaño de fuente.
-    expect(filaGrupo.height).toBeGreaterThanOrEqual(44);
+    expect(filaGrupo.height).toBeCloseTo(48, 0);
     expect(filaSub.height).toBeGreaterThanOrEqual(44);
 
-    // La fila va a sangre: si alguien devuelve el `padding: 10px 0` de antes, el
-    // alto aguanta pero el realce de hover vuelve a ceñirse al texto y esto no
-    // lo detecta nadie más.
-    expect(filaGrupo.width).toBeCloseTo(panel.width, 0);
-    // El subenlace sangra el nivel entero —fila y barra— y alinea su canto
-    // derecho con el del primer nivel.
-    expect(filaSub.x).toBeGreaterThan(filaGrupo.x);
-    expect(filaSub.x + filaSub.width).toBeCloseTo(filaGrupo.x + filaGrupo.width, 0);
+    // El carril exterior es de 24px a cada lado; padre y subítem comparten caja
+    // para que fondos y radios queden alineados.
+    expect(filaGrupo.width).toBeCloseTo(panel.width - 48, 0);
+    expect(filaSub.x).toBeCloseTo(filaGrupo.x, 0);
+    expect(filaSub.width).toBeCloseTo(filaGrupo.width, 0);
 
-    // La sangría del TEXTO, que es distinta de la de la fila: 16px el primer
-    // nivel, 34px el subítem. Sólo es medible porque la etiqueta va envuelta en
-    // un `.nav-label` (que existe para poder animarla sin mover el fondo).
+    // Ambos textos caen a 64px del borde del ítem: 8+48+8 en el padre y 40+24
+    // en el subítem. Respecto al panel son 24+64 = 88px.
     const textoGrupo = (await grupo.locator(".nav-label").boundingBox())!;
     const textoSub = (await subenlace.locator(".nav-label").boundingBox())!;
-    expect(textoGrupo.x - panel.x).toBeCloseTo(16, 0);
-    expect(textoSub.x - panel.x).toBeCloseTo(34, 0);
+    expect(textoGrupo.x - filaGrupo.x).toBeCloseTo(64, 0);
+    expect(textoSub.x - filaSub.x).toBeCloseTo(64, 0);
+    expect(textoGrupo.x - panel.x).toBeCloseTo(88, 0);
+    expect(textoSub.x - panel.x).toBeCloseTo(88, 0);
 
-    // El ✕ va en el mismo carril de 16px, por el otro lado. Sin el padding del
-    // `.close-button-wrap` queda pegado al canto, porque las filas van a sangre
-    // y `space-between` lo empuja hasta el borde del panel.
+    // El cierre ocupa un blanco táctil de 48px y respeta el carril de 24px.
     const cerrar = (await page.locator(".close-button").boundingBox())!;
     const huecoDerecho = panel.x + panel.width - (cerrar.x + cerrar.width);
-    expect(huecoDerecho).toBeCloseTo(16, 0);
+    expect(cerrar.width).toBeCloseTo(48, 0);
+    expect(cerrar.height).toBeCloseTo(48, 0);
+    expect(huecoDerecho).toBeCloseTo(24, 0);
 
-    // El sublistado medía 320px dentro de una caja más estrecha y sacaba scroll
+    // El sublistado medía más que su caja y sacaba scroll
     // horizontal dentro del panel. Se comprueba también CON EL CURSOR ENCIMA: el
     // `translateX` + `scale` del hover amplía la región de desbordamiento, y
     // `.nav-menu` es `overflow-y: auto`, lo que hace que el eje X compute a
@@ -525,6 +539,60 @@ test.describe("navegación", () => {
     // derecho de la fila, navega igual.
     await grupo.click({ position: { x: filaGrupo.width - 12, y: filaGrupo.height / 2 } });
     await expect(page).toHaveURL(/\/tienda$/);
+  });
+
+  test("la iconografía del drawer es decorativa y el chevron refleja el estado", async ({
+    page,
+    viewport,
+  }) => {
+    await page.goto("/");
+
+    const iconosPrincipales = page.locator("#nav-menu .nav-item-icon");
+    const iconosSecundarios = page.locator("#nav-menu .nav-subitem-icon");
+
+    await expect(iconosPrincipales).toHaveCount(4);
+    await expect(iconosSecundarios).toHaveCount(18);
+    await expect(iconosPrincipales.first()).toHaveAttribute("aria-hidden", "true");
+    await expect(iconosSecundarios.first()).toHaveAttribute("focusable", "false");
+
+    if (viewport!.width > 991) {
+      await expect(iconosPrincipales.first()).toBeHidden();
+      await expect(page.locator("#nav-menu .nav-chevron")).toBeHidden();
+      return;
+    }
+
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+    await expect(iconosPrincipales.first()).toBeVisible();
+
+    const toggle = page.getByRole("button", { name: "Ocasiones", exact: true });
+    const chevron = toggle.locator(".nav-chevron");
+    await expect(chevron).toHaveAttribute("aria-hidden", "true");
+    await expect(chevron).toHaveCSS("transform", "none");
+
+    const colores = await toggle.evaluate((element) => {
+      const icono = element.querySelector(".nav-item-icon")!;
+      return [getComputedStyle(element).color, getComputedStyle(icono).color];
+    });
+    expect(colores[1]).toBe(colores[0]);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(chevron).not.toHaveCSS("transform", "none");
+  });
+
+  test("el drawer permite alcanzar el último enlace sin desplazar la página", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(viewport!.width > 991, "El drawer sólo existe a ≤991");
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+
+    const menu = page.locator("#nav-menu");
+    const ultimo = menu.getByRole("link", { name: "Escríbeme", exact: true });
+    await ultimo.scrollIntoViewIfNeeded();
+    await expect(ultimo).toBeVisible();
+    expect(await menu.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    await expect(page.locator("html")).toHaveCSS("overflow", "hidden");
   });
 
   test("Escape en dos etapas: primero el dropdown, luego el drawer", async ({ page, viewport }) => {
@@ -556,7 +624,7 @@ test.describe("navegación", () => {
     await expect(page.locator("#nav-menu")).not.toHaveClass(/nav-menu--open/);
   });
 
-  test("la etiqueta «Sobre Nosotros» del nav lleva a su página", async ({ page, viewport }) => {
+  test("la etiqueta «Sobre nosotros» del nav lleva a su página", async ({ page, viewport }) => {
     // La regresión que este test existe para cazar: el grupo no llevaba `href`,
     // así que `Dropdown` lo pintaba como <button> y el clic sólo abría el panel.
     // La página respondía 200 y era inalcanzable desde su propia etiqueta.
@@ -568,7 +636,7 @@ test.describe("navegación", () => {
     // Acotado a `#nav-menu`: el pie tiene otro enlace con la misma etiqueta.
     await page
       .locator("#nav-menu")
-      .getByRole("link", { name: "Sobre Nosotros", exact: true })
+      .getByRole("link", { name: "Sobre nosotros", exact: true })
       .click();
     await expect(page).toHaveURL(/\/sobre-nosotros$/);
     await expect(page.locator("h1")).toHaveText("Un bocado de felicidad");
