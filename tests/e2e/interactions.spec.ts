@@ -250,6 +250,21 @@ test.describe("prefers-reduced-motion", () => {
     await expect(page.locator(".slider-mask")).toHaveCSS("--i", "1");
   });
 
+  test("las estrellas de reseña nacen llenas, sin rellenarse una a una", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.reload();
+
+    // Sin desplazarse: la clave es que NO dependan de que el observer dispare.
+    // El kill-switch de 99-a11y.css no cubre esto —su `*` final sólo apaga
+    // `animation-*`, y el rellenado es una `transition`—, así que lo apaga una
+    // regla propia en 17-testimonials.css. Si alguien la borra, esto cae.
+    const estrellas = page.locator(".review-stars svg");
+    await expect(estrellas).toHaveCount(30);
+    await expect(estrellas.first()).toHaveCSS("transition-duration", "0s");
+    await expect(estrellas.first()).toHaveCSS("fill-opacity", "1");
+    await expect(estrellas.last()).toHaveCSS("fill-opacity", "1");
+  });
+
   test("la frase editorial queda revelada sin animación", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.reload();
@@ -347,6 +362,34 @@ test.describe("slider de testimonios", () => {
     // perdería sin handler. `--i` es lo primero que escribe el componente al
     // montarse, así que es la señal de que el slider está vivo.
     await expect(page.locator(".slider-mask")).toHaveCSS("--i", "0");
+  });
+
+  /**
+   * D-41: las estrellas se rellenan de izquierda a derecha al asomar la sección,
+   * en las seis tarjetas a la vez.
+   *
+   * Dos aserciones con propósitos distintos. El escalonado se comprueba por los
+   * `transition-delay`, que son deterministas y no dependen de cuándo se mire —
+   * afirmar «la tercera todavía está a medias» sería una carrera con el reloj.
+   * El estado final sí se espera, y ahí lo que importa es que lleguen LAS 30:
+   * el disparo cuelga del `.slider`, así que las cuatro tarjetas que el
+   * `overflow` recorta tienen que rellenarse igual que las visibles.
+   */
+  test("las cinco estrellas se rellenan escalonadas, en las seis tarjetas", async ({ page }) => {
+    const estrellas = page.locator(".review-card").first().locator(".review-stars svg");
+    await expect(estrellas).toHaveCount(5);
+
+    const retardos = await estrellas.evaluateAll((nodos) =>
+      nodos.map((n) => getComputedStyle(n).transitionDelay),
+    );
+    expect(retardos).toEqual(["0s", "0.18s", "0.36s", "0.54s", "0.72s"]);
+
+    await expect(page.locator(".slider")).toHaveClass(/is-rated/);
+    const todas = page.locator(".review-stars svg");
+    await expect(todas).toHaveCount(30);
+    for (const i of [0, 4, 29]) {
+      await expect(todas.nth(i)).toHaveCSS("fill-opacity", "1");
+    }
   });
 
   test("la flecha derecha avanza una tarjeta", async ({ page }) => {

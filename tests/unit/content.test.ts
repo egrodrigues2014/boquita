@@ -73,7 +73,7 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(home.statement).toEqual({});
     expect(home.mediaText.titleTop).toBe("Del horno de Ale");
     expect(home.mediaText.titleBottom).toBe("a tu mesa");
-    expect(home.mediaText.body).toContain("Ale Budowski hornea en su casa de Santa Ana desde 2022");
+    expect(home.mediaText.body).toContain("Ale hornea en su casa de Santa Ana desde 2022");
     expect(JSON.stringify(home)).not.toContain("cada receta nace con ingredientes honestos");
     expect(JSON.stringify(home.statement)).not.toContain("inline");
   });
@@ -161,25 +161,24 @@ describe("los TODO están marcados, no escondidos", () => {
     expect(home.menu.products.filter((p) => p.priceTodo).map((p) => p.slug)).toEqual([]);
   });
 
-  it("las reseñas de andamio van marcadas, todas o ninguna", () => {
-    // Una mezcla de reales y de andamio es el estado que nadie sabría leer: ni
-    // se puede lanzar ni se puede decir que falta contenido.
-    const marcadas = home.testimonials.items.filter((t) => t.todo).length;
-    expect([0, home.testimonials.items.length]).toContain(marcadas);
-  });
-
-  it("hoy las 6 reseñas siguen siendo de andamio", () => {
+  it("las reseñas de andamio siguen marcadas, y las reales no", () => {
     /**
-     * Este test sustituye al que exigía `items.length === 0`. La sección ya se
-     * publica —el layout es definitivo— pero el copy no es real: Ale todavía no
-     * entregó los textos (`CONTENT_TODO §3`).
+     * Sustituye a dos tests anteriores: «van marcadas todas o ninguna» y «hoy
+     * las 6 siguen siendo de andamio». Ambos daban por hecho que las reseñas
+     * reales llegarían de golpe. Llegan por tandas —`t1` y `t2` ya son de Ale—
+     * así que el estado mixto es el normal hasta que estén las seis, y prohibirlo
+     * sólo obligaba a esconder las reales.
      *
-     * Cuando lleguen, se sustituyen las citas y se quitan las 6 marcas de
-     * golpe, y este test rompe. Ese es el propósito: el guardarraíl no
-     * desaparece al encender la sección, cambia de lado. Publicar el andamio
-     * como si fuera real sigue exigiendo un acto deliberado.
+     * El guardarraíl deja de contar y pasa a NOMBRAR: publicar una de andamio
+     * como si fuera real, o añadir una nueva sin marcar, rompe el test igual.
+     * Cuando llegue la última, esto queda en `[]` y el bloqueante se cierra.
      */
-    expect(home.testimonials.items.filter((t) => t.todo)).toHaveLength(6);
+    expect(home.testimonials.items.filter((t) => t.todo).map((t) => t.id)).toEqual([
+      "t3",
+      "t4",
+      "t5",
+      "t6",
+    ]);
   });
 
   it("las redes públicas no usan placeholders", () => {

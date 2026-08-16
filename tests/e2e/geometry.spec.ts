@@ -124,7 +124,7 @@ test("statement usa foto izquierda y texto con revelado", async ({ page, viewpor
     .locator(".scroll-color-text__body .scroll-color-text__base")
     .evaluateAll((items) => items.map((item) => item.textContent).join(" "));
   expect(bodyText).toContain(
-    "Ale Budowski hornea en su",
+    "Ale hornea en su",
   );
   expect(bodyText).toContain(
     "pequeñas y el sabor de lo hecho a mano.",
@@ -327,6 +327,8 @@ test("los testimonios van bajo la galería, sin retrato y con la fila cuadrada",
   await expect(page.locator(".review-card")).toHaveCount(6);
   // D-34: el spec §7 pide un .review-avatar de 70×70 y aquí no hay ninguno.
   await expect(page.locator(".review-avatar")).toHaveCount(0);
+  // D-41: cinco estrellas por tarjeta, en su propia línea dentro de `.review-head`.
+  await expect(page.locator(".review-card .review-head .review-stars svg")).toHaveCount(30);
   expect(await style(page, ".review-card", "background-color")).toBe("rgb(250, 245, 236)");
 
   // La sección empieza donde acaba la galería, sin solaparla.
@@ -349,6 +351,60 @@ test("los testimonios van bajo la galería, sin retrato y con la fila cuadrada",
     .locator(".review-card")
     .evaluateAll((cards, n) => cards.slice(0, n).map((c) => c.getBoundingClientRect().height), perView);
   for (const alto of alturas) expect(alto).toBeCloseTo(alturas[0]!, 0);
+});
+
+/**
+ * D-41: las estrellas ocupan su PROPIA línea, entre el nombre y la ocasión.
+ *
+ * Esta forma se rompe en silencio y su contraria ya se rompió una vez. Cuando
+ * las estrellas compartían línea con el nombre, un `flex-wrap: wrap` las tiraba
+ * enteras a la línea de abajo en cuanto el nombre tenía tres partes —4 de las 6
+ * tarjetas—, y seguía siendo HTML válido, con las 30 en su sitio y las tarjetas
+ * cuadradas: ningún otro test lo notaba. Ahora la trampa es la simétrica —que
+ * alguien le devuelva el `display:flex` a `.review-head` (D-34) y los tres hijos
+ * se pongan en fila—, así que se fija el orden vertical y la alineación.
+ *
+ * A 32px no hay vuelta atrás posible: cinco estrellas piden ~168px y en la
+ * tarjeta más estrecha, 992px, el nombre más largo deja 43 libres de 263.
+ */
+test("las estrellas de reseña van en su línea, entre el nombre y la ocasión", async ({
+  page,
+}) => {
+  await page.locator(".slider").scrollIntoViewIfNeeded();
+
+  const medidas = await page.locator(".review-card").evaluateAll((cards) =>
+    cards.map((c) => {
+      const nombre = c.querySelector(".review-name")!;
+      const estrellas = c.querySelector(".review-stars")!;
+      const rol = c.querySelector(".review-role")!;
+      const rn = nombre.getBoundingClientRect();
+      const re = estrellas.getBoundingClientRect();
+      const rr = rol.getBoundingClientRect();
+      const svg = estrellas.querySelector("svg")!.getBoundingClientRect();
+      return {
+        quien: nombre.textContent!.trim(),
+        bajoElNombre: re.top >= rn.bottom - 1,
+        sobreElRol: rr.top >= re.bottom - 1,
+        // Los tres arrancan en el mismo canto: si `.review-head` volviera a ser
+        // flex, las estrellas se irían a la derecha del nombre.
+        mismoCanto: Math.abs(re.left - rn.left) < 1 && Math.abs(rr.left - rn.left) < 1,
+        lado: Math.round(svg.width),
+        alto: Math.round(svg.height),
+        // Una sola fila de cinco: si envolvieran, la caja mediría el doble.
+        unaFila: re.height < svg.height * 1.5,
+      };
+    }),
+  );
+
+  expect(medidas).toHaveLength(6);
+  for (const m of medidas) {
+    expect(m.bajoElNombre, `estrellas no van bajo «${m.quien}»`).toBe(true);
+    expect(m.sobreElRol, `la ocasión no va bajo las estrellas de «${m.quien}»`).toBe(true);
+    expect(m.mismoCanto, `estrellas desalineadas en «${m.quien}»`).toBe(true);
+    expect(m.unaFila, `estrellas en dos filas en «${m.quien}»`).toBe(true);
+    expect(m.lado, `estrella de ${m.lado}px en «${m.quien}»`).toBe(32);
+    expect(m.alto).toBe(32);
+  }
 });
 
 /**
@@ -388,9 +444,12 @@ test("las flechas del slider cuelgan del titular", async ({ page, viewport }) =>
   expect(cajaDerecha.y).toBeCloseTo(slider.y, 0);
 
   // El acople: el slider arranca 40px por encima de donde acaba el titular.
-  // A ≤479 la regla le añade `margin-top: 30px`, que se come 30 de esos 40 y
-  // deja el solape en 10 — el par de números baja, pero sigue acoplado.
-  const solape = viewport!.width <= 479 ? 10 : 40;
+  //
+  // Por debajo de 768 ese acople se DESACOPLA a propósito y el solape es 0: ahí
+  // `w-50-tablet` pasa el h2 a ancho completo, se parte en dos líneas y las
+  // flechas —que van a `top: 0` del slider— le caían encima; a ≤479 la izquierda
+  // salta además a `left: 0`, justo sobre el texto. Ver D-41.
+  const solape = viewport!.width <= 767 ? -10 : 40;
   expect(slider.y).toBeCloseTo(titular.y + titular.height - solape, 0);
 
   // Y en ningún ancho invaden la primera tarjeta.

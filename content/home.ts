@@ -273,7 +273,7 @@ export const home: HomeContent = {
     titleTop: "Del horno de Ale",
     titleBottom: "a tu mesa",
     body:
-      "Ale Budowski hornea en su casa de Santa Ana desde 2022. Sin conservantes y sin " +
+      "Ale hornea en su casa de Santa Ana desde 2022. Sin conservantes y sin " +
       "mezclas industriales: recetas propias, tandas pequeñas y el sabor de lo hecho a mano.",
     poster: mediaPoster,
   },
@@ -296,7 +296,7 @@ export const home: HomeContent = {
     titleTop: "Hecho a mano,",
     titleBottom: "en tandas pequeñas",
     body:
-      "Boquita nació en la cocina de casa de Ale Budowski, en Santa Ana. " +
+      "Boquita nació en la cocina de casa de Ale, en Santa Ana. " +
       "Hoy horneamos por encargo para familias, oficinas y celebraciones de todo el " +
       "Valle Central.",
     image: serviceImage,
@@ -316,20 +316,29 @@ export const home: HomeContent = {
   testimonials: {
     title: "Lo que dicen nuestros clientes",
     /**
-     * ⚠ ANDAMIO. Las seis van marcadas `todo` y NO son reseñas reales: Ale
-     * todavía no entregó los textos (`CONTENT_TODO §3`, bloqueante de
-     * lanzamiento). El layout es definitivo; el copy no.
+     * MEDIO ANDAMIO. `t1` y `t2` son reseñas REALES, entregadas por Ale; `t3`
+     * a `t6` siguen inventadas y van marcadas `todo` (`CONTENT_TODO §3`, sigue
+     * siendo bloqueante de lanzamiento: faltan cuatro).
      *
-     * Cuando lleguen las de verdad se sustituye el texto y se quitan las seis
-     * marcas de golpe. `tests/unit/content.test.ts` exige hoy que las seis
-     * estén marcadas, así que quitarlas rompe el test: el andamio no se puede
-     * publicar por descuido, sólo a propósito.
+     * El estado mixto es el normal a partir de ahora, porque las reales llegan
+     * por tandas. Por eso `tests/unit/content.test.ts` ya no cuenta las marcas
+     * sino que NOMBRA las que faltan: publicar una de andamio como real, o
+     * añadir una nueva sin marcar, rompe el test igual que antes.
+     *
+     * ⚠ «torta de zanahoria» en `t1` y `t2` es CITA LITERAL y se queda así. La
+     * regla de «queque» del CLAUDE.md gobierna el copy que escribimos nosotros,
+     * no las palabras de un cliente; además el buscador ya trata «torta» como
+     * sinónimo de la categoría (`lib/shopSearch.ts`). No «corregirlo».
+     *
+     * El original de cada reseña real, sin editar, y su consentimiento están en
+     * `docs/TESTIMONIOS_FUENTES.md`. Lo publicado lleva sólo edición ligera:
+     * tildes y puntuación.
      *
      * `role` es la OCASIÓN del pedido, no un cargo. La referencia pone
      * «Cook»/«Manager» porque es una plantilla genérica; en una repostería lo
      * que da credibilidad es dónde y para qué se encargó.
      *
-     * Las citas miden a propósito entre ~110 y ~200 caracteres: la referencia
+     * Las citas miden a propósito entre ~110 y ~230 caracteres: la referencia
      * describe tarjetas de 3 a 5 líneas, y el `min-height` de `.review-card`
      * existe justo para que esa desigualdad no descuadre la fila. El tope duro
      * son 320 caracteres (`content/schema.ts`), medido contra ese mismo alto.
@@ -337,23 +346,21 @@ export const home: HomeContent = {
     items: [
       {
         id: "t1",
-        name: "María Fernanda Rojas",
-        role: "Cumpleaños en Santa Ana",
+        name: "María Elena M.",
+        role: "Clienta frecuente, Escazú",
         quote:
-          "Pedí el queque de zanahoria para los 60 de mi mamá y llegó justo a la hora " +
-          "acordada. Desapareció en veinte minutos y tres personas me pidieron el " +
-          "contacto de Ale antes de irse.",
-        todo: true,
+          "Los postres de Ale son deliciosos. Su torta de zanahoria es la mejor: textura, " +
+          "sabor, presentación. Es mi favorita. Los polvorones deliciosos y las galletas " +
+          "adictivas. La verdad es que es imposible escoger entre todas sus recetas.",
       },
       {
         id: "t2",
-        name: "Carlos Vargas Solís",
-        role: "Pedido de oficina, Escazú",
+        name: "Mirella S.",
+        role: "Clienta frecuente, Santa Ana",
         quote:
-          "Llevamos dos años pidiendo los brigadeiros para los cumpleaños de la oficina. " +
-          "Nunca se ha atrasado un pedido y siempre pregunta si hay alguien con alergias " +
-          "antes de hornear.",
-        todo: true,
+          "Los postres de Ale son deliciosos. Torta de zanahoria, polvorones, barra de " +
+          "dátiles, queque de limón, pie de brigadeiros: de todos los que he probado, todos " +
+          "espectaculares. Recomendadísimos.",
       },
       {
         id: "t3",

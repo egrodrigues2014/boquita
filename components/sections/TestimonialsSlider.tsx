@@ -2,6 +2,8 @@
 
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
+import { observeOnce } from "@/lib/revealObserver";
+
 /**
  * Slider de reseñas hecho a mano (spec §6.7, punto 8 del checklist).
  *
@@ -28,6 +30,7 @@ export function TestimonialsSlider({
   count: number;
   children: ReactNode;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const maskRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   // 3 es el valor de escritorio: coincide con el CSS, así el SSR y el primer
@@ -57,6 +60,29 @@ export function TestimonialsSlider({
   useEffect(() => {
     maskRef.current?.style.setProperty("--i", String(index));
   }, [index]);
+
+  /**
+   * Dispara el rellenado de las estrellas (D-41) cuando la sección asoma.
+   *
+   * Se observa ESTE nodo y no cada tarjeta: así las seis arrancan la secuencia a
+   * la vez, incluidas las cuatro que el `overflow` recorta. Un observer por
+   * tarjeta las escalonaría según cuándo entra cada una, que no es lo pedido.
+   *
+   * `observeOnce` es el mismo observer compartido que usa `Reveal` —threshold
+   * 0.15 y disparo único—, así que esto no añade un segundo IntersectionObserver
+   * a la página. El estado de reposo y el escalonado viven en
+   * `styles/17-testimonials.css`; aquí sólo se pone la clase.
+   *
+   * No se envuelve el slider en `<Reveal>`, aunque el spec §4.1 lo pida: eso le
+   * añadiría el desplazamiento de 100px y volvería intermitentes los tests que
+   * miden las flechas y las tarjetas. El desvío está anotado en D-41.
+   */
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    return observeOnce(root, (node) => node.classList.add("is-rated"));
+  }, []);
 
   const maxIndex = Math.max(0, count - perView);
   const atStart = index === 0;
@@ -112,6 +138,7 @@ export function TestimonialsSlider({
 
   return (
     <div
+      ref={rootRef}
       className="slider"
       role="group"
       aria-roledescription="carrusel"

@@ -1,5 +1,6 @@
 import { TestimonialsSlider } from "@/components/sections/TestimonialsSlider";
 import { Reveal } from "@/components/ui/Reveal";
+import { StarRating } from "@/components/ui/StarRating";
 import type { HomeContent } from "@/types/content";
 
 /**
@@ -17,6 +18,12 @@ import type { HomeContent } from "@/types/content";
  * ⚠ Con el retrato fuera, `.review-head` **dejó de ser flex**. Si alguien le
  * devuelve el `display:flex`, el nombre y el rol se colocan uno al lado del
  * otro en vez de apilarse.
+ *
+ * ⚠ Y ahora `.review-head` tiene TRES hijos —nombre, estrellas (D-41) y rol—,
+ * apilados por ser un bloque. Las estrellas estuvieron un día en la misma línea
+ * que el nombre y se bajaron aquí porque a 32px no caben al lado: en la tarjeta
+ * más estrecha, 992px, el nombre deja 43px libres y cinco estrellas piden ~168.
+ * Devolverle el `display:flex` pondría los tres en fila.
  *
  * Devolver `null` con la lista vacía es la válvula para apagar el bloque desde
  * el contenido, sin tocar código.
@@ -49,6 +56,7 @@ export function Testimonials({
               <article className="review-card">
                 <div className="review-head">
                   <div className="review-name">{item.name}</div>
+                  <StarRating />
                   <div className="review-role">{item.role}</div>
                 </div>
                 <p>{item.quote}</p>

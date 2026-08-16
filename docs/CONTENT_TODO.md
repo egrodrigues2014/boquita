@@ -35,29 +35,39 @@ diciendo otra cosa. Editar `content/products.ts` y ejecutar `npm run db:seed` de
 acuerdo — y `db:seed` **pisa** la tabla, así que si se usó el primer camino antes, ese cambio se
 revierte.
 
-### 3. Los 6 testimonios
+### 3. Los testimonios: faltan 4 de 6
 
-Con **nombre, rol y texto** de cada persona, más su **consentimiento escrito**. Los seis que hay en
-`content/home.ts` son de andamio.
+**Hay dos reales**, entregadas por Ale y publicadas sin marca: `t1` (María Elena M., Escazú) y `t2`
+(Mirella S., Santa Ana). Su texto original sin editar, lo que se cambió al publicarlo y el estado de
+su permiso están en `docs/TESTIMONIOS_FUENTES.md`.
+
+**Faltan cuatro**, con **nombre, rol y texto** de cada persona más su **consentimiento escrito**.
+`t3`…`t6` de `content/home.ts` siguen siendo de andamio.
+
+⚠ **El consentimiento de las dos publicadas está pendiente de confirmar.** Van con nombre en una web
+pública, así que es lo primero que hay que cerrar — antes incluso que las cuatro que faltan.
 
 No hacen falta fotos: la tarjeta **ya no lleva retrato** (desvío D-34). El `rol` es la **ocasión del
 pedido** («Cumpleaños en Santa Ana», «Pedido de oficina, Escazú»), no un cargo — eso es lo que da
-credibilidad en una repostería.
+credibilidad en una repostería. Ni María Elena ni Mirella dieron ocasión, sólo la zona: «Clienta
+frecuente» sale de lo que ambas cuentan, no de un dato suyo. Si Ale sabe la ocasión real, mejor.
 
 El PDF de Instagram sólo trae fotos y permalinks; no trae comentarios ni captions extraíbles
 (`assets/raw/manifest.json` lo documenta). Desde este entorno tampoco se pueden leer comentarios de
-Instagram sin acceso interactivo/login. Para cerrar este bloque, dejar en `assets/testimonios/` seis
-capturas o un `.txt/.md` con comentario, nombre y permiso.
+Instagram sin acceso interactivo/login. Para cerrar este bloque, anotar en `docs/TESTIMONIOS_FUENTES.md` el texto
+de las cuatro que faltan, con su nombre y su permiso. Las capturas, si las hay, se quedan fuera del
+repo como todos los originales (`/assets/*` está en `.gitignore`): lo que se versiona es el registro.
 
-**Estado v1: la sección ya se publica, con las seis reseñas de andamio marcadas `todo: true`.** El
-layout es definitivo; el copy no. Se cambió de criterio respecto a v1 temprana —donde el bloque
-quedaba oculto— porque una portada que termina en la galería y salta al pie no tiene prueba social
-en ninguna parte, y la sección es normativa en el spec §6.7.
+**Lo que impide publicar el andamio por descuido:** `tests/unit/content.test.ts` ya no cuenta las
+marcas —eso prohibía el estado mixto y obligaba a esconder las reales— sino que **nombra** las que
+faltan: `["t3","t4","t5","t6"]`. Sustituir un texto sin quitar su marca, o quitar una marca sin
+sustituir el texto, rompe el test. Cuando llegue la última, la lista queda vacía y el bloqueante se
+cierra.
 
-**Lo que impide publicar el andamio por descuido:** `tests/unit/content.test.ts` exige hoy que las
-seis lleven la marca. Al sustituir los textos se quitan las seis a la vez y el test rompe, que es
-justo cuando alguien tiene que mirar si el contenido es real. Un segundo test prohíbe el estado
-intermedio: o van marcadas todas, o ninguna.
+**Las estrellas no son un dato de la reseña.** Las seis tarjetas muestran cinco estrellas por
+decisión de negocio (desvío D-41), incluidas las cuatro inventadas, y María Elena escribió tres. No
+hay campo `rating` y no debe haberlo mientras el copy sea andamio. Al cerrar este bloque conviene
+decidir si las estrellas siguen siendo diseño o pasan a ser la puntuación de cada persona.
 
 Restricciones de forma, ya validadas por `content/schema.ts`: exactamente **6 items** (o 0 para
 apagar el bloque), `name` y `role` de 2 a 40 caracteres, y `quote` de 40 a **320** — el tope está

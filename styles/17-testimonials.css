@@ -3,12 +3,15 @@
 
    ⚠ ORDEN DE MEDIA QUERIES: base → min-width asc → max-width desc. No reordenar.
 
-   Punto 8 del checklist: 3 tarjetas crema de min-height 398px, flechas
-   circulares y línea a la derecha, alineadas con el titular.
+   Punto 8 del checklist: 3 tarjetas crema, flechas circulares y línea a la
+   derecha, alineadas con el titular. El alto de la tarjeta ya NO son los
+   `min-height` por breakpoint del spec: lo manda la reseña más larga y las demás
+   la llenan (ver `.review-card`, desvío D-41).
 
    La alineación de las flechas con el h2 sale de dos números que trabajan
    juntos: `h2.mb--40` (margin-bottom:-40px) y `.slider{padding-top:95px}`.
-   No tocar uno sin el otro.
+   No tocar uno sin el otro — y ojo, ese par se DESACOPLA por debajo de 768,
+   donde el h2 pasa a ancho completo y las flechas se le echaban encima.
 
    El `right:218px` de la flecha izquierda es 160 (línea) + 34 (círculo) + 24.
    Se copia, no se recalcula.
@@ -53,15 +56,31 @@
   touch-action: pan-y;
 }
 
+/* La columna existe para que la tarjeta pueda LLENAR el slide. El slide ya se
+   estiraba a la altura de la fila —es un ítem flex del `.slider-mask`—, pero la
+   tarjeta de dentro medía su propio contenido, así que una reseña corta dejaba
+   su caja crema recortada dentro de un slide más alto. */
 .slide {
+  display: flex;
+  flex-direction: column;
   flex: none;
   width: var(--slide-w);
   margin-right: var(--slide-gap);
 }
 
+/* ⚠ El `min-height` es un SUELO, no el alto de la tarjeta.
+   Aquí había cinco valores por breakpoint —420/398/393/312/420, del spec §6.7—
+   cuyo trabajo era cuadrar de altura las tarjetas a la vista. Ese trabajo lo
+   hace ahora `flex: 1`: la fila mide lo que la reseña más larga y las demás la
+   llenan, así que cuadran POR CONSTRUCCIÓN y no porque los números salgan.
+   Aquellos `min-height` sólo añadían crema muerta bajo el texto —50px medidos a
+   ≤479— y, cuando el contenido los rozaba, sacaban una tarjeta de la fila.
+   Lo que queda es el suelo que impide que la sección quede escuálida si algún
+   día las seis reseñas son cortas. Desvío D-41. */
 .review-card {
   width: 100%;
-  min-height: 420px;
+  flex: 1;
+  min-height: 260px;
   padding: 25px 22px;
   background: var(--primary-light);
   /* Sin border-radius y sin sombra: sólo fondo crema. */
@@ -80,6 +99,79 @@
   font-size: 20px;
   font-weight: 600;
   line-height: 1.5em;
+}
+
+/* Las estrellas (D-41) ocupan su PROPIA línea, entre el nombre y la ocasión.
+   Estuvieron un día compartiendo línea con el nombre y no cabían: a 32px cinco
+   estrellas piden ~168px, y en la tarjeta más estrecha —992px, donde la caja del
+   nombre mide 263 y el nombre más largo se come 220— quedaban 43px. Subirlas de
+   nuevo obliga a bajarlas a ~21px, que era la queja de partida. */
+.review-stars {
+  display: flex;
+  flex: none;
+  gap: 6px;
+  /* Arriba no hace falta margen: el `line-height: 1.5em` del nombre ya deja aire
+     bajo el texto. Abajo el 4 colapsa con el `margin-top: 5px` del rol. */
+  margin: 0 0 4px;
+}
+
+/* El relleno es el amarillo de la marca, pero sobre el crema de la tarjeta se
+   queda en 1.95:1: quien hace perceptible la forma es el contorno, 3.68:1 sobre
+   ese mismo fondo (SC 1.4.11, ver `tests/unit/contrast.test.ts`). Quitar el
+   `stroke` deja unas estrellas que se desvanecen en el fondo. */
+.review-stars svg {
+  width: 32px;
+  height: 32px;
+  fill: var(--gold);
+  stroke: var(--gold-line);
+  stroke-width: 1.5;
+  stroke-linejoin: round; /* sin esto las cinco puntas salen en pico */
+}
+
+/* ── Rellenado al entrar en pantalla (D-41) ─────────────────────────────────
+   El reposo va bajo `.js` y NUNCA en la regla base, como `.reveal` y
+   `.scroll-color-text__word`: sin JavaScript las estrellas nacen llenas, que es
+   el estado correcto, no uno degradado.
+
+   ⚠ Se anima `fill-opacity`, no `opacity`. `opacity` apagaría también el
+   contorno, y el contorno es lo ÚNICO que da 3:1 sobre el crema —el relleno se
+   queda en 1.95:1—, así que una estrella a medio rellenar dejaría de cumplir
+   SC 1.4.11 mientras dura la animación. Con `fill-opacity` la silueta se ve
+   entera desde el primer fotograma.
+
+   El escalonado de izquierda a derecha sale de `--star-i`, el entero que
+   `StarRating.tsx` pone en cada `<svg>`. Total: 4 × 180ms + 520 = 1.240ms.
+   Estuvo a la mitad y no se notaba. Consecuencia conocida del cambio:
+   `screenshots.spec.ts` estabiliza bajando al final de la página y volviendo
+   arriba, lo que dispara el observer, así que a 1,24s las capturas de la portada
+   saldrán a menudo con las estrellas a medio rellenar. Se asume: no llevan
+   aserciones —son para revisión a ojo— y ese fichero ya documenta que no son
+   deterministas.
+   ────────────────────────────────────────────────────────────────────────── */
+.js .review-stars svg {
+  fill-opacity: 0.15;
+  transition: fill-opacity 520ms ease-out;
+  transition-delay: calc(var(--star-i, 0) * 180ms);
+}
+
+/* `.is-rated` la pone `TestimonialsSlider` sobre el `.slider` al entrar en
+   pantalla, una sola vez y para las seis tarjetas a la vez. `.reveal-all` es el
+   failsafe de 2,5s de `app/layout.tsx`: si el observer no llegara a disparar,
+   las estrellas se llenan igual en vez de quedarse traslúcidas para siempre. */
+.js .slider.is-rated .review-stars svg,
+.js.reveal-all .review-stars svg {
+  fill-opacity: 1;
+}
+
+/* El kill-switch de `99-a11y.css` NO cubre esto: su `*` final sólo apaga
+   `animation-*`, y esto es una `transition`. Va aquí, junto a lo que apaga, como
+   `19-product-wheel.css` y `30-cart.css`. Sin esta regla la animación sobrevive
+   a `prefers-reduced-motion` y no lo dice nadie. */
+@media (prefers-reduced-motion: reduce) {
+  .js .review-stars svg {
+    fill-opacity: 1 !important;
+    transition: none !important;
+  }
 }
 
 .review-role {
@@ -143,7 +235,6 @@
     --slide-gap: 30px;
   }
   .review-card {
-    min-height: 398px;
     padding: 30px 30px 25px;
   }
   .review-name {
@@ -156,6 +247,28 @@
   }
 }
 
+/* ⚠ Consulta con los DOS límites, y por eso vive aquí, al final de la zona
+   `min-width`: sólo actúa entre 992 y 1279 y ningún bloque `max-width` posterior
+   la pisa, porque ninguno alcanza esta franja.
+
+   Qué arregla: en esa franja el h2 va a ancho completo —`w-50-tablet` sólo lo
+   acota a ≤991— y «LO QUE DICEN NUESTROS CLIENTES» mide 854px, mientras la
+   flecha izquierda arranca en 725 (a 992) o 833 (a 1100). Resultado medido: la
+   `.slider-line` cruzaba «CLIENTES» y la flecha quedaba detrás del texto. De
+   1280 en adelante el carril es de 1170px, la flecha se va a 933 y el titular
+   cabe holgado, así que ahí no hace falta.
+
+   Se acota el ancho en vez de bajar las flechas —que es lo que se hace a ≤767—
+   porque a estos anchos SÍ hay sitio de sobra en vertical, y acotar el titular
+   es justo lo que ya hace `w-50-tablet` un breakpoint más abajo: el titular se
+   parte en dos líneas y las flechas siguen colgando de él, como en la
+   referencia. */
+@media (min-width: 992px) and (max-width: 1279px) {
+  .testimonials-section h2 {
+    max-width: 55%;
+  }
+}
+
 /* ══════════════════ max-width descendente ══════════════════ */
 
 @media (max-width: 991px) {
@@ -164,7 +277,6 @@
     --per-view: 2;
   }
   .review-card {
-    min-height: 393px;
     padding-inline: 25px;
   }
   .slider-line {
@@ -177,19 +289,28 @@
     --slide-w: 100%;
     --per-view: 1;
   }
-  .review-card {
-    min-height: 312px;
+
+  /* ⚠ Aquí se DESACOPLA el par `h2.mb--40` + `.slider{padding-top}` que alinea
+     las flechas con el titular, y es a propósito. Por debajo de 768
+     `w-50-tablet` pasa el h2 a ancho completo (`04-layout.css`), así que se parte
+     en dos líneas y su segunda línea llega hasta donde están las flechas: el
+     margen negativo las metía DENTRO del titular. A ≤479 es peor, porque la
+     flecha izquierda salta a `left: 0` y cae justo encima del texto.
+     De 768 para arriba el h2 ocupa la mitad izquierda, no llega nunca a las
+     flechas, y el acople sigue intacto. */
+  .testimonials-section h2 {
+    margin-bottom: 10px;
+  }
+  .slider {
+    /* Sitio para la fila de flechas (34px) dejando la `.slider-line` —que a ≤991
+       baja a `top: 57px`— por encima del borde de la tarjeta. */
+    padding-top: 70px;
   }
 }
 
 @media (max-width: 479px) {
-  .slider {
-    margin-top: 30px;
-    padding-top: 75px;
-  }
-  .review-card {
-    min-height: 420px;
-  }
+  /* El `margin-top: 30px` y el `padding-top: 75px` que había aquí compensaban el
+     margen negativo del h2, que a este ancho ya no existe. */
   /* A ≤479 las flechas ya no están conectadas por la línea: es así en el spec. */
   .slider-arrow--left {
     right: auto;

@@ -210,6 +210,19 @@ describe("botón: relleno dorado con etiqueta marrón (desvío D-0)", () => {
   it("--gold-line sobre blanco ≥ 3:1 — límite del control (SC 1.4.11)", () => {
     expect(contrastRatio(light["--gold-line"]!, WHITE)).toBeGreaterThanOrEqual(NON_TEXT);
   });
+
+  it("--gold-line sobre crema ≥ 3:1 — contorno de las estrellas de reseña (D-41)", () => {
+    // Las estrellas van sobre `.review-card`, que es crema, no blanco. El
+    // relleno es `--gold` y ahí se queda en ~1.95:1 (lo mide el test de abajo):
+    // lo único que las hace perceptibles es el contorno, así que su ratio es
+    // parte del diseño, no un detalle. Sin esto, aclarar `--gold-line` borraría
+    // las estrellas sin que nada avisara.
+    expect(contrastRatio(light["--gold-line"]!, CREAM)).toBeGreaterThanOrEqual(NON_TEXT);
+  });
+
+  it("--gold sobre crema NO llega a 3:1 — por eso la estrella lleva contorno", () => {
+    expect(contrastRatio(light["--gold"]!, CREAM)).toBeLessThan(NON_TEXT);
+  });
 });
 
 describe("indicador de foco (SC 1.4.11)", () => {
