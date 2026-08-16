@@ -75,16 +75,33 @@ const MARCA_ALTO = Math.round((MARCA_ANCHO * 340) / 770);
  */
 const VELO = "rgba(28,18,10,0.66)";
 
-const FOTO_SRC = `data:image/jpeg;base64,${readFileSync(
-  path.join(process.cwd(), "app", "og-hero.jpg"),
-).toString("base64")}`;
-
-const MARCA_SVG = readFileSync(
-  path.join(process.cwd(), "public", "img", "brand", "wordmark-boquita-white.svg"),
-);
+/**
+ * Rutas, no bytes. **Importar este módulo no puede tocar el disco**, y no es una
+ * preferencia de estilo: Next importa este fichero para leer `alt`, `size` y
+ * `contentType` al resolver la metadata, así que sus efectos de importación se
+ * ejecutan en el bundle de CUALQUIER ruta que resuelva metadata fuera del build.
+ * En Vercel esas funciones no llevan `public/` —se sirve como estático desde el
+ * CDN— ni `app/`, de modo que un `readFileSync` aquí arriba revienta la
+ * resolución de metadata entera: el `<head>` sale sin `<title>`, Next arrastra el
+ * error al cliente y el límite de error sustituye la página ya pintada.
+ *
+ * Fue exactamente eso: medido el 17 ago 2026 contra producción, con `/tienda`
+ * —la única ruta dinámica— cayéndose al hidratar y las revalidaciones ISR de `/`
+ * fallando en silencio. Bisecado a `e8188e5`, que fue quien añadió la lectura de
+ * `public/`; `9ac4b7e`, que sólo leía de `app/`, todavía se servía bien.
+ */
+const RUTA_FOTO = ["app", "og-hero.jpg"];
+const RUTA_MARCA = ["public", "img", "brand", "wordmark-boquita-white.svg"];
 
 export default async function OpengraphImage() {
-  const marcaPng = await sharp(MARCA_SVG, { density: 300 })
+  // Dentro del handler: aquí sí corre en la función de `/opengraph-image`, que es
+  // la única a la que `outputFileTracingIncludes` le mete estos dos ficheros.
+  const fotoSrc = `data:image/jpeg;base64,${readFileSync(
+    path.join(process.cwd(), ...RUTA_FOTO),
+  ).toString("base64")}`;
+  const marcaSvg = readFileSync(path.join(process.cwd(), ...RUTA_MARCA));
+
+  const marcaPng = await sharp(marcaSvg, { density: 300 })
     .resize({ width: MARCA_ANCHO * 2 })
     .png()
     .toBuffer();
@@ -94,7 +111,7 @@ export default async function OpengraphImage() {
     (
       <div style={{ width: "100%", height: "100%", display: "flex", position: "relative" }}>
         <img
-          src={FOTO_SRC}
+          src={fotoSrc}
           alt=""
           width={size.width}
           height={size.height}

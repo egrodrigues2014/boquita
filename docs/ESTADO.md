@@ -926,10 +926,24 @@ con **4 `<meta>` y sin `<title>`** contra 28 en local, y Next arrastra ese error
   `/tienda` sigue sirviéndose por el fallback, y `/api/orders` responde 405 en producción); la
   tarjeta OG (`/opengraph-image` devuelve en producción el mismo JPEG de 131.462 bytes, y ningún
   bundle de página la referencia); `metadataBase` (válido). No es intermitente: 8 de 8.
-- **Siguiente paso:** el digest es `stringHash(message + stack)` y no se puede revertir, así que se
-  desplegó `instrumentation.ts` —**andamio temporal**— con `onRequestError`, que recibe el error
-  antes de que React lo pode y escribe mensaje y traza en los logs de la función. **Retirar ese
-  fichero en cuanto el fallo esté identificado.**
+- **CAUSA ENCONTRADA, bisecando en Vercel.** `9ac4b7e` (despliegue `cvgmxxer1`) se servía **bien**;
+  el siguiente, `e8188e5`, ya fallaba. Lo único runtime-relevante que introdujo: `app/opengraph-image.tsx`
+  pasó a leer **`public/img/brand/wordmark-boquita-white.svg` a nivel de módulo**. La versión sana
+  sólo leía de `app/`.
+  **El mecanismo:** Next importa ese fichero para leer `alt`, `size` y `contentType` al resolver la
+  metadata, así que sus efectos de importación corren en el bundle de cualquier ruta que resuelva
+  metadata fuera del build. En Vercel esas funciones **no llevan `public/`** —se sirve como estático
+  desde el CDN— y `outputFileTracingIncludes` sólo se lo mete a `/opengraph-image`. El `readFileSync`
+  revienta al importar → se cae la resolución de metadata entera. Es la trampa que el propio mensaje
+  de `9ac4b7e` dejó anotada: «leer de public/ con process.cwd() compila pero falla sólo en Vercel».
+  **Por qué no se reproducía en local:** `next start` corre desde la raíz del proyecto y sirve todas
+  las rutas del mismo proceso, así que el fichero está siempre en disco y no hay bundle por función.
+- **Arreglo:** las dos lecturas se mueven **dentro del handler**, de modo que importar el módulo no
+  toca el disco. Verificado antes de desplegar: 335 unitarios en verde, typecheck y lint limpios, y
+  la tarjeta sigue saliendo **byte a byte idéntica** (131.462 bytes, `image/jpeg`), que era el riesgo
+  de regresión del cambio.
+- **⚠ Queda por retirar `instrumentation.ts`**, el andamio de `onRequestError`. Se deja un despliegue
+  más por si el arreglo no bastara; en cuanto producción quede confirmada, **borrarlo**.
 
 **Nada invalida la caché.** `CATALOG_CACHE_TAG` está definido en `lib/db/catalog.ts:77` y aplicado
 como tag en la línea 127, pero **`revalidateTag` y `revalidatePath` no se llaman en ningún sitio del
