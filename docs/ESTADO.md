@@ -64,6 +64,37 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 
 ## Hecho
 
+### La tarjeta OG dejaba sin metadata a todo el sitio
+
+Fallo de producción del 17 ago 2026, **cerrado y verificado contra el dominio**. `app/opengraph-image.tsx`
+leía `public/img/brand/wordmark-boquita-white.svg` con `readFileSync` **a nivel de módulo**. Next importa
+ese fichero para leer `alt`, `size` y `contentType` al resolver la metadata, así que ese efecto de
+importación corría en el bundle de cualquier ruta que resolviera metadata **fuera del build** — y en
+Vercel esas funciones no llevan `public/`, que se sirve como estático desde el CDN. El `readFileSync`
+reventaba al importar y se llevaba por delante la resolución de metadata entera.
+
+- **Síntoma:** `/tienda`, la única ruta `ƒ (Dynamic)`, pintaba las 23 tarjetas y **al hidratar** las
+  sustituía por `app/error.tsx`. El `<head>` salía con 4 `<meta>` y sin `<title>`, y en el stream RSC
+  la fila de metadata llegaba como error (`"error":"$Z"`). Las revalidaciones ISR de `/` y de las
+  fichas fallaban igual pero **en silencio**: el sitio llevaba desde `e8188e5` congelado en el
+  contenido del build, así que un cambio en Neon no habría llegado nunca.
+- **Por qué no se reproducía en local:** `next start` corre desde la raíz y sirve todas las rutas del
+  mismo proceso — el fichero está siempre en disco y no hay bundle por función que pueda quedarse sin
+  él. Un build de producción local del mismo commit se servía perfecto.
+- **Cómo se encontró:** bisecando despliegues de Vercel. `9ac4b7e` bien, `e8188e5` roto; ese commit es
+  el que añadió la lectura de `public/`. La causa no salía de los logs porque
+  `next/dist/lib/metadata/metadata.js` captura el error de metadata en su propio `try/catch` y **no lo
+  registra**, y React poda el mensaje en producción dejando sólo un digest, que es
+  `stringHash(message + stack)` y no se puede revertir.
+- **Arreglo** (`app/opengraph-image.tsx`): las dos lecturas se mueven **dentro del handler**, así que
+  importar el módulo no toca el disco. La tarjeta sigue saliendo **byte a byte idéntica** (131.462
+  bytes, `image/jpeg`). Verificado en producción: `/tienda` sirve `<title>` y 29 `<meta>`, mantiene
+  las 23 tarjetas pasada la hidratación sin errores de consola, y `/tienda/<slug-inexistente>` volvió
+  de **500** a **404**.
+- **⚠ Deuda que deja:** el mismo patrón sigue vivo con `app/og-hero.jpg`, que se lee igual pero desde
+  `app/`. Hoy no rompe, y **no hay ningún test que impida que alguien vuelva a poner un `readFileSync`
+  a nivel de módulo** en una ruta de metadata. Es el candidato obvio a guardarraíl.
+
 ### Cierre de la capa de SEO y de la tarjeta de enlace
 
 La capa ya existía —`app/sitemap.ts`, `app/robots.ts`, metadata global y por página, JSON-LD
@@ -902,48 +933,6 @@ test que exige que las 6 sigan puestas—, así que publicar el andamio como rea
 deliberado.
 
 ### 🟠 Bloquea operar el sitio
-
-**🔥 ABIERTO — en producción falla TODO render en tiempo de petición.** Medido el 17 ago 2026 contra
-`www.boquitacostarica.com`, con el despliegue de `c0229c3` (o sea HEAD). Lo que se ve: `/tienda`
-pinta bien las 23 tarjetas y **al hidratar** las sustituye por `app/error.tsx` («Se nos cayó la
-bandeja»). Lo que pasa por debajo: **la metadata revienta**, no el cuerpo. En la carga RSC de
-producción la fila de metadata llega como error —`a:{"metadata":"$undefined","error":"$Z",…}`, y
-`$Z` es el marcador que el cliente de flight resuelve con `resolveError`—, así que el `<head>` sale
-con **4 `<meta>` y sin `<title>`** contra 28 en local, y Next arrastra ese error al cliente.
-
-- **Sólo se nota en `/tienda`** porque es la única ruta `ƒ (Dynamic)` del proyecto: la única que
-  resuelve su metadata en el lambda. El resto la hornea en el build.
-- **Pero no es sólo `/tienda`.** Los logs de runtime de Vercel dan el mismo error en las
-  revalidaciones ISR de `/` (digest `1120656995`, 5 repeticiones) y de las fichas; `/tienda` da
-  digest `3029784357`, y `/tienda/<slug-inexistente>` —también a demanda— da **500** donde en local
-  da 404 limpio. **Consecuencia que no se ve:** como la revalidación falla siempre, el sitio está
-  congelado en el contenido del build y **un cambio en Neon no va a aparecer nunca**.
-- **Descartado, cada cosa con su medida:** despliegue viejo (producción trae `+100`, el `hidden` del
-  nav y ya sin `streetAddress`); deriva de versiones (`255-3d881dfa8c72bc56.js` y
-  `4bd1b696-c023c6e3521b1417.js` tienen hash idéntico local y en producción); el código (build de
-  producción local del mismo commit sirve `/tienda` bien, también con `NEXT_PUBLIC_SITE_URL`,
-  `VERCEL_ENV` y `SITE_LAUNCHED` de producción); Neon (con `DATABASE_URL` apuntando a la nada
-  `/tienda` sigue sirviéndose por el fallback, y `/api/orders` responde 405 en producción); la
-  tarjeta OG (`/opengraph-image` devuelve en producción el mismo JPEG de 131.462 bytes, y ningún
-  bundle de página la referencia); `metadataBase` (válido). No es intermitente: 8 de 8.
-- **CAUSA ENCONTRADA, bisecando en Vercel.** `9ac4b7e` (despliegue `cvgmxxer1`) se servía **bien**;
-  el siguiente, `e8188e5`, ya fallaba. Lo único runtime-relevante que introdujo: `app/opengraph-image.tsx`
-  pasó a leer **`public/img/brand/wordmark-boquita-white.svg` a nivel de módulo**. La versión sana
-  sólo leía de `app/`.
-  **El mecanismo:** Next importa ese fichero para leer `alt`, `size` y `contentType` al resolver la
-  metadata, así que sus efectos de importación corren en el bundle de cualquier ruta que resuelva
-  metadata fuera del build. En Vercel esas funciones **no llevan `public/`** —se sirve como estático
-  desde el CDN— y `outputFileTracingIncludes` sólo se lo mete a `/opengraph-image`. El `readFileSync`
-  revienta al importar → se cae la resolución de metadata entera. Es la trampa que el propio mensaje
-  de `9ac4b7e` dejó anotada: «leer de public/ con process.cwd() compila pero falla sólo en Vercel».
-  **Por qué no se reproducía en local:** `next start` corre desde la raíz del proyecto y sirve todas
-  las rutas del mismo proceso, así que el fichero está siempre en disco y no hay bundle por función.
-- **Arreglo:** las dos lecturas se mueven **dentro del handler**, de modo que importar el módulo no
-  toca el disco. Verificado antes de desplegar: 335 unitarios en verde, typecheck y lint limpios, y
-  la tarjeta sigue saliendo **byte a byte idéntica** (131.462 bytes, `image/jpeg`), que era el riesgo
-  de regresión del cambio.
-- **⚠ Queda por retirar `instrumentation.ts`**, el andamio de `onRequestError`. Se deja un despliegue
-  más por si el arreglo no bastara; en cuanto producción quede confirmada, **borrarlo**.
 
 **Nada invalida la caché.** `CATALOG_CACHE_TAG` está definido en `lib/db/catalog.ts:77` y aplicado
 como tag en la línea 127, pero **`revalidateTag` y `revalidatePath` no se llaman en ningún sitio del
