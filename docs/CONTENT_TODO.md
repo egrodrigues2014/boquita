@@ -44,8 +44,8 @@ su permiso están en `docs/TESTIMONIOS_FUENTES.md`.
 **Faltan cuatro**, con **nombre, rol y texto** de cada persona más su **consentimiento escrito**.
 `t3`…`t6` de `content/home.ts` siguen siendo de andamio.
 
-⚠ **El consentimiento de las dos publicadas está pendiente de confirmar.** Van con nombre en una web
-pública, así que es lo primero que hay que cerrar — antes incluso que las cuatro que faltan.
+✅ **El consentimiento de las dos publicadas está concedido** (Ale lo confirmó el 16 ago 2026). Queda
+anotado en `docs/TESTIMONIOS_FUENTES.md`; para las cuatro que falten hace falta el mismo permiso.
 
 No hacen falta fotos: la tarjeta **ya no lleva retrato** (desvío D-34). El `rol` es la **ocasión del
 pedido** («Cumpleaños en Santa Ana», «Pedido de oficina, Escazú»), no un cargo — eso es lo que da

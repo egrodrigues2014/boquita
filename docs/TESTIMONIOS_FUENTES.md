@@ -24,7 +24,8 @@ de `!` y `.`; las admiraciones pasan a punto. Ni una palabra sustituida.
 diseño aplicado a las seis tarjetas por decisión de negocio (desvío D-41), no la puntuación que dio
 esta persona. Queda anotado aquí porque en el sitio no se distingue.
 
-**Consentimiento:** ⏳ **pendiente de confirmar con Ale.** Está publicada con nombre.
+**Consentimiento:** ✅ **concedido.** Ale confirmó el 16 de agosto de 2026 que las dos personas
+dieron el visto bueno a publicar su reseña con nombre.
 
 ---
 
@@ -41,7 +42,8 @@ una sola («… pie de brigadeiros: de todos los que he probado, todos espectacu
 `Recomendadisimos` → `Recomendadísimos`; `Mirella S` → `Mirella S.`. No se añadió ningún producto que
 no nombrara ella.
 
-**Consentimiento:** ⏳ **pendiente de confirmar con Ale.** Está publicada con nombre.
+**Consentimiento:** ✅ **concedido.** Ale confirmó el 16 de agosto de 2026 que las dos personas
+dieron el visto bueno a publicar su reseña con nombre.
 
 ---
 
