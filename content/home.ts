@@ -301,8 +301,11 @@ export const home: HomeContent = {
       "Valle Central.",
     image: serviceImage,
     metrics: [
-      // ⚠ TODO: necesita un número real y defendible, o cambiar la métrica.
-      { value: "+500", label: "Pedidos horneados desde 2022" },
+      // Cifra dada por Ale el 16 ago 2026, y por eso el «+»: es un suelo que
+      // puede defender, no una estimación. Sustituye al «+500» de andamio que
+      // bloqueaba el lanzamiento. `content.test.ts` la fija para que no vuelva
+      // a moverse sin que alguien lo decida.
+      { value: "+100", label: "Pedidos horneados desde 2022" },
       // Verificable: son los productos del catálogo.
       { value: "23", label: "Recetas en el catálogo" },
     ],

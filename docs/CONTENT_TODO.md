@@ -75,10 +75,14 @@ medido contra el `min-height` de `.review-card`, pasarlo desborda la tarjeta má
 
 ### 4. La métrica nº 1
 
+✅ **Cerrado el 16 ago 2026.** Ale dio la cifra: la portada dice **«+100 pedidos horneados desde
+2022»**, y el «+» es deliberado — es un suelo que puede defender, no una estimación. El `⚠ TODO`
+salió de `content/home.ts` y `tests/unit/content.test.ts` fija ahora las dos métricas para que
+mover cualquiera de ellas sea una decisión y no un descuido de edición.
+
 El bloque de servicio muestra dos métricas. La segunda («23 recetas en el catálogo») es verificable:
-la calcula `lib/homeContent.ts` contando el catálogo servido. La primera sigue siendo un placeholder:
-**«+500 pedidos horneados desde 2022»** necesita un número real y defendible, o se cambia por otra
-métrica que sí se pueda sostener. El **año ya es el bueno** (13 ago): Ale sitúa el primer pedido
+la calcula `lib/homeContent.ts` contando el catálogo servido. El **año ya era el bueno** (13 ago):
+Ale sitúa el primer pedido
 vendido en **abril de 2022**, y ese es el dato que cuenta `content/pages.ts`. La portada decía 2019 y
 se corrigió para que las dos páginas no se desmintieran.
 

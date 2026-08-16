@@ -195,9 +195,15 @@ describe("los TODO están marcados, no escondidos", () => {
     ]);
   });
 
-  it("la métrica sin verificar está marcada y la verificable no", () => {
+  it("las dos métricas son cifras reales, y ninguna se mueve sin que se note", () => {
+    /**
+     * Este test vigilaba que la métrica de pedidos siguiera SIN verificar. Dejó
+     * de tener sentido el 16 ago 2026, cuando Ale dio la cifra y el «+500» de
+     * andamio pasó a «+100». Ahora hace lo contrario: fija las dos para que
+     * cambiar una sea una decisión explícita y no un descuido de edición.
+     */
     const [pedidos, verificable] = home.service.metrics;
-    expect(pedidos.value).toBe("+500");
+    expect(pedidos.value).toBe("+100");
     // 2022, no 2019: es la fecha del primer pedido vendido, la que cuenta Ale en
     // «Sobre nosotros». Las dos páginas tienen que decir lo mismo.
     expect(pedidos.label).toBe("Pedidos horneados desde 2022");
