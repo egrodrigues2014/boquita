@@ -903,6 +903,34 @@ deliberado.
 
 ### 🟠 Bloquea operar el sitio
 
+**🔥 ABIERTO — en producción falla TODO render en tiempo de petición.** Medido el 17 ago 2026 contra
+`www.boquitacostarica.com`, con el despliegue de `c0229c3` (o sea HEAD). Lo que se ve: `/tienda`
+pinta bien las 23 tarjetas y **al hidratar** las sustituye por `app/error.tsx` («Se nos cayó la
+bandeja»). Lo que pasa por debajo: **la metadata revienta**, no el cuerpo. En la carga RSC de
+producción la fila de metadata llega como error —`a:{"metadata":"$undefined","error":"$Z",…}`, y
+`$Z` es el marcador que el cliente de flight resuelve con `resolveError`—, así que el `<head>` sale
+con **4 `<meta>` y sin `<title>`** contra 28 en local, y Next arrastra ese error al cliente.
+
+- **Sólo se nota en `/tienda`** porque es la única ruta `ƒ (Dynamic)` del proyecto: la única que
+  resuelve su metadata en el lambda. El resto la hornea en el build.
+- **Pero no es sólo `/tienda`.** Los logs de runtime de Vercel dan el mismo error en las
+  revalidaciones ISR de `/` (digest `1120656995`, 5 repeticiones) y de las fichas; `/tienda` da
+  digest `3029784357`, y `/tienda/<slug-inexistente>` —también a demanda— da **500** donde en local
+  da 404 limpio. **Consecuencia que no se ve:** como la revalidación falla siempre, el sitio está
+  congelado en el contenido del build y **un cambio en Neon no va a aparecer nunca**.
+- **Descartado, cada cosa con su medida:** despliegue viejo (producción trae `+100`, el `hidden` del
+  nav y ya sin `streetAddress`); deriva de versiones (`255-3d881dfa8c72bc56.js` y
+  `4bd1b696-c023c6e3521b1417.js` tienen hash idéntico local y en producción); el código (build de
+  producción local del mismo commit sirve `/tienda` bien, también con `NEXT_PUBLIC_SITE_URL`,
+  `VERCEL_ENV` y `SITE_LAUNCHED` de producción); Neon (con `DATABASE_URL` apuntando a la nada
+  `/tienda` sigue sirviéndose por el fallback, y `/api/orders` responde 405 en producción); la
+  tarjeta OG (`/opengraph-image` devuelve en producción el mismo JPEG de 131.462 bytes, y ningún
+  bundle de página la referencia); `metadataBase` (válido). No es intermitente: 8 de 8.
+- **Siguiente paso:** el digest es `stringHash(message + stack)` y no se puede revertir, así que se
+  desplegó `instrumentation.ts` —**andamio temporal**— con `onRequestError`, que recibe el error
+  antes de que React lo pode y escribe mensaje y traza en los logs de la función. **Retirar ese
+  fichero en cuanto el fallo esté identificado.**
+
 **Nada invalida la caché.** `CATALOG_CACHE_TAG` está definido en `lib/db/catalog.ts:77` y aplicado
 como tag en la línea 127, pero **`revalidateTag` y `revalidatePath` no se llaman en ningún sitio del
 repo** — sólo se mencionan en dos comentarios (`app/layout.tsx:77`, `lib/db/catalog.ts:76`).
