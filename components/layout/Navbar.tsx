@@ -140,6 +140,7 @@ function Dropdown({
   onToggle,
   onRequestClose,
   hoverEnabled,
+  isDrawer,
 }: {
   dropdown: NavDropdown;
   isOpen: boolean;
@@ -147,6 +148,7 @@ function Dropdown({
   onToggle: () => void;
   onRequestClose: () => void;
   hoverEnabled: boolean;
+  isDrawer: boolean;
 }) {
   const id = useId();
   const closeTimer = useRef<number>(0);
@@ -167,7 +169,17 @@ function Dropdown({
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 
-  const persistentOpen = Boolean(dropdown.href && !hoverEnabled);
+  // En el drawer, un grupo con destino propio va SIEMPRE desplegado: su etiqueta
+  // es un <a> que navega, así que no hay nada que alterne el panel.
+  //
+  // La condición es `isDrawer`, no `!hoverEnabled`: son cosas distintas y
+  // confundirlas mandaba los dos paneles abiertos en el HTML del servidor.
+  // `hoverEnabled` sólo puede medirse tras hidratar, así que en el servidor vale
+  // `false` y `!hoverEnabled` daba `true` para todo el mundo — en escritorio los
+  // paneles son `position:absolute` y se pintaban flotando sobre el hero hasta
+  // que llegaba el bundle. `isDrawer` arranca igual de ciego, pero al revés: en
+  // el peor caso el panel lateral está fuera de pantalla y nadie lo ve.
+  const persistentOpen = Boolean(dropdown.href && isDrawer);
   const expanded = isOpen || persistentOpen;
   const hidden = !expanded;
 
@@ -245,6 +257,11 @@ export function Navbar({
   const [menuOpen, setMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [hoverEnabled, setHoverEnabled] = useState(false);
+  // Arranca en `false` a propósito, y ese `false` es el arreglo: es el valor con
+  // el que se genera el HTML del servidor, y el HTML del servidor es el mismo
+  // para todos los anchos. Ante la duda, el estado inicial tiene que ser el que
+  // no se vea mal en escritorio.
+  const [isDrawer, setIsDrawer] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLElement>(null);
 
@@ -263,15 +280,20 @@ export function Navbar({
     setOpenDropdown(null);
   }, []);
 
+  // Mismo umbral que convierte `.nav-menu` en panel lateral (10-navbar.css), y
+  // el único que decide si un grupo con destino propio va desplegado de entrada.
+  //
   // Al pasar a escritorio hay que cerrar el drawer: si no, rotar una tablet deja
   // el body bloqueado con un panel invisible. Es el bug clásico de este patrón.
   useEffect(() => {
     const query = window.matchMedia("(min-width: 992px)");
-    const onChange = () => {
+    const update = () => {
+      setIsDrawer(!query.matches);
       if (query.matches) closeAll();
     };
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
+    update(); // sin lectura inicial, `isDrawer` se quedaría en el valor del servidor
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
   }, [closeAll]);
 
   // Cierre al hacer clic fuera.
@@ -334,6 +356,7 @@ export function Navbar({
     onToggle: () => setOpenDropdown((current) => (current === position ? null : position)),
     onRequestClose: () => setOpenDropdown((current) => (current === position ? null : current)),
     hoverEnabled,
+    isDrawer,
   });
 
   return (

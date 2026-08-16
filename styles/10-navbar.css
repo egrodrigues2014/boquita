@@ -584,6 +584,15 @@
     gap: 4px;
   }
 
+  /* El `hidden` del componente NO gana solo: el `display: flex` de arriba es una
+     declaración de AUTOR y el `[hidden] { display: none }` que la anularía es del
+     NAVEGADOR, así que pierde por origen, no por especificidad — da igual lo que
+     se afine el selector. Sin esta línea, «Ocasiones» sale siempre desplegado en
+     el drawer mientras su chevron y su `aria-expanded` dicen lo contrario. */
+  .nav-dropdown-list[hidden] {
+    display: none;
+  }
+
   /* La guía propone 40px; se mantienen 44px para no reducir el área táctil que
      ya cubren las pruebas. 40px de sangría + slot de 24px alinea la etiqueta a
      los mismos 64px del nivel principal. */

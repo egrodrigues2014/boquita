@@ -464,6 +464,51 @@ test.describe("slider de testimonios", () => {
 
 // ── Punto 14 · navegación ──────────────────────────────────────────────────
 test.describe("navegación", () => {
+  /**
+   * El HTML del servidor es el ÚNICO sitio donde se ve este fallo, y por eso se
+   * mira el texto crudo en vez del DOM: cualquier aserción sobre la página ya
+   * hidratada llega tarde y pasa aunque el usuario haya visto los paneles
+   * abiertos sobre el hero durante toda la descarga del bundle.
+   *
+   * Ocurrió: `persistentOpen` se calculaba con `!hoverEnabled`, y `hoverEnabled`
+   * sólo puede medirse en el cliente, así que el servidor mandaba desplegados
+   * los dos grupos con destino propio (Catálogo y Sobre nosotros).
+   */
+  test("el HTML del servidor no manda ningún panel del nav desplegado", async ({ page }) => {
+    const html = await (await page.request.get("/")).text();
+    const paneles = html.match(/<div [^>]*class="nav-dropdown-list"[^>]*>/g) ?? [];
+
+    expect(paneles).toHaveLength(3);
+    expect(paneles.filter((panel) => !panel.includes('hidden=""'))).toEqual([]);
+  });
+
+  test("en escritorio ningún panel se ve al cargar", async ({ page, viewport }) => {
+    test.skip(viewport!.width <= 991, "A ≤991 el nav vive dentro del drawer");
+
+    const paneles = page.locator(".nav-dropdown-list");
+    await expect(paneles).toHaveCount(3);
+    for (let i = 0; i < 3; i += 1) await expect(paneles.nth(i)).toBeHidden();
+  });
+
+  test("en el drawer «Ocasiones» empieza plegado y despliega al pulsarlo", async ({
+    page,
+    viewport,
+  }) => {
+    test.skip(viewport!.width > 991, "El drawer sólo existe a ≤991");
+
+    await page.getByRole("button", { name: "Abrir menú" }).click();
+
+    // El `hidden` del panel no basta por sí solo: a ≤991 `.nav-dropdown-list`
+    // lleva un `display: flex` de autor que vence al del navegador. Esto mide
+    // visibilidad real, no el atributo.
+    const toggle = page.getByRole("button", { name: "Ocasiones", exact: true });
+    const panel = page.locator(".nav-dropdown", { has: toggle }).locator(".nav-dropdown-list");
+    await expect(panel).toBeHidden();
+
+    await toggle.click();
+    await expect(panel).toBeVisible();
+  });
+
   test("los dropdowns de escritorio abren y cierran con teclado", async ({ page, viewport }) => {
     test.skip(viewport!.width <= 991, "A ≤991 el nav vive dentro del drawer");
 

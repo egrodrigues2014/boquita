@@ -42,7 +42,7 @@ medido:** si el fichero dice «179 en verde», es porque acabas de correr `npm t
 
 ## Rompen en silencio
 
-Nueve cosas que fallan **sin dar error**. Si tocas algo cerca, verifícalas a mano.
+Diez cosas que fallan **sin dar error**. Si tocas algo cerca, verifícalas a mano.
 
 1. **Un solo import de CSS.** `app/layout.tsx` importa exclusivamente `styles/index.css`, que encadena
    los parciales con `@import`. Next no garantiza el orden entre varios imports globales, y aquí toda
@@ -72,6 +72,12 @@ Nueve cosas que fallan **sin dar error**. Si tocas algo cerca, verifícalas a ma
    recodifica la query con un codificador que no maneja pares surrogados y **convierte cada emoji del
    mensaje en `�`**. Se pierde todo carácter de 4 bytes en UTF-8 y sobrevive todo lo de 1-3, así que el
    síntoma es un mensaje casi correcto con los iconos roídos. El motivo está medido en `lib/contact.ts`.
+10. **El atributo `hidden` pierde contra cualquier `display` de la hoja del proyecto.** La regla
+    que lo oculta, `[hidden] { display: none }`, es del **navegador**, y una declaración de autor gana
+    por origen aunque su selector sea menos específico. `styles/10-navbar.css` daba `display: flex` a
+    `.nav-dropdown-list` a ≤991 y el panel de «Ocasiones» salía siempre desplegado en el drawer,
+    mientras su chevron y su `aria-expanded` decían lo contrario. Si ocultas algo por atributo y su
+    clase declara `display`, escribe además la regla `[hidden]`.
 
 ## Dónde mirar
 
