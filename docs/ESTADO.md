@@ -78,31 +78,52 @@ construcción. No crea rutas ni toca pedidos ni base de datos.
   en la SERP en vez de cortarse a media frase. Los términos largos («zanahoria», «limón») siguen en
   `keywords`, en el copy de la portada y en la descripción de `/tienda`, que es de donde se indexan;
   a cambio entra la llamada a la acción, que es lo que gana el clic.
-- **La tarjeta de Open Graph lleva foto** (`app/opengraph-image.tsx`, `scripts/build-images.mjs`).
-  Era un rectángulo de texto, y esto se comparte en chats donde compite con fotos de comida. Usa el
-  mismo recorte que el hero, generado aparte en `app/og-hero.jpg` (480×630) porque **Satori no
-  decodifica el WebP ni el AVIF** que es todo lo que hay en `public/img/hero/`.
+- **La tarjeta de Open Graph reproduce el hero** (`app/opengraph-image.tsx`,
+  `scripts/build-images.mjs`). Era un rectángulo de texto que decía «Dulce y salado» en tipografía
+  de sistema; ahora lleva la foto a sangre bajo un velo (`rgba(28,18,10,0.66)`) y **el wordmark de
+  la marca** en blanco, con `hero.eyebrow` y `hero.tagline` sacados de `content/home.ts` en vez de
+  quemados. El velo no es decoración: el queque va sobre plato blanco y con azúcar glas encima, así
+  que sin oscurecer la foto el wordmark desaparece justo en el centro.
+- **«Boquita» no se dibuja con una fuente, y eso resolvió el problema difícil.** Es
+  `wordmark-boquita-white.svg`, los tres contornos del logo maestro, como manda **D-39**. `Satori`
+  necesita los BYTES de la fuente y en el repo no hay ni un TTF/OTF/WOFF —`next/font` sólo
+  materializa WOFF2, que Satori rechaza—, así que dibujarlo con Cormorant Infant habría exigido
+  traer un fichero de fuente **y** habría violado D-39. Se rasteriza a PNG con sharp en el build
+  porque el SVG **no trae `width` ni `height`**, sólo `viewBox="0 250 770 340"` con el `min-y` en
+  250, y resvg calcula mal el intrínseco en ese caso. Se lee del SVG y no de un PNG commiteado para
+  que el wordmark conserve una sola fuente de verdad.
+- **El recorte de la foto NO es el del hero**, aunque el original sea el mismo. El hero es vertical
+  porque llena una columna a 100vh; en la tarjeta la foto es el fondo de un lienzo apaisado, así que
+  `app/og-hero.jpg` pasó de **480×630 a 1200×630**, con una banda centrada en el queque (medido:
+  ocupa de y≈617 a y≈1659 del original 1440×1800).
 - **La tarjeta se sirve en JPEG, no en PNG.** Con la foto dentro, el PNG que emite `ImageResponse`
   pesaba **567 KB** — absurdo para un thumbnail que WhatsApp reduce, y en la banda donde los
-  rastreadores de enlaces empiezan a abandonar la descarga. Recomprimida con sharp: **86,5 KB**, la
-  misma imagen. Una ruta de metadata es un route handler, así que puede devolver el `Response` que
-  quiera mientras `contentType` lo declare.
+  rastreadores de enlaces empiezan a abandonar la descarga. Recomprimida con sharp: **131 KB** con
+  la foto ya a sangre. Una ruta de metadata es un route handler, así que puede devolver el
+  `Response` que quiera mientras `contentType` lo declare.
+- **`openGraph.description` baja de 123 a 94 caracteres.** WhatsApp la cortaba a media frase
+  («…Pedidos por WhatsApp con 48»), visto en un pantallazo real del chat. La `description` general,
+  la que lee Google, se queda en sus 157.
 
 Dos trampas medidas por el camino, anotadas en la cabecera de `app/opengraph-image.tsx` para que no
 se repitan: el `fetch(new URL("./x.jpg", import.meta.url))` que documenta Next **rompe el build**
 aquí (webpack lo reescribe a `/_next/static/media/…` y `fetch` no parsea una URL sin origen), y leer
 de `public/` con `process.cwd()` compila pero falla sólo en Vercel, porque `public/` no viaja dentro
-del bundle de la función.
+del bundle de la función. Los dos ficheros que la ruta lee están en `outputFileTracingIncludes`.
 
-Verificado el 16 ago: `npm test` **333 en verde** (18 ficheros), `npm run typecheck` y `npm run lint`
+Verificado el 16 ago: `npm test` **335 en verde** (18 ficheros), `npm run typecheck` y `npm run lint`
 limpios, `NEXT_DIST_DIR=.next-verify npm run build` con **37 páginas**. Contra el build servido,
 `/sitemap.xml` da **26 URLs** (3 fijas + 23 fichas) y `/opengraph-image` responde 200 `image/jpeg` a
-1200×630.
+1200×630 y **131 KB**. La tarjeta se revisó a ojo a tamaño completo y reducida a 400px, que es lo que
+enseña WhatsApp en el chat.
 
-⚠ **Se queda sin cobertura de tests** el slot `og` de `scripts/build-images.mjs` y la recompresión a
-JPEG: nadie comprueba que `app/og-hero.jpg` exista ni que la ruta devuelva `image/jpeg`. Si el
-fichero desapareciera, el síntoma sería un build roto, no un test en rojo. `seo-perf.spec.ts:58`
-sólo exige que `og:image` tenga *algún* contenido.
+✅ **Cubierto el hueco de tests que dejó la entrega anterior.** `tests/unit/brand-wordmark.test.ts`
+comprueba ahora que `app/og-hero.jpg` mida 1200×630 —si alguien cambia el recorte y no regenera, el
+síntoma no era un rojo sino una tarjeta descuadrada que nadie mira hasta que la comparte un
+cliente— y que el wordmark siga siendo blanco, que es lo que lo hace legible sobre el velo.
+
+⚠ **Sigue sin cobertura** que la ruta devuelva `image/jpeg`: eso sólo se ve levantando el build, y
+`seo-perf.spec.ts:58` se conforma con que `og:image` tenga *algún* contenido.
 
 🔴 **Lo único que separa hoy al sitio del índice son dos variables de entorno de Vercel.** Ver
 «Despliegue» en Pendiente.

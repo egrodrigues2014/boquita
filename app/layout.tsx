@@ -40,9 +40,12 @@ export const metadata: Metadata = {
     siteName: "Boquita — Sweet & Salty",
     url: SITE_URL,
     title: "Boquita — Sweet & Salty · Repostería artesanal en Santa Ana",
+    // WhatsApp corta la descripción alrededor de los 100 caracteres: los 123 de
+    // antes se partían en «…Pedidos por WhatsApp con 48». Mejor una frase que
+    // cierra que una que se queda a medias.
     description:
       "Queques, cupcakes, galletas y dulces horneados por encargo en Santa Ana. " +
-      "Pedidos por WhatsApp con 48 horas de anticipación.",
+      "Pedidos por WhatsApp.",
   },
   twitter: { card: "summary_large_image" },
   robots: shouldIndex

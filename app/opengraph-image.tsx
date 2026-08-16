@@ -2,46 +2,53 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { ImageResponse } from "next/og";
 import sharp from "sharp";
+import { home } from "@/content/home";
 import { CONTACT } from "@/lib/contact";
 
 /**
  * Tarjeta de Open Graph — la imagen que aparece al pegar el enlace en WhatsApp,
  * que es el canal principal de la tienda.
  *
- * El layout se compone con `ImageResponse` y no con un archivo estático para que
- * los textos salgan del contenido y no haya que reeditar una imagen cada vez que
- * cambia el eslogan.
+ * Reproduce el hero: la foto a sangre bajo un velo oscuro, el wordmark de la
+ * marca en blanco y el tagline debajo. Se compone con `ImageResponse` y no con
+ * un archivo estático para que los textos salgan de `content/home.ts` y no haya
+ * que reeditar una imagen cada vez que Ale cambie el eslogan.
  *
- * Sin `next/font` aquí: `ImageResponse` necesita los bytes de la fuente y
- * cargarlos añadiría un fetch al build por una tarjeta que casi nadie mira en
- * detalle. Las familias de sistema con el peso adecuado dan un resultado digno.
+ * ── Por qué aquí no hace falta ninguna fuente ─────────────────────────────
+ * «Boquita» NO es tipografía: es `wordmark-boquita-white.svg`, los tres
+ * contornos exactos del logo maestro. Lo impone **D-39** en docs/DEVIATIONS.md
+ * —«una fuente aproximada altera la B, la q, la inclinación y los remates»— y de
+ * paso resuelve el problema difícil, porque `ImageResponse` necesita los BYTES
+ * de la fuente y en el repo no hay ni un TTF/OTF/WOFF: `next/font` sólo
+ * materializa WOFF2, que Satori no acepta. El resto de textos van en las
+ * familias de sistema, que a este tamaño dan un resultado digno.
+ *
+ * El wordmark se rasteriza a PNG con sharp en vez de pasarle el SVG a Satori
+ * porque el fichero **no trae `width` ni `height`**, sólo
+ * `viewBox="0 250 770 340"` con el `min-y` en 250, y resvg calcula mal el
+ * intrínseco en ese caso. Se lee del SVG y no de un PNG commiteado para que el
+ * wordmark conserve una sola fuente de verdad: si `npm run brand:wordmark` lo
+ * regenera, la tarjeta lo sigue sin que nadie tenga que acordarse.
  *
  * ── Por qué sale JPEG y no PNG ────────────────────────────────────────────
- * `ImageResponse` sólo emite PNG, y resvg lo escribe en color completo: con la
- * foto dentro, la tarjeta pesaba **567 KB**. Para un thumbnail que WhatsApp
- * reduce a unos cientos de píxeles eso es absurdo, y además roza el tamaño en el
- * que los rastreadores de enlaces empiezan a abandonar la descarga y a no
- * mostrar vista previa. Recomprimir a JPEG deja la MISMA imagen por una fracción
- * del peso. Una ruta de metadata es un route handler, así que puede devolver un
- * `Response` cualquiera mientras `contentType` lo declare.
+ * `ImageResponse` sólo emite PNG, y resvg lo escribe en color completo: con una
+ * foto dentro eso son cientos de KB para un thumbnail que WhatsApp reduce, y
+ * roza el tamaño en el que los rastreadores abandonan la descarga y no muestran
+ * vista previa. Recomprimir a JPEG deja la MISMA imagen por una fracción del
+ * peso. Una ruta de metadata es un route handler, así que puede devolver el
+ * `Response` que quiera mientras `contentType` lo declare.
  *
  * `sharp` es devDependency y aquí no es un problema: la ruta se hornea en el
  * build —donde Vercel sí instala devDependencies— y lo que se despliega es el
  * JPEG ya resuelto. `serverExternalPackages` en `next.config.ts` evita que el
  * binario nativo se intente empaquetar.
  *
- * ── La foto ───────────────────────────────────────────────────────────────
- * Ocupa el tercio derecho. Sin ella la tarjeta era un rectángulo de texto, y
- * esto compite en un chat con fotos de comida: lo que gana el toque es el
- * queque, no el eslogan. La genera `scripts/build-images.mjs` con el mismo
- * recorte que el hero, y es JPEG porque Satori no decodifica el WebP ni el AVIF
- * de `public/img/hero/`.
- *
  * ⚠ Los bytes se leen con `readFileSync`, NO con el
  * `fetch(new URL("./x.jpg", import.meta.url))` que documenta Next para fuentes:
  * webpack reescribe ese patrón a una ruta de asset relativa
  * (`/_next/static/media/og-hero.<hash>.jpg`) y `fetch` no puede parsear una URL
- * sin origen, así que el build **falla** al prerenderizar esta ruta.
+ * sin origen, así que el build **falla** al prerenderizar esta ruta. Los dos
+ * ficheros que se leen están en `outputFileTracingIncludes`.
  */
 
 export const alt = "Boquita — Sweet & Salty · Repostería artesanal en Santa Ana";
@@ -50,85 +57,127 @@ export const contentType = "image/jpeg";
 
 /** El acento dorado de la marca, como franja izquierda. */
 const BORDE = 24;
-const FOTO_ANCHO = 480;
+const ORO = "#E8A81B";
+
+/**
+ * El wordmark a 620px de ancho; el viewBox es 770×340, así que el alto sale de
+ * mantener esa proporción. Se rasteriza al doble para que los contornos no
+ * queden dentados al reducirlos.
+ */
+const MARCA_ANCHO = 620;
+const MARCA_ALTO = Math.round((MARCA_ANCHO * 340) / 770);
+
+/**
+ * El velo. No es decoración: el queque va sobre un plato BLANCO y la foto lleva
+ * azúcar glas encima, así que sin oscurecerla el wordmark blanco desaparece
+ * justo en el centro. Plano y no degradado porque el soporte de
+ * `linear-gradient` en Satori es irregular y un rgba sólido es predecible.
+ */
+const VELO = "rgba(28,18,10,0.66)";
 
 const FOTO_SRC = `data:image/jpeg;base64,${readFileSync(
   path.join(process.cwd(), "app", "og-hero.jpg"),
 ).toString("base64")}`;
 
+const MARCA_SVG = readFileSync(
+  path.join(process.cwd(), "public", "img", "brand", "wordmark-boquita-white.svg"),
+);
+
 export default async function OpengraphImage() {
+  const marcaPng = await sharp(MARCA_SVG, { density: 300 })
+    .resize({ width: MARCA_ANCHO * 2 })
+    .png()
+    .toBuffer();
+  const marcaSrc = `data:image/png;base64,${marcaPng.toString("base64")}`;
+
   const tarjeta = new ImageResponse(
     (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          background: "#FAF5EC",
-          borderLeft: `${BORDE}px solid #E8A81B`,
-        }}
-      >
+      <div style={{ width: "100%", height: "100%", display: "flex", position: "relative" }}>
+        <img
+          src={FOTO_SRC}
+          alt=""
+          width={size.width}
+          height={size.height}
+          style={{ position: "absolute", top: 0, left: 0, objectFit: "cover" }}
+        />
+
         <div
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: VELO,
+          }}
+        />
+
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: BORDE,
+            height: "100%",
+            backgroundColor: ORO,
+          }}
+        />
+
+        {/* Bloque central: ópticamente centrado, con el pie anclado abajo aparte. */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
             display: "flex",
             flexDirection: "column",
+            alignItems: "center",
             justifyContent: "center",
-            flex: 1,
-            padding: "64px 48px 64px 56px",
+            padding: `0 64px 0 ${64 + BORDE}px`,
           }}
         >
           <div
             style={{
-              fontSize: 22,
-              letterSpacing: 3,
-              textTransform: "uppercase",
-              color: "#8A5A06",
-              fontWeight: 600,
-            }}
-          >
-            Repostería artesanal en Santa Ana
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              marginTop: 24,
-              fontSize: 96,
-              lineHeight: 1,
-              fontWeight: 700,
-              letterSpacing: -1,
-            }}
-          >
-            <span style={{ color: "#3A2A1A" }}>Dulce</span>
-            <span style={{ color: "#B07208" }}>y salado</span>
-          </div>
-
-          <div style={{ marginTop: 28, fontSize: 28, lineHeight: 1.35, color: "#6B5B4D" }}>
-            Queques, cupcakes, galletas y dulces horneados por encargo en Santa Ana.
-          </div>
-
-          <div
-            style={{
-              marginTop: "auto",
-              display: "flex",
-              flexDirection: "column",
               fontSize: 24,
+              letterSpacing: 6,
+              textTransform: "uppercase",
+              color: ORO,
               fontWeight: 600,
             }}
           >
-            <span style={{ color: "#3A2A1A" }}>Boquita — Sweet &amp; Salty</span>
-            <span style={{ color: "#8A5A06", marginTop: 6 }}>{CONTACT.whatsappDisplay}</span>
+            {home.hero.eyebrow}
           </div>
+
+          <img
+            src={marcaSrc}
+            alt=""
+            width={MARCA_ANCHO}
+            height={MARCA_ALTO}
+            style={{ marginTop: 18 }}
+          />
+
+          <div style={{ marginTop: 12, fontSize: 40, color: ORO }}>{home.hero.tagline}</div>
         </div>
 
-        <img
-          src={FOTO_SRC}
-          alt=""
-          width={FOTO_ANCHO}
-          height={size.height}
-          style={{ objectFit: "cover" }}
-        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 44,
+            left: 0,
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            fontSize: 24,
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.92)",
+          }}
+        >
+          <span>Boquita — Sweet &amp; Salty</span>
+          <span style={{ margin: "0 14px", color: ORO }}>·</span>
+          <span>{CONTACT.whatsappDisplay}</span>
+        </div>
       </div>
     ),
     size,

@@ -23,7 +23,10 @@ const nextConfig: NextConfig = {
   // dinámica el bundle de la función no incluye app/ por su cuenta y la ruta
   // fallaría sólo en Vercel. Ver la cabecera de app/opengraph-image.tsx.
   outputFileTracingIncludes: {
-    "/opengraph-image": ["./app/og-hero.jpg"],
+    "/opengraph-image": [
+      "./app/og-hero.jpg",
+      "./public/img/brand/wordmark-boquita-white.svg",
+    ],
   },
 
   // El sitio es es-CR; no hay i18n en v1 (ver plan §8, fuera de alcance).

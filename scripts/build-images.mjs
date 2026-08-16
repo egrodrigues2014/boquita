@@ -637,43 +637,43 @@ async function writeAppIcons() {
 }
 
 /**
- * Foto de la tarjeta Open Graph — la mitad derecha de app/opengraph-image.tsx.
+ * Fondo de la tarjeta Open Graph — `app/opengraph-image.tsx` la usa a sangre,
+ * con un velo oscuro encima y el wordmark blanco centrado.
  *
- * Va a `app/` y no a `public/img/` por una razón de despliegue, no de estilo:
- * `opengraph-image.tsx` carga los bytes con `new URL("./og-hero.jpg",
- * import.meta.url)`, que es lo que hace que el fichero quede TRAZADO dentro del
- * bundle de la función serverless. Leerlo de `public/` con `fs` y
- * `process.cwd()` compila igual y luego revienta sólo en Vercel, porque
- * `public/` no viaja dentro de la función.
+ * Va a `app/` y no a `public/img/` por una razón de despliegue, no de estilo: la
+ * ruta lee los bytes con `readFileSync` y `outputFileTracingIncludes` la mete en
+ * el bundle de la función. `public/` no viaja dentro de la función.
  *
  * JPEG y no WebP: Satori —el motor de `ImageResponse`— no decodifica WebP ni
- * AVIF, que es todo lo que hay en `public/img/hero/`. De ahí que esta foto se
- * genere aparte en vez de reutilizar un derivado del hero.
+ * AVIF, que es todo lo que hay en `public/img/hero/`.
  *
- * Mismo original y mismo recorte que el hero (docs/IMAGE_MAP.md): es la foto que
- * ya representa a la marca, y así la tarjeta del enlace y la portada enseñan lo
- * mismo. El ajuste de ratio 0.75 → 0.762 lo absorbe `fit:"cover"` recortando
- * ~15px de los lados, no deformando.
+ * ⚠ El recorte NO es el del hero, aunque el original sea el mismo. El hero es
+ * vertical (0.75) porque llena una columna a 100vh; aquí la foto es el FONDO de
+ * un lienzo apaisado, y lo que tiene que llenar el cuadro es el queque, no el
+ * porche. La banda va centrada en él: medido sobre el original 1440×1800, el
+ * queque ocupa de y≈617 a y≈1659 —centro en y≈1138—, así que los 709px de alto
+ * que pide el ratio 1200/630 arrancan en y=784.
+ *
+ * Calidad 85 y no 80: esta foto se recomprime UNA SEGUNDA VEZ al emitirse la
+ * tarjeta, así que partir de un máster mejor evita apilar artefactos sobre
+ * artefactos.
  */
-const OG_PHOTO = { width: 480, height: 630 };
+const OG_PHOTO = { width: 1200, height: 630 };
 
 async function writeOgPhoto() {
   if (CHECK_ONLY) {
     console.log(
       `  ✓ app/og-hero.jpg: ${OG_PHOTO.width}×${OG_PHOTO.height} JPEG desde ig-27-obj70.jpg ` +
-        "(mismo recorte que el hero)",
+        "(banda apaisada centrada en el queque)",
     );
     return;
   }
 
   await sharp(path.join(RAW, "ig-27-obj70.jpg"), { failOn: "error" })
     .rotate()
-    .extract({ left: 45, top: 0, width: 1350, height: 1800 })
+    .extract({ left: 45, top: 784, width: 1350, height: 709 })
     .resize(OG_PHOTO.width, OG_PHOTO.height, { fit: "cover", position: "centre" })
-    // mozjpeg a 80: la tarjeta se mira a 1200×630 en un chat y no da para más
-    // detalle, pero el peso sí importa: los rastreadores de enlaces abandonan
-    // la descarga si tarda.
-    .jpeg({ quality: 80, mozjpeg: true })
+    .jpeg({ quality: 85, mozjpeg: true })
     .toFile(path.join(ROOT, "app", "og-hero.jpg"));
   written++;
 }
