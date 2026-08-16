@@ -14,6 +14,18 @@ const nextConfig: NextConfig = {
     // remotePatterns para Vercel Blob se añade en la fase 3, cuando exista el store.
   },
 
+  // sharp recomprime la tarjeta OG a JPEG en app/opengraph-image.tsx. Es un
+  // binario nativo: se marca externo para que no se intente empaquetar.
+  serverExternalPackages: ["sharp"],
+
+  // La foto de la tarjeta OG vive en app/ y la lee `readFileSync`. Hoy la ruta
+  // se hornea en el build y no haría falta, pero si algún día pasa a ser
+  // dinámica el bundle de la función no incluye app/ por su cuenta y la ruta
+  // fallaría sólo en Vercel. Ver la cabecera de app/opengraph-image.tsx.
+  outputFileTracingIncludes: {
+    "/opengraph-image": ["./app/og-hero.jpg"],
+  },
+
   // El sitio es es-CR; no hay i18n en v1 (ver plan §8, fuera de alcance).
   poweredByHeader: false,
 };

@@ -20,8 +20,8 @@ export const metadata: Metadata = {
   },
   description:
     "Repostería artesanal hecha en casa en Santa Ana, San José. " +
-    "Queques de zanahoria, limón y chocolate, cupcakes, polvorones españoles, " +
-    "galletas de granola, brigadeiros y pies. Horneamos por encargo, en tandas pequeñas.",
+    "Queques, cupcakes, polvorones, galletas y brigadeiros horneados por encargo. " +
+    "Pedidos por WhatsApp.",
   applicationName: "Boquita",
   authors: [{ name: "Boquita — Sweet & Salty" }],
   keywords: [

@@ -50,7 +50,10 @@ export function bakeryJsonLd() {
     paymentAccepted: "Efectivo, SINPE Móvil, transferencia",
     address: {
       "@type": "PostalAddress",
-      streetAddress: "Condominio Condado del Río",
+      // Sin `streetAddress`: Boquita se hornea en casa de Ale. La localidad da la
+      // señal de proximidad que necesita la búsqueda local; el portal exacto no
+      // aporta ranking y no tiene por qué quedar en datos estructurados
+      // indexables. La zona de reparto va en `areaServed`, justo debajo.
       addressLocality: CONTACT.addressLocality,
       addressRegion: CONTACT.addressRegion,
       addressCountry: CONTACT.addressCountry,

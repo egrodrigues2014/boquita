@@ -636,6 +636,48 @@ async function writeAppIcons() {
   written++;
 }
 
+/**
+ * Foto de la tarjeta Open Graph — la mitad derecha de app/opengraph-image.tsx.
+ *
+ * Va a `app/` y no a `public/img/` por una razón de despliegue, no de estilo:
+ * `opengraph-image.tsx` carga los bytes con `new URL("./og-hero.jpg",
+ * import.meta.url)`, que es lo que hace que el fichero quede TRAZADO dentro del
+ * bundle de la función serverless. Leerlo de `public/` con `fs` y
+ * `process.cwd()` compila igual y luego revienta sólo en Vercel, porque
+ * `public/` no viaja dentro de la función.
+ *
+ * JPEG y no WebP: Satori —el motor de `ImageResponse`— no decodifica WebP ni
+ * AVIF, que es todo lo que hay en `public/img/hero/`. De ahí que esta foto se
+ * genere aparte en vez de reutilizar un derivado del hero.
+ *
+ * Mismo original y mismo recorte que el hero (docs/IMAGE_MAP.md): es la foto que
+ * ya representa a la marca, y así la tarjeta del enlace y la portada enseñan lo
+ * mismo. El ajuste de ratio 0.75 → 0.762 lo absorbe `fit:"cover"` recortando
+ * ~15px de los lados, no deformando.
+ */
+const OG_PHOTO = { width: 480, height: 630 };
+
+async function writeOgPhoto() {
+  if (CHECK_ONLY) {
+    console.log(
+      `  ✓ app/og-hero.jpg: ${OG_PHOTO.width}×${OG_PHOTO.height} JPEG desde ig-27-obj70.jpg ` +
+        "(mismo recorte que el hero)",
+    );
+    return;
+  }
+
+  await sharp(path.join(RAW, "ig-27-obj70.jpg"), { failOn: "error" })
+    .rotate()
+    .extract({ left: 45, top: 0, width: 1350, height: 1800 })
+    .resize(OG_PHOTO.width, OG_PHOTO.height, { fit: "cover", position: "centre" })
+    // mozjpeg a 80: la tarjeta se mira a 1200×630 en un chat y no da para más
+    // detalle, pero el peso sí importa: los rastreadores de enlaces abandonan
+    // la descarga si tarda.
+    .jpeg({ quality: 80, mozjpeg: true })
+    .toFile(path.join(ROOT, "app", "og-hero.jpg"));
+  written++;
+}
+
 async function processLogoVariants() {
   if (CHECK_ONLY) {
     console.log("  ✓ brand/logo-variants: se generan desde logo-boquita.jpg sin upscale");
@@ -663,6 +705,7 @@ async function main() {
     await processJob(job);
   }
   await processLogoVariants();
+  await writeOgPhoto();
 
   if (problems > 0) {
     console.error(`\n✗ ${problems} recortes inválidos. No se generó nada de ellos.`);
