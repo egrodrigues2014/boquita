@@ -20,7 +20,7 @@ Son recetas delicadas, suaves y originales. Un bocado de gusto y frescura con un
 
 #### Quién está detrás
 
-Soy Ale Budowski y Boquita es mi cocina.
+Soy Ale y Boquita es mi cocina.
 
 Empecé horneando para los grupos a los que pertenezco —amigos, colegio, club, las actividades deportivas de la semana— y de ahí llegaron los primeros pedidos, por boca a boca y por referencia de quienes ya habían probado. En abril de 2022 vendí el primer pedido y ese es el arranque oficial de Boquita.
 

@@ -33,7 +33,7 @@ import { toShopSearchSources } from "@/lib/shopSearch";
 export const metadata: Metadata = {
   title: "Sobre nosotros",
   description:
-    "Ale Budowski hornea Boquita en su cocina de Santa Ana: recetas propias en tandas " +
+    "Ale hornea Boquita en su cocina de Santa Ana: recetas propias en tandas " +
     "pequeñas. Cómo horneamos, qué hay en el catálogo, pedidos, entregas y preguntas frecuentes.",
   alternates: { canonical: "/sobre-nosotros" },
 };

@@ -64,7 +64,7 @@ export function bakeryJsonLd() {
     // Horneado por encargo con 48 h de anticipación: no hay horario de tienda,
     // así que no se declara `openingHoursSpecification` — sería falso.
     slogan: "Dulce y salado, hecho en casa",
-    founder: { "@type": "Person", name: "Ale Budowski" },
+    founder: { "@type": "Person", name: "Ale" },
     knowsLanguage: "es-CR",
     hasMenu: {
       "@type": "Menu",

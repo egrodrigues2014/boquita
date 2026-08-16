@@ -91,7 +91,7 @@ export const about = {
       id: "historia",
       title: "Quién está detrás",
       paragraphs: [
-        "Soy Ale Budowski y Boquita es mi cocina.",
+        "Soy Ale y Boquita es mi cocina.",
         "Empecé horneando para mis círculos cercanos —amistades, colegio, club y actividades " +
           "deportivas— y de ahí llegaron los primeros pedidos, por " +
           "boca a boca y por referencia de quienes ya habían probado. En abril de 2022 vendí " +
