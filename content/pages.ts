@@ -133,8 +133,10 @@ export const about = {
         {
           lead: "Queques:",
           text:
-            "Zanahoria con coco y nueces bajo una cobertura de queso crema; limón con jugo " +
-            "y ralladura natural; Devil's Food, explosión de chocolate rellena y cubierta de " +
+            "Zanahoria, no es el típico: me gusta con coco y nueces, con cobertura y capitas " +
+            "de relleno de un frosting elaborado con queso crema. El de limón, esponjoso y " +
+            "cítrico, elaborado con jugo y ralladura de limón natural. Devil's Food, explosión " +
+            "de chocolate rellena y cubierta de " +
             "brigadeiro; Coffee Cake, de vainilla con nueces, dulce de leche y canela; Chocolate " +
             "Chip Cookie, crujiente por fuera y suave por dentro; vainilla, mi mejor versión de un " +
             "bizcocho de mantequilla; y Banana Bread con bananas naturales y azúcar en polvo. Cada uno se ofrece en " +
@@ -144,7 +146,8 @@ export const about = {
         {
           lead: "Galletas:",
           text:
-            "Polvorones españoles de almendras molidas, galletas de granola con avena, " +
+            "Polvorones españoles de almendras molidas, deliciosos: cuando los llevas a la " +
+            "boca se deshacen. Galletas de granola con avena, " +
             "coco y mantequilla de maní, y galletas de miel y limón, crujientes y perfectas para " +
             "el café. En paquetes de 6 o 12 unidades, o por peso.",
         },
@@ -153,8 +156,11 @@ export const about = {
           text:
             "Brigadeiros, que son trufas de chocolate cubiertas de hormiguitas: un bocado " +
             "de amor y felicidad. Pie de brigadeiro con base de galleta de mantequilla y un toque " +
-            "de sal marina. Key Lime Pie con merengue italiano. Cheese cake con fresas naturales " +
-            "en láminas. Quesillo cremoso con caramelo. Barra de dátiles, crujiente y suave a la " +
+            "de sal marina. Key lime pie, mi mejor versión del pie de los cayos de Florida: " +
+            "con merengue italiano, nunca queda blanco, porque los huevos naturales de la feria " +
+            "tienen una yema rojiza que tiñe de naranja el pie. Cheese cake con fresas naturales " +
+            "en láminas; el coulis de fresas está elaborado con fresas naturales y va aparte. " +
+            "Quesillo cremoso con caramelo. Barra de dátiles, crujiente y suave a la " +
             "vez. Y mousse de chocolate oscuro, que se hace sólo con chocolate y huevo, así que " +
             "sirve para quien no puede tomar gluten ni lácteos, con una versión endulzada con " +
             "monk fruit sin azúcar añadida.",
