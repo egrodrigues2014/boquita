@@ -68,9 +68,17 @@ describe("filterShopProducts", () => {
   it("el sinónimo funciona a medio escribir, que es cuando se busca", () => {
     // El desplegable ya sugiere la categoría con «tort»; si el filtro del servidor
     // no casara lo mismo, Enter llevaría a una página vacía.
-    expect(filterShopProducts(products, { q: "tort" }).map((p) => p.slug)).toEqual(
-      products.filter((p) => p.categoria === "queques").map((p) => p.slug),
-    );
+    //
+    // «tort» es prefijo de «torta» Y de «tortilla», así que desde que hay salados
+    // devuelve los dos grupos, y lo haría aunque `tortilla` no fuese sinónimo de
+    // categoría: el producto SE LLAMA «Tortilla española» y la búsqueda mira el
+    // nombre. No es un defecto — a medio escribir la palabra es ambigua de verdad,
+    // y el desplegable ofrece las dos categorías en vez de elegir por su cuenta.
+    const slugs = filterShopProducts(products, { q: "tort" }).map((p) => p.slug);
+    const queques = products.filter((p) => p.categoria === "queques").map((p) => p.slug);
+    const salados = products.filter((p) => p.categoria === "salado").map((p) => p.slug);
+
+    expect(slugs).toEqual([...queques, ...salados]);
   });
 
   it("combina q con categoría y ocasión", () => {

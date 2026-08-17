@@ -41,19 +41,19 @@ test.describe("catálogo", () => {
     await expect(page.locator(".shop-card")).toHaveCount(3);
   });
 
-  test("lista los 23 productos", async ({ page }) => {
+  test("lista los 26 productos", async ({ page }) => {
     await page.goto("/tienda");
-    await expect(page.locator(".shop-card")).toHaveCount(23);
+    await expect(page.locator(".shop-card")).toHaveCount(26);
     await expect(page.locator("h1")).toHaveText("Catálogo de productos");
   });
 
-  test("hay exactamente 4 filtros de categoría: Todo y las 3 del catálogo", async ({ page }) => {
+  test("hay exactamente 5 filtros de categoría: Todo y las 4 del catálogo", async ({ page }) => {
     // Las categorías salen de `CATEGORIAS`, así que una de más significa que el
     // tipo y el catálogo de Ale se han separado.
     await page.goto("/tienda");
     const filtros = page.locator('nav[aria-label="Filtrar por categoría"] .shop-filter');
-    await expect(filtros).toHaveCount(4);
-    await expect(filtros).toHaveText(["Todo", "Queques", "Galletas", "Dulces"]);
+    await expect(filtros).toHaveCount(5);
+    await expect(filtros).toHaveText(["Todo", "Queques", "Galletas", "Dulces", "Salado"]);
   });
 
   test("el filtro por categoría reduce la lista y marca el activo", async ({ page }) => {
@@ -64,6 +64,21 @@ test.describe("catálogo", () => {
     await expect(cards).toHaveCount(3);
     await expect(page.locator("h1")).toHaveText("Galletas");
     await expect(page.getByRole("link", { name: "Galletas", exact: true })).toHaveAttribute(
+      "aria-current",
+      "true",
+    );
+  });
+
+  test("el filtro Salado sirve las dos tortillas", async ({ page }) => {
+    // `salado` es la categoría que estrenó el catálogo con `SAL-25` y `SAL-26`.
+    // Va aparte de la prueba de galletas porque es la única cuyo chip, enlace de
+    // nav y valor del enum se añadieron a la vez: si alguno se quedara atrás, el
+    // filtro respondería 200 con la lista vacía en vez de fallar.
+    await page.goto("/tienda?categoria=salado");
+
+    await expect(page.locator(".shop-card")).toHaveCount(2);
+    await expect(page.locator("h1")).toHaveText("Salado");
+    await expect(page.getByRole("link", { name: "Salado", exact: true })).toHaveAttribute(
       "aria-current",
       "true",
     );
@@ -90,7 +105,7 @@ test.describe("catálogo", () => {
     // llegan enlaces con las categorías que existían antes del catálogo de Ale.
     const response = await page.goto("/tienda?categoria=bocaditos");
     expect(response?.status()).toBe(200);
-    await expect(page.locator(".shop-card")).toHaveCount(23);
+    await expect(page.locator(".shop-card")).toHaveCount(26);
   });
 
   test("la tarjeta muestra categoría, subcategoría y todas las presentaciones", async ({
@@ -174,7 +189,7 @@ test.describe("catálogo", () => {
     await page.goto("/tienda");
     // Es lo que compra el `flex: 1` de `.shop-card-summary`: con descripciones de
     // 2, 3 y 4 líneas la fila tiene que ser el suelo de la tarjeta y no un renglón
-    // a media altura. Se miden LAS 23, no una fila.
+    // a media altura. Se miden LAS 26, no una fila.
     const holguras = await page.locator(".shop-card").evaluateAll((cards) =>
       cards.map((card) => {
         const caja = card.getBoundingClientRect();
@@ -183,7 +198,7 @@ test.describe("catálogo", () => {
       }),
     );
 
-    expect(holguras).toHaveLength(23);
+    expect(holguras).toHaveLength(26);
     expect(new Set(holguras), `holguras distintas: ${[...new Set(holguras)]}`).toEqual(new Set([20]));
   });
 
@@ -699,10 +714,10 @@ test.describe("la portada enlaza bien con la tienda", () => {
     const nav = page.getByLabel("Principal");
     const catalogo = nav.getByRole("link", { name: "Catálogo", exact: true });
     await catalogo.hover();
-    // Las 3 categorías del catálogo de Ale, en el mismo orden que los chips.
+    // Las 4 categorías del catálogo de Ale, en el mismo orden que los chips.
     const links = nav.locator(".nav-dropdown").first().locator(".nav-dropdown-link");
-    await expect(links).toHaveCount(3);
-    await expect(links).toHaveText(["Queques", "Galletas", "Dulces"]);
+    await expect(links).toHaveCount(4);
+    await expect(links).toHaveText(["Queques", "Galletas", "Dulces", "Salado"]);
     await expect(links.first()).toHaveAttribute("href", "/tienda?categoria=queques");
     await expect(links.first()).not.toContainText("—");
 
@@ -807,12 +822,17 @@ test.describe("la portada enlaza bien con la tienda", () => {
 
     // A medio escribir todavía no hay término exacto, así que Enter no secuestra
     // la búsqueda hacia el filtro. Los sinónimos hacen que igual salgan queques.
+    //
+    // 15 y no 13: «tort» es prefijo de «torta» Y de «tortilla», así que desde que
+    // hay salados caen los 13 queques más las 2 tortillas. Pasaría igual sin el
+    // sinónimo de categoría — el producto SE LLAMA «Tortilla española» y la
+    // búsqueda mira el nombre.
     const searchbox = page.getByRole("searchbox", { name: "Buscar productos" });
     await searchbox.fill("tort");
     await searchbox.press("Enter");
 
     await expect(page).toHaveURL(/\/tienda\?q=tort$/);
-    await expect(page.locator(".shop-card")).toHaveCount(13);
+    await expect(page.locator(".shop-card")).toHaveCount(15);
   });
 
   test("la portada movil muestra buscador en el header", async ({ page, viewport }) => {

@@ -93,7 +93,11 @@ function repair(row: ProductRow): ShopProduct | undefined {
   return rescued;
 }
 
-/** Etiqueta de caché. El panel de la fase 3 la invalidará con `revalidateTag`. */
+/**
+ * Etiqueta de caché. La invalida `app/api/revalidate/route.ts`, que es a quien
+ * llama `scripts/seed-catalog.ts` al terminar — sin eso, sembrar la base no
+ * cambia nada de lo servido hasta que expire la hora de abajo.
+ */
 export const CATALOG_CACHE_TAG = "catalog";
 
 /**

@@ -3,11 +3,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { catalogSchema } from "@/content/shopSchema";
 import { findProduct, products } from "@/content/products";
-import { home } from "@/content/home";
+import { GALLERY_SLUGS, home } from "@/content/home";
 import { CATEGORIAS, OCASIONES } from "@/types/shop";
 
 describe("el catálogo cumple su esquema", () => {
-  it("valida las 23 fichas", () => {
+  it("valida las 26 fichas", () => {
     const result = catalogSchema.safeParse(products);
     if (!result.success) {
       const issues = result.error.issues
@@ -15,14 +15,14 @@ describe("el catálogo cumple su esquema", () => {
         .join("\n");
       throw new Error(`El catálogo no cumple el esquema:\n${issues}`);
     }
-    expect(products).toHaveLength(23);
+    expect(products).toHaveLength(26);
   });
 
-  it("tiene las 60 presentaciones del Excel de Ale", () => {
+  it("tiene las 63 presentaciones del Excel de Ale", () => {
     // El recuento es la comprobación de que no se perdió una fila al cargarlo:
-    // 60 filas para 23 productos, de 1 a 3 presentaciones cada uno.
+    // 63 filas para 26 productos, de 1 a 3 presentaciones cada uno.
     const total = products.reduce((sum, product) => sum + product.variants.length, 0);
-    expect(total).toBe(60);
+    expect(total).toBe(63);
   });
 
   it("todos los slugs son únicos", () => {
@@ -72,6 +72,27 @@ describe("coherencia con la portada", () => {
   it("la métrica de recetas de la portada coincide con el catálogo", () => {
     const metric = home.service.metrics.find((m) => m.label.includes("Recetas"))!;
     expect(Number(metric.value)).toBe(products.length);
+  });
+
+  it("todos los slugs de la galería existen en el catálogo", () => {
+    // `GALLERY_SLUGS` es una selección escrita a mano, así que puede tener una
+    // errata o quedarse con el slug de un producto retirado. El síntoma no sería
+    // un enlace roto sino un error de arranque: `galleryProducts()` cuenta las
+    // fotos resultantes y exige 24, así que un slug fantasma tumba la portada
+    // entera con un mensaje que habla de conteos y no de la errata. Este test
+    // señala el slug culpable.
+    for (const slug of GALLERY_SLUGS) {
+      expect(findProduct(slug), `${slug} está en GALLERY_SLUGS pero no en el catálogo`).toBeDefined();
+    }
+  });
+
+  it("la galería rinde exactamente las 24 fotos de la rejilla 6×4", () => {
+    // 23 slugs y 24 fotos: `queque-personalizado` aporta dos porque tiene `imageB`.
+    const fotos = GALLERY_SLUGS.reduce(
+      (total, slug) => total + (findProduct(slug)!.imageB ? 2 : 1),
+      0,
+    );
+    expect(fotos).toBe(24);
   });
 });
 

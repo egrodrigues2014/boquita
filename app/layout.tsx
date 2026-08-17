@@ -32,6 +32,7 @@ export const metadata: Metadata = {
     "polvorones Costa Rica",
     "brigadeiros San José",
     "queques por encargo Escazú",
+    "tortilla española Costa Rica",
   ],
   alternates: { canonical: SITE_URL },
   openGraph: {
@@ -76,8 +77,10 @@ export const viewport: Viewport = {
  * nunca una visita real.
  *
  * Una hora es el compromiso: un precio corregido en Neon aparece solo, sin
- * redespliegue. Cuando exista el panel de la fase 3 se añade `revalidatePath`
- * para que sea instantáneo y este número deje de importar.
+ * redespliegue. Para no esperarla, `app/api/revalidate/route.ts` hace
+ * `revalidatePath("/", "layout")` y tira de golpe el ISR de todo lo que cuelga
+ * de aquí; `scripts/seed-catalog.ts` la llama al acabar. Este número es sólo la
+ * red de seguridad para los cambios que se hagan por SQL sin pasar por ahí.
  */
 export const revalidate = 3600;
 

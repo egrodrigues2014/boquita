@@ -286,6 +286,9 @@ const PRODUCTS = [
   { name: "key-lime-pie", src: "DUL-021.jpeg" },
   { name: "cheesecake", src: "DUL-022.jpeg" },
   { name: "quesillo", src: "DUL-023.jpeg" },
+  { name: "quesillo-de-coco", src: "DUL-024.jpeg" },
+  { name: "tortilla-espanola-original", src: "SAL-25.jpeg" },
+  { name: "tortilla-espanola-con-chorizo", src: "SAL-26.jpeg" },
 ].map((product) => ({
   dir: PRODUCTS_SRC,
   ...product,

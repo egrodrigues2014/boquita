@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FEATURED_SLUGS, home } from "@/content/home";
+import { FEATURED_SLUGS, GALLERY_SLUGS, home } from "@/content/home";
 import { products as fallbackCatalog } from "@/content/products";
 import { buildHomeContent } from "@/lib/homeContent";
 import { homeSchema } from "@/content/schema";
@@ -115,11 +115,16 @@ describe("ninguna foto de la galería lleva a un 404", () => {
   it("todas las fotos del catálogo servido se publican en la galería", () => {
     const content = buildHomeContent(fallbackCatalog);
     const hrefs = content.gallery.rows.flat().map((item) => item.href);
-    const expected = fallbackCatalog.flatMap((product) =>
-      product.imageB
+    // La galería ya no es «todo el catálogo», es la selección de `GALLERY_SLUGS`:
+    // atarla al tamaño del catálogo hacía que dar de alta un producto reventara la
+    // portada. Lo que este test sigue protegiendo es lo importante — que cada foto
+    // publicada apunte a una ficha que existe en el catálogo SERVIDO.
+    const expected = GALLERY_SLUGS.flatMap((slug) => {
+      const product = fallbackCatalog.find((p) => p.slug === slug)!;
+      return product.imageB
         ? [`/tienda/${product.slug}`, `/tienda/${product.slug}`]
-        : [`/tienda/${product.slug}`],
-    );
+        : [`/tienda/${product.slug}`];
+    });
 
     expect(hrefs).toEqual(expected);
   });

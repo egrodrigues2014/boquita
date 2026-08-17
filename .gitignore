@@ -16,6 +16,10 @@ next-env.d.ts
 .env.local
 .env*.local
 
+# ficheros de bloqueo de Office: Excel crea `~$catalogo.xlsx` mientras el libro
+# esté abierto, y `data/boquita_products_catalog.xlsx` se edita a mano a menudo.
+~$*
+
 # originales de imagen (fuente de verdad, fuera del repo)
 #
 # Es `/assets/*` y no `/assets/`, a propósito: excluir el DIRECTORIO impide que git

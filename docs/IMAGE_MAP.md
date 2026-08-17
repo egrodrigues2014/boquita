@@ -204,8 +204,8 @@ tabla de arriba y el techo de 1440px siguen aplicando sólo a los 15 slots del l
 
 **Y son la única excepción a «los originales van fuera del repo».** El `.gitignore` excluye
 `/assets/*` y vuelve a incluir `!/assets/products/`: las 37 de Instagram se regeneran del PDF con
-`scripts/extract-pdf-images.py`, pero estas 24 se tomaron una vez y no hay de dónde sacarlas otra vez.
-Son 6,1 MB. Ojo con el detalle de sintaxis, que es lo que hace que funcione: excluir el
+`scripts/extract-pdf-images.py`, pero estas 27 se tomaron una vez y no hay de dónde sacarlas otra vez.
+Son 6,6 MB. Ojo con el detalle de sintaxis, que es lo que hace que funcione: excluir el
 **directorio** (`/assets/`) impide que git descienda en él y ninguna negación posterior surte efecto;
 hay que excluir su **contenido** (`/assets/*`).
 
@@ -239,6 +239,15 @@ la escalera sola en las fuentes pequeñas y el script **aborta antes que hacer u
 | `DUL-021` | `key-lime-pie` | 1142×960 | 400·800 | |
 | `DUL-022` | `cheesecake` | 1079×919 | 400·800 | |
 | `DUL-023` | `quesillo` | 900×722 | 400·800 | |
+| `DUL-024` | `quesillo-de-coco` | 1200×1600 | 400·800·1200 | |
+| `SAL-25` | `tortilla-espanola-original` | 1200×1600 | 400·800·1200 | primera foto salada del catálogo |
+| `SAL-26` | `tortilla-espanola-con-chorizo` | 1200×1600 | 400·800·1200 | |
+
+**Los SKU salados no siguen la numeración de los dulces.** `SAL-25` y `SAL-26` llevan el
+`product_id` del Excel, no un contador propio por familia como `DUL-017…024`. Es el nombre que les dio
+Ale y el que hay que respetar: el `src` de un job **es** el SKU, así que renombrarlos «para que cuadren»
+dejaría el job apuntando a un fichero inexistente. Llegaron al repo como `SAL-01`/`SAL-02` y se
+renombraron al actualizarse el Excel.
 
 **El personalizado es el único con dos fotos.** `QUE-013` es un queque de zanahoria de dos pisos de
 cumpleaños y `QUE-013-B` un queque de chocolate de graduación: son dos encargos distintos, y ver los

@@ -1,0 +1,692 @@
+{
+  "id": "3a876f59-78e0-4904-8664-e77d6894b76e",
+  "prevId": "6dd4afca-525b-4b0d-929f-13cec172dee8",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.customers": {
+      "name": "customers",
+      "schema": "",
+      "columns": {
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "marketing_opt_in": {
+          "name": "marketing_opt_in",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "marketing_consent_at": {
+          "name": "marketing_consent_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "marketing_consent_source": {
+          "name": "marketing_consent_source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "marketing_consent_version": {
+          "name": "marketing_consent_version",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "marketing_opt_out_at": {
+          "name": "marketing_opt_out_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "customers_email_length": {
+          "name": "customers_email_length",
+          "value": "char_length(\"customers\".\"email\") BETWEEN 3 AND 254"
+        },
+        "customers_email_normalized": {
+          "name": "customers_email_normalized",
+          "value": "\"customers\".\"email\" = lower(btrim(\"customers\".\"email\"))"
+        },
+        "customers_name_length": {
+          "name": "customers_name_length",
+          "value": "\"customers\".\"name\" IS NULL OR char_length(\"customers\".\"name\") BETWEEN 1 AND 100"
+        },
+        "customers_opt_out_consistent": {
+          "name": "customers_opt_out_consistent",
+          "value": "(\"customers\".\"marketing_opt_in\" AND \"customers\".\"marketing_opt_out_at\" IS NULL) OR\n          (NOT \"customers\".\"marketing_opt_in\" AND \"customers\".\"marketing_opt_out_at\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.form_rate_limits": {
+      "name": "form_rate_limits",
+      "schema": "",
+      "columns": {
+        "day": {
+          "name": "day",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ip_hash": {
+          "name": "ip_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "submissions": {
+          "name": "submissions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "form_rate_limits_day_ip_hash_pk": {
+          "name": "form_rate_limits_day_ip_hash_pk",
+          "columns": [
+            "day",
+            "ip_hash"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "form_rate_limits_hash_length": {
+          "name": "form_rate_limits_hash_length",
+          "value": "char_length(\"form_rate_limits\".\"ip_hash\") = 64"
+        },
+        "form_rate_limits_submissions_positive": {
+          "name": "form_rate_limits_submissions_positive",
+          "value": "\"form_rate_limits\".\"submissions\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.order_items": {
+      "name": "order_items",
+      "schema": "",
+      "columns": {
+        "order_id": {
+          "name": "order_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_slug": {
+          "name": "product_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_name": {
+          "name": "product_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit_price": {
+          "name": "unit_price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "order_items_order_id_orders_id_fk": {
+          "name": "order_items_order_id_orders_id_fk",
+          "tableFrom": "order_items",
+          "tableTo": "orders",
+          "columnsFrom": [
+            "order_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "order_items_order_id_position_pk": {
+          "name": "order_items_order_id_position_pk",
+          "columns": [
+            "order_id",
+            "position"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "order_items_position_nonnegative": {
+          "name": "order_items_position_nonnegative",
+          "value": "\"order_items\".\"position\" >= 0"
+        },
+        "order_items_slug_length": {
+          "name": "order_items_slug_length",
+          "value": "char_length(\"order_items\".\"product_slug\") BETWEEN 1 AND 120"
+        },
+        "order_items_name_length": {
+          "name": "order_items_name_length",
+          "value": "char_length(\"order_items\".\"product_name\") BETWEEN 1 AND 160"
+        },
+        "order_items_unit_length": {
+          "name": "order_items_unit_length",
+          "value": "char_length(\"order_items\".\"unit\") BETWEEN 1 AND 100"
+        },
+        "order_items_price_positive": {
+          "name": "order_items_price_positive",
+          "value": "\"order_items\".\"unit_price\" > 0"
+        },
+        "order_items_quantity_range": {
+          "name": "order_items_quantity_range",
+          "value": "\"order_items\".\"quantity\" BETWEEN 1 AND 20"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.orders": {
+      "name": "orders",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "customer_email": {
+          "name": "customer_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "customer_name": {
+          "name": "customer_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'whatsapp_opened'"
+        },
+        "desired_date": {
+          "name": "desired_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "zone": {
+          "name": "zone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subtotal": {
+          "name": "subtotal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "orders_customer_email_idx": {
+          "name": "orders_customer_email_idx",
+          "columns": [
+            {
+              "expression": "customer_email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "orders_created_at_idx": {
+          "name": "orders_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "orders_customer_email_customers_email_fk": {
+          "name": "orders_customer_email_customers_email_fk",
+          "tableFrom": "orders",
+          "tableTo": "customers",
+          "columnsFrom": [
+            "customer_email"
+          ],
+          "columnsTo": [
+            "email"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "orders_status_known": {
+          "name": "orders_status_known",
+          "value": "\"orders\".\"status\" = 'whatsapp_opened'"
+        },
+        "orders_subtotal_nonnegative": {
+          "name": "orders_subtotal_nonnegative",
+          "value": "\"orders\".\"subtotal\" >= 0"
+        },
+        "orders_customer_name_length": {
+          "name": "orders_customer_name_length",
+          "value": "\"orders\".\"customer_name\" IS NULL OR char_length(\"orders\".\"customer_name\") BETWEEN 1 AND 100"
+        },
+        "orders_zone_length": {
+          "name": "orders_zone_length",
+          "value": "\"orders\".\"zone\" IS NULL OR char_length(\"orders\".\"zone\") <= 160"
+        },
+        "orders_notes_length": {
+          "name": "orders_notes_length",
+          "value": "\"orders\".\"notes\" IS NULL OR char_length(\"orders\".\"notes\") <= 500"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.product_variants": {
+      "name": "product_variants",
+      "schema": "",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "product_variants_slug_products_slug_fk": {
+          "name": "product_variants_slug_products_slug_fk",
+          "tableFrom": "product_variants",
+          "tableTo": "products",
+          "columnsFrom": [
+            "slug"
+          ],
+          "columnsTo": [
+            "slug"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {
+        "product_variants_slug_unit_pk": {
+          "name": "product_variants_slug_unit_pk",
+          "columns": [
+            "slug",
+            "unit"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "product_variants_price_positive": {
+          "name": "product_variants_price_positive",
+          "value": "\"product_variants\".\"price\" > 0"
+        },
+        "product_variants_unit_length": {
+          "name": "product_variants_unit_length",
+          "value": "char_length(\"product_variants\".\"unit\") BETWEEN 3 AND 60"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.products": {
+      "name": "products",
+      "schema": "",
+      "columns": {
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price": {
+          "name": "price",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "price_from": {
+          "name": "price_from",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "price_on_request": {
+          "name": "price_on_request",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "price_todo": {
+          "name": "price_todo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "categoria": {
+          "name": "categoria",
+          "type": "categoria",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "subcategoria": {
+          "name": "subcategoria",
+          "type": "subcategoria",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ocasiones": {
+          "name": "ocasiones",
+          "type": "ocasion[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ingredients": {
+          "name": "ingredients",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "allergens": {
+          "name": "allergens",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "lead_time_hours": {
+          "name": "lead_time_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_heights": {
+          "name": "image_heights",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_alt": {
+          "name": "image_alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_b_heights": {
+          "name": "image_b_heights",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_b_alt": {
+          "name": "image_b_alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "photo_todo": {
+          "name": "photo_todo",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "products_slug_kebab": {
+          "name": "products_slug_kebab",
+          "value": "\"products\".\"slug\" ~ '^[a-z0-9]+(-[a-z0-9]+)*$'"
+        },
+        "products_price_positive": {
+          "name": "products_price_positive",
+          "value": "\"products\".\"price\" > 0"
+        },
+        "products_lead_time_range": {
+          "name": "products_lead_time_range",
+          "value": "\"products\".\"lead_time_hours\" BETWEEN 24 AND 336"
+        },
+        "products_description_size": {
+          "name": "products_description_size",
+          "value": "array_length(\"products\".\"description\", 1) BETWEEN 1 AND 4"
+        },
+        "products_ocasiones_not_empty": {
+          "name": "products_ocasiones_not_empty",
+          "value": "array_length(\"products\".\"ocasiones\", 1) >= 1"
+        },
+        "products_ingredients_not_empty": {
+          "name": "products_ingredients_not_empty",
+          "value": "array_length(\"products\".\"ingredients\", 1) >= 1"
+        },
+        "products_image_heights_size": {
+          "name": "products_image_heights_size",
+          "value": "array_length(\"products\".\"image_heights\", 1) BETWEEN 1 AND 3"
+        },
+        "products_image_b_complete": {
+          "name": "products_image_b_complete",
+          "value": "(\"products\".\"image_b_heights\" IS NULL) = (\"products\".\"image_b_alt\" IS NULL)"
+        },
+        "products_on_request_is_from": {
+          "name": "products_on_request_is_from",
+          "value": "NOT (\"products\".\"price_on_request\" AND NOT \"products\".\"price_from\")"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.categoria": {
+      "name": "categoria",
+      "schema": "public",
+      "values": [
+        "queques",
+        "galletas",
+        "dulces",
+        "salado"
+      ]
+    },
+    "public.ocasion": {
+      "name": "ocasion",
+      "schema": "public",
+      "values": [
+        "cumpleanos",
+        "bodas-bautizos",
+        "baby-shower",
+        "oficinas",
+        "regalos",
+        "navidad"
+      ]
+    },
+    "public.subcategoria": {
+      "name": "subcategoria",
+      "schema": "public",
+      "values": [
+        "cupcake",
+        "personalizado"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

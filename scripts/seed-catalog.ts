@@ -76,6 +76,65 @@ function loadEnv() {
   }
 }
 
+/**
+ * Avisa al sitio de que el catálogo cambió, para que no sirva el viejo una hora.
+ *
+ * Sin esto, sembrar no cambiaba nada de lo que ve un visitante: el catálogo vive
+ * en un `unstable_cache` de una hora y las páginas en ISR con el mismo reloj. Se
+ * descubrió sembrando tres productos y viendo `/tienda` seguir en 23 tarjetas.
+ *
+ * **Nunca hace fallar la semilla.** Para cuando esto corre, las filas ya están
+ * escritas y son correctas; que el servidor esté apagado, o que el secreto no
+ * esté puesto, no puede convertir un seed bueno en un error. Avisa y sale.
+ *
+ * `REVALIDATE_URL` existe para poder apuntar a un sitio distinto del que dice
+ * `NEXT_PUBLIC_SITE_URL` — por ejemplo, sembrar con el `.env.local` de siempre
+ * pero refrescar producción.
+ */
+async function revalidarCatalogo() {
+  const base = process.env.REVALIDATE_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
+  const secret = process.env.REVALIDATE_SECRET;
+
+  if (!base || !secret) {
+    const falta = [
+      !base && "REVALIDATE_URL (o NEXT_PUBLIC_SITE_URL)",
+      !secret && "REVALIDATE_SECRET",
+    ].filter(Boolean);
+
+    console.warn(
+      `⚠ No se revalidó la caché: falta ${falta.join(" y ")}.\n` +
+        "  Lo servido puede tardar hasta una hora en reflejar esto. Para forzarlo a mano:\n" +
+        '    curl -X POST "<url del sitio>/api/revalidate" -H "Authorization: Bearer <secreto>"',
+    );
+    return;
+  }
+
+  const url = new URL("/api/revalidate", base);
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secret}` },
+    });
+
+    if (response.ok) {
+      console.log(`Caché del catálogo revalidada en ${url.origin}.`);
+      return;
+    }
+
+    console.warn(
+      `⚠ ${url.origin} respondió ${response.status} al revalidar; la semilla SÍ se aplicó.\n` +
+        "  503 significa que ese sitio no tiene REVALIDATE_SECRET configurado; 401, que el\n" +
+        "  secreto de aquí no coincide con el suyo.",
+    );
+  } catch {
+    console.warn(
+      `⚠ No se pudo contactar con ${url.origin} para revalidar; la semilla SÍ se aplicó.\n` +
+        "  Si es tu servidor local, levantalo y repetí el curl de arriba.",
+    );
+  }
+}
+
 async function main() {
   loadEnv();
 
@@ -151,6 +210,9 @@ async function main() {
         "acaban de perder.",
     );
   }
+
+  // Lo último: los datos ya están, esto sólo hace que se vean.
+  await revalidarCatalogo();
 }
 
 main().catch((error: unknown) => {

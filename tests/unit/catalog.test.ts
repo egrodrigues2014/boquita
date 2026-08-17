@@ -106,7 +106,7 @@ describe("sin base de datos", () => {
     dbAvailable = false;
     const catalog = await getCatalog();
     expect(catalog).toEqual(fallbackCatalog);
-    expect(catalog).toHaveLength(23);
+    expect(catalog).toHaveLength(26);
   });
 
   it("getProduct sigue funcionando y no explota con un slug inexistente", async () => {

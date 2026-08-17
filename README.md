@@ -38,7 +38,7 @@ corre CI. Ver [El catálogo y su fallback](#el-catálogo-y-su-fallback).
 | `npm run e2e` | Playwright: geometría, interacciones, lightbox, SEO y presupuestos, a 8 anchos |
 | `npm run db:generate` | genera el SQL de la migración en `drizzle/`. No conecta a nada |
 | `npm run db:migrate` | aplica las migraciones (usa `DATABASE_URL_UNPOOLED`) |
-| `npm run db:seed` | siembra `products` desde `content/products.ts`. Idempotente |
+| `npm run db:seed` | siembra `products` desde `content/products.ts`. Idempotente; revalida la caché al terminar |
 | `npm run db:studio` | inspector de Drizzle sobre la base |
 
 Página útil en desarrollo: **`/dev/tokens`** — especímenes de la escala tipográfica, los tokens con
@@ -128,7 +128,7 @@ formatFrom(22000)     // "desde ₡ 22.000 CRC"
 
 ## El catálogo y su fallback
 
-Son **23 productos con 60 presentaciones**, cargados del catálogo que entregó Ale
+Son **26 productos con 63 presentaciones**, cargados del catálogo que entregó Ale
 (`data/boquita_products_catalog.xlsx`). Viven en dos tablas de Neon: `products` y
 `product_variants` —una fila por presentación, que es una fila del Excel—, con `content/products.ts`
 como **fallback**. No es contenido muerto: es lo que se sirve en las situaciones de abajo.
@@ -197,6 +197,13 @@ Sin panel de administración (fase 3) hay dos caminos:
 # b) varios precios: editar content/products.ts y volver a sembrar.
 npm run db:seed
 ```
+
+**Sembrar no basta para que se vea.** El catálogo vive en un `unstable_cache` de una hora y las
+páginas en ISR con el mismo reloj, así que escribir en Neon no cambiaba nada de lo servido —ni en
+local ni en producción, donde la única salida era redesplegar—. Por eso `db:seed` llama al terminar a
+`POST /api/revalidate`, que tira las dos cachés. Necesita `REVALIDATE_SECRET` en el entorno del sitio
+**y** en el de quien siembra; sin él la ruta responde 503 (apagada, no abierta) y el script avisa con
+el `curl` listo para pegar. El camino (a), el `UPDATE` por SQL, no pasa por ahí: ése sí espera la hora.
 
 `db:seed` hace `ON CONFLICT (slug) DO UPDATE`, así que **pisa** lo que haya en la tabla: si alguien
 corrigió un precio por SQL y el fallback sigue con el valor viejo, sembrar lo revierte. El script lo
@@ -345,7 +352,8 @@ propia y no del marketplace de Vercel, precisamente para no atar la base al host
 **El plan Free de Neon da 100 CU-horas al mes y el cómputo se autosuspende a los 5 minutos.** Por eso
 la lectura del catálogo está en `unstable_cache` con una hora de vida: sin ella, `/tienda` —que es
 dinámica porque lee `searchParams`— iría a Postgres en cada visita y un goteo de tráfico mantendría
-el cómputo despierto casi todo el día, que no cabe en esa cifra.
+el cómputo despierto casi todo el día, que no cabe en esa cifra. El precio de esa caché es que un
+cambio en la base no se ve solo: lo resuelve `POST /api/revalidate`, ver «Corregir un precio, hoy».
 
 **El repositorio vive en una carpeta sincronizada por OneDrive.** `npm install` funciona sin
 problemas, pero si aparecen errores `EPERM` de bloqueo de archivos durante `next dev`, mover el

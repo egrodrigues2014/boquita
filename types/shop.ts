@@ -12,15 +12,21 @@ import type { Colones, ImageRef } from "@/types/content";
 /**
  * Categorías del primer dropdown del nav. Debe coincidir con content/nav.
  *
- * Son las tres de la columna `category` del catálogo de Ale
- * (`data/boquita_products_catalog.xlsx`), en singular y minúscula allí. Las
- * cinco anteriores —`bocaditos`, `salado`, `sin-gluten-keto`— eran del catálogo
- * de andamio y no existen en el real: no hay nada salado ni una línea keto.
+ * Son las de la columna `category` del catálogo de Ale
+ * (`data/boquita_products_catalog.xlsx`), en singular y minúscula allí. De las
+ * del catálogo de andamio siguen sin existir `bocaditos` y `sin-gluten-keto`:
+ * no hay línea keto.
+ *
+ * `salado` sí volvió, y esta vez con productos detrás: Ale añadió las dos
+ * tortillas españolas (`SAL-25` y `SAL-26`) al Excel. El orden de este objeto es
+ * el de los chips de `/tienda` y el del desplegable del nav, así que la nueva va
+ * al final: lo salado se lee después de lo dulce.
  */
 export const CATEGORIAS = {
   queques: "Queques",
   galletas: "Galletas",
   dulces: "Dulces",
+  salado: "Salado",
 } as const;
 
 export type Categoria = keyof typeof CATEGORIAS;
@@ -66,6 +72,10 @@ export const SINONIMOS_CATEGORIA: Record<Categoria, string[]> = {
   ],
   galletas: ["galleta", "cookie", "cookies"],
   dulces: ["dulce", "postre", "postres", "reposteria"],
+  // «tortilla» entra porque hoy sólo la tienen los salados y es como se pide el
+  // producto de viva voz. Si algún día hay una tortilla dulce, sale de aquí por
+  // el mismo motivo por el que `cake` nunca entró.
+  salado: ["salado", "salados", "salada", "saladas", "tortilla", "tortillas"],
 };
 
 /** Lo mismo para el segundo nivel. Ver `SINONIMOS_CATEGORIA`. */

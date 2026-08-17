@@ -97,7 +97,7 @@ describe("el texto es el de Ale, no el de andamio", () => {
     }
   });
 
-  it("el catálogo marca sus cuatro temas en negrita, cada uno con sus dos puntos", () => {
+  it("el catálogo marca sus cinco temas en negrita, cada uno con sus dos puntos", () => {
     const catalogo = about.sections.find((s) => s.id === "catalogo");
     const entradillas = catalogo!.paragraphs.filter(isLeadParagraph).map((p) => p.lead);
 
@@ -105,12 +105,21 @@ describe("el texto es el de Ale, no el de andamio", () => {
     // `display: block`) y ahí un punto se lee como frase terminada en vez de como
     // el rótulo del texto que viene debajo.
     //
-    // `toEqual` y no `arrayContaining`: los temas del catálogo son estos cuatro y
+    // `toEqual` y no `arrayContaining`: los temas del catálogo son estos cinco y
     // ninguno más, en este orden. Con `arrayContaining` se podía colar uno nuevo
     // —o perderse uno— sin que nada dijera una palabra. (Los rótulos de
     // #entregas son otros seis y tienen su propio test: el filtro por sección es
     // lo que mantiene los dos independientes.)
-    expect(entradillas).toEqual(["Queques:", "Galletas:", "Postres:", "Queques personalizados:"]);
+    //
+    // «Salados:» va entre los postres y los personalizados: cierra lo que se
+    // vende hecho antes de pasar a lo que se cotiza por encargo.
+    expect(entradillas).toEqual([
+      "Queques:",
+      "Galletas:",
+      "Postres:",
+      "Salados:",
+      "Queques personalizados:",
+    ]);
   });
 
   it("la negrita y su texto casan con el único espacio que mete el render", () => {

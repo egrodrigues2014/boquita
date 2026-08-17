@@ -92,8 +92,8 @@ export async function generateMetadata({
       title: "Catálogo",
       description:
         `Los ${catalog.length} productos de Boquita: queques de zanahoria, limón y chocolate, ` +
-        "cupcakes, polvorones españoles, galletas de granola, brigadeiros, pies y quesillo. " +
-        "Horneado por encargo en Santa Ana.",
+        "cupcakes, polvorones españoles, galletas de granola, brigadeiros, pies, quesillo y " +
+        "tortilla española. Horneado por encargo en Santa Ana.",
       alternates: { canonical: "/tienda" },
     };
   }

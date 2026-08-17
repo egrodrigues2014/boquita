@@ -1,0 +1,1 @@
+ALTER TYPE "public"."categoria" ADD VALUE 'salado';

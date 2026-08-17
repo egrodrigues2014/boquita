@@ -19,7 +19,7 @@ Ordenado por urgencia real, no por sección.
 
 ### 2. Los precios reales — ✅ **CERRADO**
 
-Ale entregó el catálogo completo en `data/boquita_products_catalog.xlsx`: **23 productos con 60
+Ale entregó el catálogo completo en `data/boquita_products_catalog.xlsx`: **26 productos con 63
 presentaciones**, cada una con su precio en colones. Está cargado en `content/products.ts` y sembrado
 en Postgres, y **ya no queda ningún `priceTodo`** en el repo — hay un test que falla si vuelve a
 aparecer uno (`tests/unit/shop.test.ts`).
@@ -80,19 +80,19 @@ medido contra el `min-height` de `.review-card`, pasarlo desborda la tarjeta má
 salió de `content/home.ts` y `tests/unit/content.test.ts` fija ahora las dos métricas para que
 mover cualquiera de ellas sea una decisión y no un descuido de edición.
 
-El bloque de servicio muestra dos métricas. La segunda («23 recetas en el catálogo») es verificable:
+El bloque de servicio muestra dos métricas. La segunda («26 recetas en el catálogo») es verificable:
 la calcula `lib/homeContent.ts` contando el catálogo servido. El **año ya era el bueno** (13 ago):
 Ale sitúa el primer pedido
 vendido en **abril de 2022**, y ese es el dato que cuenta `content/pages.ts`. La portada decía 2019 y
 se corrigió para que las dos páginas no se desmintieran.
 
-Ojo con el número de recetas: Ale cuenta **diecisiete recetas base** (7 queques, 3 galletas, 7
-postres) y la métrica cuenta **23 productos** del catálogo, porque los cupcakes son la misma receta en
-otro molde. Por eso «Sobre nosotros» dice «recetas base» y no «recetas» a secas.
+Ojo con el número de recetas: Ale cuenta **veinte recetas base** (7 queques, 3 galletas, 8 postres,
+2 salados) y la métrica cuenta **26 productos** del catálogo, porque los cupcakes son la misma receta
+en otro molde. Por eso «Sobre nosotros» dice «recetas base» y no «recetas» a secas.
 
 ### 4b. Dos fotos de producto en resolución original
 
-De las 23 fotos que mandó Ale, **dos son miniaturas** y sólo dan el escalón de 400px de la escalera,
+De las 26 fotos que mandó Ale, **dos son miniaturas** y sólo dan el escalón de 400px de la escalera,
 así que en la ficha —que renderiza a ~540px— se ven blandas. El pipeline no hace upscale nunca, y
 falsear el segundo escalón sería peor que la foto blanda. Los dos productos van marcados `photoTodo`:
 

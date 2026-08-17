@@ -3,9 +3,9 @@ import {
   GALLERY_ITEMS_PER_ROW,
   GALLERY_ROW_COUNT,
   chunkGalleryRows,
+  galleryItemsFrom,
   home as fallbackHome,
   toFeatured,
-  toGalleryItems,
 } from "@/content/home";
 import { getCatalog } from "@/lib/db/catalog";
 import type { GalleryRows, HomeContent, Product } from "@/types/content";
@@ -69,8 +69,15 @@ function featuredFrom(catalog: ShopProduct[]): Product[] {
   return chosen.map(toFeatured);
 }
 
+/**
+ * Las fotos de la galería, con la MISMA selección que la ruta estática.
+ *
+ * Aquí se avisa en vez de lanzar: una tabla sembrada a medias debe degradar la
+ * portada, no tumbarla. `content/home.ts` sí lanza sobre el fallback, donde
+ * faltar una foto es un error del repo y no del entorno.
+ */
 function galleryFrom(catalog: ShopProduct[]): GalleryRows {
-  const items = catalog.flatMap(toGalleryItems);
+  const items = galleryItemsFrom(catalog);
   const expected = GALLERY_ROW_COUNT * GALLERY_ITEMS_PER_ROW;
 
   if (items.length !== expected) {

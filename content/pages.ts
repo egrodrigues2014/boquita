@@ -99,14 +99,14 @@ export const about = {
         "Las recetas son propias y originales, y las han probado personas con gustos y " +
           "nacionalidades diferentes. Esa variedad de opiniones me ha ayudado a crear sabores " +
           "que disfrutan paladares muy distintos.",
-        // «Diecisiete recetas base» y no «diecisiete recetas» a secas: la portada
-        // anuncia una métrica que cuenta PRODUCTOS del catálogo (hoy 23, la
-        // calcula `lib/homeContent.ts`), y los cupcakes son la misma receta en
-        // otro molde. Sin la palabra «base», las dos cifras se desmienten.
-        "Hoy son diecisiete recetas base —siete de queque, tres de galleta y siete postres—, " +
-          "que en el catálogo se abren en más productos según el tamaño y el formato, más los " +
-          "queques personalizados por encargo. Todas se preparan en mi casa, con mi horno y " +
-          "mis manos. La cantidad que sale cada día depende de los pedidos que haya, no al revés.",
+        // «Veinte recetas base» y no «veinte recetas» a secas: la portada anuncia
+        // una métrica que cuenta PRODUCTOS del catálogo (hoy 26, la calcula
+        // `lib/homeContent.ts`), y los cupcakes son la misma receta en otro
+        // molde. Sin la palabra «base», las dos cifras se desmienten.
+        "Hoy son veinte recetas base —siete de queque, tres de galleta, ocho postres y dos " +
+          "salados—, que en el catálogo se abren en más productos según el tamaño y el formato, " +
+          "más los queques personalizados por encargo. Todas se preparan en mi casa, con mi horno " +
+          "y mis manos. La cantidad que sale cada día depende de los pedidos que haya, no al revés.",
       ],
     },
     {
@@ -158,6 +158,14 @@ export const about = {
             "vez. Y mousse de chocolate oscuro, que se hace sólo con chocolate y huevo, así que " +
             "sirve para quien no puede tomar gluten ni lácteos, con una versión endulzada con " +
             "monk fruit sin azúcar añadida.",
+        },
+        {
+          lead: "Salados:",
+          text:
+            "Tortilla española de papas con cebolla caramelizada, tierna por dentro y dorada por " +
+            "fuera, en dos versiones: la original y otra con chorizo. Se hornea grande, para doce " +
+            "personas, y es la que se pide para una reunión de oficina o para acompañar una mesa " +
+            "que no sea sólo dulce.",
         },
         {
           lead: "Queques personalizados:",

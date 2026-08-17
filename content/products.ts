@@ -2,7 +2,7 @@ import { productImage } from "@/lib/productImage";
 import type { ShopProduct } from "@/types/shop";
 
 /**
- * El catálogo completo: 23 productos y 60 presentaciones.
+ * El catálogo completo: 26 productos y 63 presentaciones.
  *
  * **Es el catálogo real de Ale**, cargado desde `data/boquita_products_catalog.xlsx`.
  * Ese Excel es la referencia de fondo: nombres, precios, descripciones,
@@ -20,6 +20,16 @@ import type { ShopProduct } from "@/types/shop";
  *  · **El mousse sin azúcar.** El Excel le da a `DUL-019` una tercera fila con
  *    otro nombre («Mousse de Chocolate S/Azucar»); es la misma ficha con una
  *    presentación más, no un producto aparte.
+ *  · **Las dos tortillas son dos productos.** `SAL-25` y `SAL-26` comparten la
+ *    etiqueta «grande (12 personas)», así que como presentaciones de una misma
+ *    ficha chocarían con el `.refine()` de etiquetas únicas — y son recetas
+ *    distintas, no dos tamaños de una.
+ *
+ * ⚠ **Un queque y su versión cupcake NO comparten descripción.** Lo parecían:
+ * `queque-de-vainilla` llevaba el texto de `cupcakes-de-vainilla` y
+ * `cupcakes-de-banano` el de `banana-bread`, así que cada ficha describía la
+ * cobertura de su hermana y contradecía a su propia foto. El Excel distingue las
+ * cuatro (QUE-09/010/011/012) y ésa es la referencia.
  *
  * Este archivo es el FALLBACK de las tablas `products` y `product_variants` (ver
  * `lib/db/catalog.ts`): se usa tal cual cuando no hay `DATABASE_URL`, cuando la
@@ -309,7 +319,7 @@ export const products: ShopProduct[] = [
     ],
     description: [
       "Queque de vainilla, suave, terso, esponjoso, mi mejor versión de un pound cake, cubierto " +
-        "con butter cream de vainilla.",
+        "con azúcar pulverizada o decorado con dulce de leche.",
     ],
     categoria: "queques",
     ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
@@ -341,8 +351,8 @@ export const products: ShopProduct[] = [
       { unit: "24 unidades", price: 14000 },
     ],
     description: [
-      "Clásico pan de banano, suave, esponjoso, hecho con bananas naturales y cubierto por azúcar " +
-        "nevada.",
+      "Clásico pan de banano, suave, esponjoso, hecho con bananas naturales y cubierto con " +
+        "buttercream de vainilla.",
     ],
     categoria: "queques",
     subcategoria: "cupcake",
@@ -657,6 +667,64 @@ export const products: ShopProduct[] = [
       "quesillo",
       [321, 642],
       "Quesillo individual desmoldado en un plato blanco, bañado en su caramelo",
+    ),
+  },
+  {
+    slug: "quesillo-de-coco",
+    name: "Quesillo de coco",
+    price: 14000,
+    variants: [{ unit: "mediano (10 personas)", price: 14000 }],
+    description: [
+      "Dulce cremoso de leche de coco cubierto con caramelo y decorado con coco tostado.",
+    ],
+    categoria: "dulces",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    // Los dos campos, tal cual el Excel. El coco aparece en la descripción y en
+    // la foto pero NO aquí: Ale lo quitó de los alérgenos el 17 ago, así que la
+    // ficha lo cuenta como sabor y no como advertencia. Es decisión suya.
+    ingredients: ["leche", "huevos"],
+    allergens: ["lácteos", "huevo"],
+    leadTimeHours: 48,
+    image: productImage(
+      "quesillo-de-coco",
+      [533, 1067, 1600],
+      "Quesillo de coco entero sobre un plato blanco, con la superficie de caramelo cubierta de coco tostado rallado",
+    ),
+  },
+  {
+    slug: "tortilla-espanola-original",
+    name: "Tortilla española original",
+    price: 12000,
+    variants: [{ unit: "grande (12 personas)", price: 12000 }],
+    description: ["Tierna tortilla de papas con cebolla caramelizada, mi versión."],
+    categoria: "salado",
+    // El Excel escribe «oficinas, reuniones», pero `reuniones` no es una ocasión
+    // del catálogo y `oficinas` ya se rotula «Oficinas y cafeterías».
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["huevos", "papas", "aceite", "sal", "cebolla"],
+    allergens: ["huevo"],
+    leadTimeHours: 48,
+    image: productImage(
+      "tortilla-espanola-original",
+      [533, 1067, 1600],
+      "Tortilla española entera sobre un plato metálico, dorada y jugosa, con el centro tostado",
+    ),
+  },
+  {
+    slug: "tortilla-espanola-con-chorizo",
+    name: "Tortilla española con chorizo",
+    price: 15000,
+    variants: [{ unit: "grande (12 personas)", price: 15000 }],
+    description: ["Tierna tortilla de papas con cebolla caramelizada y chorizo."],
+    categoria: "salado",
+    ocasiones: ["cumpleanos", "bodas-bautizos", "oficinas"],
+    ingredients: ["huevos", "papas", "aceite", "sal", "cebolla", "chorizo"],
+    allergens: ["huevo"],
+    leadTimeHours: 48,
+    image: productImage(
+      "tortilla-espanola-con-chorizo",
+      [533, 1067, 1600],
+      "Tortilla española con chorizo entera sobre un plato metálico, vista desde arriba y dorada en los bordes",
     ),
   },
 ];

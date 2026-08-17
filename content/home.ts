@@ -51,6 +51,46 @@ export const FEATURED_SLUGS = [
   "cheesecake",
 ] as const;
 
+/**
+ * Qué productos se asoman a la galería de la portada, y en qué orden.
+ *
+ * Existe por el mismo motivo que `FEATURED_SLUGS`: la selección editorial vive
+ * aquí y los datos no. Antes la galería era «todos los productos del catálogo»,
+ * y eso ataba la portada al tamaño del catálogo — `galleryProducts()` exige
+ * exactamente 24 fotos y `content/schema.ts` fija la rejilla como 6 filas de 4,
+ * así que dar de alta un producto en `/tienda` reventaba la portada entera en la
+ * EVALUACIÓN del módulo, no en el render: build, unitarios y e2e a la vez. Pasó
+ * al añadir los salados, que dejaron el conteo en 27.
+ *
+ * Son 23 slugs y no 24 a propósito: `queque-personalizado` aporta dos fotos
+ * porque tiene `imageB`, y esa expansión la sigue haciendo `toGalleryItems`.
+ */
+export const GALLERY_SLUGS = [
+  "queque-de-zanahoria",
+  "cupcakes-de-zanahoria",
+  "cupcakes-de-limon",
+  "queque-de-limon",
+  "cupcakes-devils-food",
+  "queque-devils-food",
+  "coffee-cake",
+  "queque-chocolate-chip-cookie",
+  "cupcakes-de-vainilla",
+  "queque-de-vainilla",
+  "cupcakes-de-banano",
+  "banana-bread",
+  "queque-personalizado",
+  "polvorones-espanoles",
+  "galletas-de-granola",
+  "galletas-de-miel-y-limon",
+  "barra-de-datiles",
+  "brigadeiros",
+  "mousse-de-chocolate",
+  "pie-de-brigadeiro",
+  "key-lime-pie",
+  "cheesecake",
+  "quesillo",
+] as const;
+
 export const GALLERY_ITEMS_PER_ROW = 4;
 export const GALLERY_ROW_COUNT = 6;
 
@@ -90,6 +130,24 @@ export function toGalleryItems(product: ShopProduct): GalleryItem[] {
   ];
 }
 
+/**
+ * Las fotos de la galería, resueltas contra el catálogo que se le pase.
+ *
+ * La comparten el literal de este fichero y `lib/homeContent.ts` a propósito: sin
+ * ella la ruta estática y la de base de datos elegían fotos por caminos
+ * distintos, y de hecho ya divergían —una lanzaba y la otra truncaba en
+ * silencio—. Un slug ausente del catálogo se omite aquí; quien llama decide si
+ * eso es un error (en el fallback lo es) o un aviso (con la tabla a medias, no).
+ */
+export function galleryItemsFrom(catalog: ShopProduct[]): GalleryItem[] {
+  const bySlug = new Map(catalog.map((product) => [product.slug, product]));
+
+  return GALLERY_SLUGS.flatMap((slug) => {
+    const product = bySlug.get(slug);
+    return product ? toGalleryItems(product) : [];
+  });
+}
+
 export function chunkGalleryRows(items: GalleryItem[]): GalleryRows {
   return Array.from({ length: GALLERY_ROW_COUNT }, (_, row) =>
     items.slice(row * GALLERY_ITEMS_PER_ROW, (row + 1) * GALLERY_ITEMS_PER_ROW),
@@ -109,7 +167,7 @@ function featuredProducts(): Product[] {
 }
 
 function galleryProducts(): GalleryRows {
-  const items = products.flatMap(toGalleryItems);
+  const items = galleryItemsFrom(products);
 
   if (items.length !== GALLERY_ROW_COUNT * GALLERY_ITEMS_PER_ROW) {
     throw new Error(`La galeria necesita 24 fotos y tiene ${items.length}`);
@@ -203,12 +261,14 @@ export const home: HomeContent = {
       {
         label: "Catálogo",
         href: "/tienda",
-        // Las tres categorías del catálogo de Ale, ni una más: un cuarto enlace
-        // sería un filtro que no devuelve nada.
+        // Las categorías del catálogo de Ale, ni una más: un enlace de sobra
+        // sería un filtro que no devuelve nada. Lo vigila `shop.test.ts`
+        // comparando esta lista con `CATEGORIAS`.
         items: [
           { label: "Queques", href: "/tienda?categoria=queques" },
           { label: "Galletas", href: "/tienda?categoria=galletas" },
           { label: "Dulces", href: "/tienda?categoria=dulces" },
+          { label: "Salado", href: "/tienda?categoria=salado" },
         ],
       },
       {
@@ -288,7 +348,7 @@ export const home: HomeContent = {
       "y coordinamos todo por WhatsApp.",
     // Derivados del catálogo: los precios y nombres no pueden desincronizarse.
     products: featuredProducts(),
-    more: { label: "Ver los 23 productos", href: "/tienda" },
+    more: { label: "Ver los 26 productos", href: "/tienda" },
   },
 
   service: {
@@ -307,7 +367,7 @@ export const home: HomeContent = {
       // a moverse sin que alguien lo decida.
       { value: "+100", label: "Pedidos horneados desde 2022" },
       // Verificable: son los productos del catálogo.
-      { value: "23", label: "Recetas en el catálogo" },
+      { value: "26", label: "Recetas en el catálogo" },
     ],
   },
 

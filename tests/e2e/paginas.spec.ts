@@ -61,15 +61,20 @@ test.describe("sobre nosotros", () => {
   test("el carrusel muestra todas las fotos del catálogo sin enlaces", async ({ page }) => {
     await page.goto("/sobre-nosotros");
 
+    // 27 = los 26 productos del catálogo + la segunda foto del personalizado.
+    // A diferencia de la galería de la PORTADA —que va por la lista curada
+    // `GALLERY_SLUGS` y está clavada en 24 por la rejilla 6×4—, esta rueda es
+    // decorativa y sí crece con el catálogo: calcula su radio con el número real
+    // de imágenes. Si añades un producto, este número sube.
     const wheel = page.locator(".product-wheel");
-    await expect(wheel).toHaveAttribute("data-carousel-count", "24");
+    await expect(wheel).toHaveAttribute("data-carousel-count", "27");
     await expect(wheel.locator("a")).toHaveCount(0);
 
     const originals = wheel.locator(
       ".product-wheel__set:not(.product-wheel__set--copy) .product-wheel__card",
     );
-    await expect(originals).toHaveCount(24);
-    await expect(wheel.locator(".product-wheel__set--copy .product-wheel__card")).toHaveCount(24);
+    await expect(originals).toHaveCount(27);
+    await expect(wheel.locator(".product-wheel__set--copy .product-wheel__card")).toHaveCount(27);
     await expect(wheel.locator(".product-wheel__set--copy")).toHaveAttribute("aria-hidden", "true");
 
     const sources = await originals.evaluateAll((cards) =>
@@ -78,7 +83,7 @@ test.describe("sobre nosotros", () => {
     const copySources = await wheel
       .locator(".product-wheel__set--copy .product-wheel__card")
       .evaluateAll((cards) => cards.map((card) => card.getAttribute("data-carousel-image")));
-    expect(new Set(sources).size).toBe(24);
+    expect(new Set(sources).size).toBe(27);
     expect(copySources, "la copia móvil no repite la secuencia exacta").toEqual(sources);
   });
 
@@ -103,6 +108,7 @@ test.describe("sobre nosotros", () => {
       "Queques:",
       "Galletas:",
       "Postres:",
+      "Salados:",
       "Queques personalizados:",
     ]);
 
@@ -373,7 +379,7 @@ test.describe("salud de la navegación", () => {
     expect(anchors).toEqual([]);
   });
 
-  test("el sitemap lista la portada, la tienda, las 23 fichas y sobre-nosotros", async ({
+  test("el sitemap lista la portada, la tienda, las 26 fichas y sobre-nosotros", async ({
     request,
   }) => {
     const xml = await (await request.get("/sitemap.xml")).text();
@@ -384,7 +390,7 @@ test.describe("salud de la navegación", () => {
     expect(xml).not.toContain("/aviso-legal");
 
     const urls = xml.match(/<loc>/g) ?? [];
-    // portada + tienda + sobre-nosotros + 23 fichas
-    expect(urls).toHaveLength(26);
+    // portada + tienda + sobre-nosotros + 26 fichas
+    expect(urls).toHaveLength(29);
   });
 });
