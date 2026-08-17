@@ -84,7 +84,7 @@ Para las fechas fuertes conviene avisar con tiempo, porque el horno es uno.
 > texto plano. La dirección la publica `CONTACT.address` (`lib/contact.ts`), no este documento.
 
 **Cómo hacer tu pedido:**
-Todo se coordina por WhatsApp. Ahí acordamos qué quieres, para cuándo y dónde, y te confirmo todos los detalles.
+Todo se coordina por WhatsApp. Ahí acordamos qué quieres, para cuándo y dónde. Para confirmar tu pedido pedimos un abono del 50% o el pago total. Si eliges el abono, el 50% restante se paga al momento de retirarlo.
 
 **Tiempo de anticipación:**
 Todo se hornea por encargo:
@@ -99,7 +99,7 @@ Puedes retirar tu pedido en Condominio Condado del Río, Santa Ana, Costa Rica.
 Hacemos entregas en todo el Gran Área Metropolitana. En las zonas cercanas, la entrega la hago yo personalmente en mi vehículo; para el resto, coordinamos con mensajería. La zona y la hora de entrega se acuerdan al confirmar tu pedido.
 
 **Formas de pago:**
-Puedes pagar en efectivo o por SINPE. La forma de pago se acuerda al confirmar el pedido.
+Puedes pagar en efectivo o por SINPE. Para confirmar el pedido se abona el 50% o se paga el total; si abonas, el resto se paga al retirarlo.
 
 **Puntualidad:**
 La puntualidad es un valor que cuidamos y una parte importante de esta iniciativa. La hora que acordamos es la hora en que llega tu pedido.
@@ -118,7 +118,7 @@ Escríbeme por WhatsApp con lo que quieres, la fecha y la zona. Te confirmo si s
 Las dos cosas. Puedes retirar en Calle Obelisco, condominio Condado del Río, Santa Ana, o coordinamos la entrega dentro del Gran Área Metropolitana. En los sectores cercanos la entrega la hago yo; para el resto coordinamos con mensajería.
 
 **¿Cómo se paga?**
-En efectivo o por SINPE, al confirmar el pedido.
+En efectivo o por SINPE. Para confirmar el pedido se abona el 50% o se paga el total, y si abonas, el 50% restante se paga al retirarlo.
 
 **¿Cuánto me dura?**
 Los queques se conservan de cinco a siete días en el refrigerador. Como no llevan conservantes, es mejor sacarlos un rato antes de servir.

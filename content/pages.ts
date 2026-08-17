@@ -226,8 +226,9 @@ export const about = {
         {
           lead: "Cómo hacer tu pedido:",
           text:
-            "Todo se coordina por WhatsApp. Ahí acordamos qué quieres, para cuándo y dónde, y " +
-            "te confirmo todo al momento.",
+            "Todo se coordina por WhatsApp. Ahí acordamos qué quieres, para cuándo y dónde. " +
+            "Para confirmar tu pedido pedimos un abono del 50% o el pago total. Si eliges el " +
+            "abono, el 50% restante se paga al momento de retirarlo.",
         },
         { lead: "Tiempo de anticipación:", text: "Todo se hornea por encargo:" },
         {
@@ -250,8 +251,8 @@ export const about = {
         {
           lead: "Formas de pago:",
           text:
-            "Puedes pagar en efectivo o por SINPE. La forma de pago se acuerda al confirmar el " +
-            "pedido.",
+            "Puedes pagar en efectivo o por SINPE. Para confirmar el pedido se abona el 50% " +
+            "o se paga el total; si abonas, el resto se paga al retirarlo.",
         },
         {
           lead: "Puntualidad:",
@@ -285,9 +286,12 @@ export const about = {
     },
     {
       question: "¿Cómo se paga?",
-      // Ya no es un TODO: Ale confirmó los medios reales (efectivo o SINPE).
-      answer: "En efectivo o por SINPE, al confirmar el pedido. No hay pagos en línea en el sitio: " +
-        "el carrito solo prepara el mensaje de WhatsApp con lo que quieres.",
+      // Ya no es un TODO: Ale confirmó los medios reales (efectivo o SINPE) y, el 17 ago,
+      // el abono del 50% para confirmar. Las tres menciones al pago —esta, el rótulo
+      // «Formas de pago:» y «Cómo hacer tu pedido:»— dicen lo mismo a propósito.
+      answer: "En efectivo o por SINPE. Para confirmar el pedido se abona el 50% o se paga el " +
+        "total, y si abonas, el 50% restante se paga al retirarlo. No hay pagos en línea en el " +
+        "sitio: el carrito solo prepara el mensaje de WhatsApp con lo que quieres.",
     },
     {
       question: "¿Cuánto tiempo se conserva?",

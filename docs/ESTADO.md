@@ -29,7 +29,7 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 | --- | --- |
 | Rama | `main`, con la preparación de Vercel y el dominio definitivo integrada desde `deploy/boquitacostarica` |
 | Último commit | Ver `git log -1 --oneline`; no se duplica aquí porque el hash queda obsoleto al commitear este fichero |
-| Sin commitear | **El repaso de copy del catálogo** (17 ago): `content/pages.ts`, `docs/boquita-sobre-nosotros.md` y este fichero. Sólo texto: ni tests, ni estructura, ni CSS. El bloque anterior, el copy de la portada, se commiteó entero — `content/home.ts`, `lib/seo.ts`, `tests/unit/content.test.ts`, `tests/e2e/geometry.spec.ts` y este fichero. ⚠ Sigue suelto de antes `scripts/verify-staging-order.ts`, **sin rastrear y ajeno a todos los bloques**; nadie lo ha reclamado en cuatro bloques seguidos, así que o se adopta o se borra. Verificar con `git status --short`. Lo de abajo es el histórico de bloques ya commiteados, que se conserva porque documenta qué tocó cada uno. **El catálogo salado** (17 ago, commit `5eb146f`): `content/products.ts`, `content/home.ts`, `content/pages.ts`, `types/shop.ts`, `lib/homeContent.ts`, `scripts/build-images.mjs`, `app/tienda/page.tsx`, `app/layout.tsx`, `drizzle/0004_ordinary_thor_girl.sql` + su `_journal.json`, las tres fuentes de `assets/products/` y los nueve `.webp` de `public/img/producto/`, cinco ficheros de `tests/unit/`, dos de `tests/e2e/`, y `README.md`, `docs/IMAGE_MAP.md`, `docs/CONTENT_TODO.md` y este fichero. ⚠ En el mismo árbol sigue suelto de antes `scripts/verify-staging-order.ts`, sin rastrear, que **no es de este bloque**. Verificar con `git status --short`. Lo de abajo es la lista de bloques anteriores, ya commiteados: **El arreglo del nav**: `components/layout/Navbar.tsx`, `styles/10-navbar.css`, `tests/e2e/interactions.spec.ts`, `CLAUDE.md` (punto 10) y este fichero. ⚠ En el mismo árbol hay **otro bloque que no es de éste y no debe entrar en el mismo commit**: la tarjeta Open Graph y el ajuste de SEO — `app/opengraph-image.tsx`, `app/og-hero.jpg` (nuevo, sin rastrear), `scripts/build-images.mjs`, `next.config.ts`, `lib/seo.ts` (sale `streetAddress` del JSON-LD) y la `description` de `app/layout.tsx`—. Ese bloque **seguía creciendo mientras se escribía esto**, así que la lista se comprueba, no se copia. ⚠ Siguen sueltos de antes `scripts/verify-staging-order.ts` sin rastrear y `data/boquita_products_catalog.xlsx` modificado. Verificar con `git status --short` |
+| Sin commitear | **El abono del 50%** (17 ago): `content/pages.ts`, `docs/boquita-sobre-nosotros.md`, `docs/CONTENT_TODO.md` y este fichero. El bloque anterior, **el repaso de copy del catálogo**, se commiteó entero en `d8fbbd4` — `content/pages.ts`, `docs/boquita-sobre-nosotros.md` y este fichero. Y antes, el copy de la portada, también entero — `content/home.ts`, `lib/seo.ts`, `tests/unit/content.test.ts`, `tests/e2e/geometry.spec.ts` y este fichero. ⚠ Sigue suelto de antes `scripts/verify-staging-order.ts`, **sin rastrear y ajeno a todos los bloques**; nadie lo ha reclamado en cuatro bloques seguidos, así que o se adopta o se borra. Verificar con `git status --short`. Lo de abajo es el histórico de bloques ya commiteados, que se conserva porque documenta qué tocó cada uno. **El catálogo salado** (17 ago, commit `5eb146f`): `content/products.ts`, `content/home.ts`, `content/pages.ts`, `types/shop.ts`, `lib/homeContent.ts`, `scripts/build-images.mjs`, `app/tienda/page.tsx`, `app/layout.tsx`, `drizzle/0004_ordinary_thor_girl.sql` + su `_journal.json`, las tres fuentes de `assets/products/` y los nueve `.webp` de `public/img/producto/`, cinco ficheros de `tests/unit/`, dos de `tests/e2e/`, y `README.md`, `docs/IMAGE_MAP.md`, `docs/CONTENT_TODO.md` y este fichero. ⚠ En el mismo árbol sigue suelto de antes `scripts/verify-staging-order.ts`, sin rastrear, que **no es de este bloque**. Verificar con `git status --short`. Lo de abajo es la lista de bloques anteriores, ya commiteados: **El arreglo del nav**: `components/layout/Navbar.tsx`, `styles/10-navbar.css`, `tests/e2e/interactions.spec.ts`, `CLAUDE.md` (punto 10) y este fichero. ⚠ En el mismo árbol hay **otro bloque que no es de éste y no debe entrar en el mismo commit**: la tarjeta Open Graph y el ajuste de SEO — `app/opengraph-image.tsx`, `app/og-hero.jpg` (nuevo, sin rastrear), `scripts/build-images.mjs`, `next.config.ts`, `lib/seo.ts` (sale `streetAddress` del JSON-LD) y la `description` de `app/layout.tsx`—. Ese bloque **seguía creciendo mientras se escribía esto**, así que la lista se comprueba, no se copia. ⚠ Siguen sueltos de antes `scripts/verify-staging-order.ts` sin rastrear y `data/boquita_products_catalog.xlsx` modificado. Verificar con `git status --short` |
 | Bloque reseñas reales + estrellas | `t1` y `t2` de `content/home.ts` pasan a ser reseñas **reales** de Ale (María Elena M., Escazú; Mirella S., Santa Ana) y pierden la marca `todo`; `t3`…`t6` siguen siendo andamio. Las seis tarjetas muestran **cinco estrellas de 32px en su propia línea**, entre el nombre y la ocasión (D-41), que **se rellenan de izquierda a derecha** al asomar la sección —de 15% a opaco, una cada 180ms, 1,24s en total, las seis tarjetas a la vez—. El disparo cuelga del `.slider` y reutiliza el observer compartido de `lib/revealObserver.ts`. El guardarraíl de `content.test.ts` deja de contar marcas y **nombra** las cuatro que faltan. Originales sin editar y estado del permiso en `docs/TESTIMONIOS_FUENTES.md`. No toca esquema, tipos, slider (más allá del disparo), base de datos ni SEO. |
 | Bloque preparación de despliegue | Dominio humano `boquitacostarica.com` en `lib/contact.ts`; URL canónica por `NEXT_PUBLIC_SITE_URL`; guardia privada `SITE_LAUNCHED` centralizada en `lib/seo.ts` y consumida por `app/layout.tsx` y `app/robots.ts`. Preview y producción permanecen en `noindex` hasta `VERCEL_ENV=production` + `SITE_LAUNCHED=true`. No cambia rutas, pedidos ni base de datos. |
 | Bloque Aviso Legal | `app/aviso-legal/page.tsx`, la clase compartida añadida a `app/sobre-nosotros/page.tsx`, `styles/40-prose.css`, el test nuevo al final de `tests/e2e/geometry.spec.ts` y D-37. Comparte tres ficheros con el bloque de “Sobre Nosotros”; el copy de privacidad sí se amplió al activar pedidos y consentimiento en Neon (`content/pages.ts`). |
@@ -65,6 +65,32 @@ lleva un fichero o un comando que la comprueba — sin cifras que no se hayan me
 ---
 
 ## Hecho
+
+### El pedido se confirma con un abono, y eso había que decirlo en los tres sitios
+
+Encargo de copy del 17 ago 2026. Ale añadió una condición que antes no existía en ninguna parte del
+sitio: **para confirmar un pedido se abona el 50% o se paga el total, y si se abona, el resto se
+paga al retirar**. El párrafo que ella mandó es el de «Cómo hacer tu pedido:»
+(`content/pages.ts:226`).
+
+**Lo que no era obvio: el dato del pago vive en tres sitios, no en uno.** Quien busca cómo se paga
+no lee el párrafo de cómo se hace el pedido — va al rótulo «Formas de pago:» (`:252`) o a la FAQ
+«¿Cómo se paga?» (`:288`), que además es lo que sale como `FAQPage` en el JSON-LD y lo que Google
+puede mostrar como respuesta. Los dos decían «efectivo o SINPE, al confirmar el pedido» y se
+habrían quedado contando media política. Actualizados los tres, consultado con el cliente. El
+comentario de la FAQ dice ahora que las tres menciones se mantienen a la vez a propósito.
+
+`lib/seo.ts:50` (`paymentAccepted`) **no se toca**: enumera medios de pago aceptados, que siguen
+siendo los mismos; el abono es una condición de confirmación, no un medio.
+
+Sincronizados `docs/boquita-sobre-nosotros.md` (las dos frases del pago) y `docs/CONTENT_TODO.md §9`,
+que es donde queda registrado qué confirmó Ale y cuándo.
+
+**Sin tests nuevos.** Ningún test afirma el texto del pago: `tests/unit/pages.test.ts:157` fija los
+seis rótulos de «Pedidos y entregas» y su única lista, y eso no cambia. ⚠ Queda anotado como
+pendiente en «Notas de alcance»: la política de pago no tiene cobertura, así que un borrado
+accidental de la frase del abono no lo detecta nada. `npm test` **345 en verde**, `typecheck` y
+`lint` limpios.
 
 ### Cuatro descripciones del catálogo, contadas como las cuenta Ale
 
@@ -1165,6 +1191,11 @@ ninguna Server Action ni `/admin`; los productos sólo cambian con `npm run db:s
 
 Cosas que hoy están bien pero conviene saber antes de tocarlas:
 
+- **La política de pago se cuenta en tres sitios de `content/pages.ts` y ningún test la afirma.**
+  «Cómo hacer tu pedido:» (`:226`), «Formas de pago:» (`:252`) y la FAQ «¿Cómo se paga?» (`:288`)
+  dicen los mismos dos datos —efectivo o SINPE, y el abono del 50% para confirmar— porque quien
+  busca el pago entra por cualquiera de los tres. Los tests fijan los rótulos, no el texto: si
+  uno se queda atrás en el próximo repaso, el sitio publica dos políticas distintas y nada falla.
 - **Catálogo y pedidos están migrados.** `products` + `product_variants` sirven el catálogo;
   `customers` + `orders` + `order_items` + `form_rate_limits` reciben el checkout. El copy de la
   portada, los 6 testimonios, `about` y `legal` siguen siendo estáticos y no necesitan tablas.

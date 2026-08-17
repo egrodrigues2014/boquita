@@ -156,6 +156,10 @@ Contestada por Ale en `docs/boquita-sobre-nosotros.md` y publicada en `/sobre-no
   hora se acuerdan al confirmar el pedido.
 - **Pago en efectivo o por SINPE**, al confirmar. Esto cierra también el `todo` que llevaba la
   pregunta «¿Cómo se paga?» de la FAQ.
+- **Abono del 50% o pago total para confirmar el pedido** (añadido por Ale el 17 ago): si se
+  abona, el 50% restante se paga al retirar. Publicado en los tres sitios que hablan de pago —
+  «Cómo hacer tu pedido:», «Formas de pago:» y la FAQ «¿Cómo se paga?»—, todos en
+  `content/pages.ts`.
 - **48 horas** de anticipación para casi todo y **una semana** para los queques personalizados
   (también los de dos pisos).
 
