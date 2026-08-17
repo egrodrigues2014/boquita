@@ -78,13 +78,32 @@ describe("cantidades que el spec exige (§8)", () => {
     expect(JSON.stringify(home.statement)).not.toContain("inline");
   });
 
+  /**
+   * El LARGO de este párrafo es geometría, no estilo.
+   *
+   * `ScrollColorText` reparte la altura de la foto entre las líneas REALES del
+   * texto y acota el interlineado a 2,8em (`components/ui/ScrollColorText.tsx`).
+   * Por debajo del umbral el párrafo baja de 4 líneas a 3 entre 1120 y 1296px de
+   * ancho, el reparto pide 3,26em, el tope actúa y sobran ~55px de agujero bajo
+   * el titular. Medido el 17 ago 2026 barriendo 59 anchos de 992 a 1920: 155
+   * caracteres no rompen ninguno, 152 rompen 12.
+   *
+   * `content/schema.ts` sólo exige `min(40)`, que admite de sobra un copy roto, y
+   * `geometry.spec.ts:193` únicamente mira los 4 anchos ≥992 que corre la suite:
+   * 11 de esos 12 anchos no los prueba nadie. De ahí este guardarraíl, que no
+   * necesita navegador.
+   */
+  it("el cuerpo del statement es lo bastante largo para llenar la banda de la foto", () => {
+    expect(home.mediaText.body.length).toBeGreaterThanOrEqual(155);
+  });
+
   it("Boquita protagoniza el hero con una promesa separada del h1", () => {
     expect(home.hero.eyebrow).toBe("Repostería artesanal · Santa Ana");
     expect(home.hero.brand).toBe("Boquita");
     expect(home.hero.tagline).toBe("Pequeños bocados. Grandes momentos.");
     expect(home.hero.lead).toBe(
-      "Dulce o salado, preparamos cada encargo con ingredientes de verdad y lo " +
-        "horneamos para que lo recibas recién hecho.",
+      "Dulce o salado, preparamos cada encargo con ingredientes naturales, orgánicos " +
+        "y de calidad, y lo horneamos para que lo recibas recién hecho.",
     );
   });
 

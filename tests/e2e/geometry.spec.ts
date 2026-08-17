@@ -127,7 +127,7 @@ test("statement usa foto izquierda y texto con revelado", async ({ page, viewpor
     "Ale hornea en su",
   );
   expect(bodyText).toContain(
-    "pequeñas y el sabor de lo hecho a mano.",
+    "pequeños y todo el sabor de lo artesanal.",
   );
   await expect(page.locator(".statement-dot")).toHaveCount(0);
   await expect(page.locator(".statement-photo-img")).toBeVisible();

@@ -61,7 +61,7 @@ export function bakeryJsonLd() {
     areaServed: [
       { "@type": "City", name: "Santa Ana" },
       { "@type": "City", name: "Escazú" },
-      { "@type": "AdministrativeArea", name: "Valle Central" },
+      { "@type": "AdministrativeArea", name: "Gran Área Metropolitana" },
     ],
     sameAs: [CONTACT.instagramUrl],
     // Horneado por encargo con 48 h de anticipación: no hay horario de tienda,

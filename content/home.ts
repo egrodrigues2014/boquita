@@ -318,8 +318,8 @@ export const home: HomeContent = {
     brand: "Boquita",
     tagline: "Pequeños bocados. Grandes momentos.",
     lead:
-      "Dulce o salado, preparamos cada encargo con ingredientes de verdad y lo " +
-      "horneamos para que lo recibas recién hecho.",
+      "Dulce o salado, preparamos cada encargo con ingredientes naturales, orgánicos " +
+      "y de calidad, y lo horneamos para que lo recibas recién hecho.",
     ctas: [
       { label: "Pedir por WhatsApp", href: WA_PEDIDO, external: true },
       { label: "Ver el catálogo", href: "/tienda" },
@@ -332,9 +332,14 @@ export const home: HomeContent = {
   mediaText: {
     titleTop: "Del horno de Ale",
     titleBottom: "a tu mesa",
+    // El LARGO de esta frase no es libre: `ScrollColorText` reparte la altura de
+    // la foto entre las líneas REALES del párrafo. Por debajo de ~155 caracteres
+    // baja de 4 líneas a 3 entre 1120 y 1296px de ancho, el interlineado ideal
+    // pide 3,26em contra el tope de 2,8 y sobran ~55px de agujero bajo el
+    // titular. Medido el 17 ago 2026 barriendo 59 anchos; lo fija `content.test.ts`.
     body:
       "Ale hornea en su casa de Santa Ana desde 2022. Sin conservantes y sin " +
-      "mezclas industriales: recetas propias, tandas pequeñas y el sabor de lo hecho a mano.",
+      "mezclas industriales: recetas propias, grupos pequeños y todo el sabor de lo artesanal.",
     poster: mediaPoster,
   },
 
@@ -358,7 +363,7 @@ export const home: HomeContent = {
     body:
       "Boquita nació en la cocina de casa de Ale, en Santa Ana. " +
       "Hoy horneamos por encargo para familias, oficinas y celebraciones de todo el " +
-      "Valle Central.",
+      "GAM (Gran Área Metropolitana).",
     image: serviceImage,
     metrics: [
       // Cifra dada por Ale el 16 ago 2026, y por eso el «+»: es un suelo que
