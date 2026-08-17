@@ -1,7 +1,9 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { ImagePreload } from "@/components/ui/Picture";
 import { SkipLink } from "@/components/ui/SkipLink";
 import { home } from "@/content/home";
+import { isAnalyticsEnabled } from "@/lib/analytics";
 import { isSiteIndexable, SITE_URL } from "@/lib/seo";
 import { display, sans, sidebar } from "./fonts";
 
@@ -120,6 +122,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SkipLink />
         {children}
+        {/* Web Analytics de Vercel, sólo en producción: ver lib/analytics.ts, que
+            explica por qué la puerta existe y por qué no es la de `lib/seo.ts`.
+            El script se pide a `/_vercel/insights/script.js`, del mismo origen:
+            no entra ningún dominio de terceros en el HTML. */}
+        {isAnalyticsEnabled() && <Analytics />}
       </body>
     </html>
   );

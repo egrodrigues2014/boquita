@@ -414,12 +414,28 @@ export const legal = {
           `${CONTACT.email}. La baja no afecta a los pedidos que ya hayas coordinado por WhatsApp.`,
       ],
     },
+    /**
+     * ⚠ Esta sección describe una medición REAL desde el 17 ago 2026: el sitio
+     * monta Vercel Web Analytics en producción (`lib/analytics.ts`). Decía «ni
+     * analítica de terceros» y, en cuanto se activó, esa frase quedó publicada y
+     * falsa. Si algún día se retira la medición, este texto vuelve atrás; y si se
+     * añade otra herramienta, se cuenta aquí. Lo vigila `tests/unit/pages.test.ts`.
+     *
+     * El `id` sigue siendo `cookies` a propósito: es un ancla que puede estar
+     * enlazada desde fuera del sitio.
+     */
     {
       id: "cookies",
-      title: "Cookies",
+      title: "Cookies y medición de visitas",
       paragraphs: [
-        "No usamos cookies de seguimiento, ni analítica de terceros, ni píxeles publicitarios. " +
+        "No usamos cookies de seguimiento, ni píxeles publicitarios, ni perfiles de publicidad. " +
           "No hay banner de cookies porque no hay nada que consentir.",
+        "Para saber cuántas personas visitan el sitio y qué páginas se ven usamos la analítica de " +
+          "Vercel, la empresa que aloja esta web. La medición es agregada y sin cookies: no guarda " +
+          "nada en tu dispositivo ni te sigue por otros sitios. Registra la página visitada, el " +
+          "país, el tipo de dispositivo y desde dónde llegaste.",
+        "Para contar visitantes únicos, Vercel deriva de la petición un identificador que se " +
+          "renueva cada día; tu dirección IP no se almacena.",
         "El único almacenamiento que usa el sitio es el del carrito descrito arriba, que es " +
           "técnico y necesario para que funcione.",
       ],

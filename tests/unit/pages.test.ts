@@ -34,6 +34,24 @@ describe("el aviso legal publica sólo el contenido aprobado", () => {
     expect(texto).toContain("consentimiento");
     expect(legal.sections).toHaveLength(7);
   });
+
+  /**
+   * El sitio mide visitas con Vercel Web Analytics desde el 17 ago 2026, y hasta
+   * ese día el aviso legal presumía de «ni analítica de terceros». Es la clase de
+   * frase que sobrevive a un repaso de copy sin que nadie la mire: nada más en la
+   * suite relaciona el texto legal con lo que `app/layout.tsx` monta de verdad.
+   */
+  it("cuenta la medición de visitas y no presume de no medir", () => {
+    const cookies = legal.sections.find((section) => section.id === "cookies");
+    const texto = cookies?.paragraphs.join(" ") ?? "";
+
+    expect(texto).not.toContain("analítica de terceros");
+    expect(texto).toContain("No usamos cookies");
+    expect(texto).toContain("Vercel");
+    expect(texto).toContain("sin cookies");
+    // El carrito sigue siendo el único almacenamiento del dispositivo.
+    expect(texto).toContain("almacenamiento");
+  });
 });
 
 describe("el nav llega a «Sobre nosotros»", () => {
