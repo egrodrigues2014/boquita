@@ -384,9 +384,9 @@ export const home: HomeContent = {
   testimonials: {
     title: "Lo que dicen nuestros clientes",
     /**
-     * MEDIO ANDAMIO. `t1` y `t2` son reseñas REALES, entregadas por Ale; `t3`
-     * a `t6` siguen inventadas y van marcadas `todo` (`CONTENT_TODO §3`, sigue
-     * siendo bloqueante de lanzamiento: faltan cuatro).
+     * MEDIO ANDAMIO. `t1`, `t2` y `t3` son reseñas REALES, entregadas por Ale;
+     * `t4` a `t6` siguen inventadas y van marcadas `todo` (`CONTENT_TODO §3`,
+     * sigue siendo bloqueante de lanzamiento: faltan tres).
      *
      * El estado mixto es el normal a partir de ahora, porque las reales llegan
      * por tandas. Por eso `tests/unit/content.test.ts` ya no cuenta las marcas
@@ -396,7 +396,8 @@ export const home: HomeContent = {
      * ⚠ «torta de zanahoria» en `t1` y `t2` es CITA LITERAL y se queda así. La
      * regla de «queque» del CLAUDE.md gobierna el copy que escribimos nosotros,
      * no las palabras de un cliente; además el buscador ya trata «torta» como
-     * sinónimo de la categoría (`lib/shopSearch.ts`). No «corregirlo».
+     * sinónimo de la categoría (`lib/shopSearch.ts`). No «corregirlo». En `t3`
+     * no hay conflicto: «queque» es palabra suya, no una corrección nuestra.
      *
      * El original de cada reseña real, sin editar, y su consentimiento están en
      * `docs/TESTIMONIOS_FUENTES.md`. Lo publicado lleva sólo edición ligera:
@@ -406,10 +407,19 @@ export const home: HomeContent = {
      * «Cook»/«Manager» porque es una plantilla genérica; en una repostería lo
      * que da credibilidad es dónde y para qué se encargó.
      *
-     * Las citas miden a propósito entre ~110 y ~230 caracteres: la referencia
+     * Las citas miden a propósito entre ~110 y ~280 caracteres: la referencia
      * describe tarjetas de 3 a 5 líneas, y el `min-height` de `.review-card`
      * existe justo para que esa desigualdad no descuadre la fila. El tope duro
      * son 320 caracteres (`content/schema.ts`), medido contra ese mismo alto.
+     *
+     * `t3` mide 280 y es la más larga: un resumen del original de Vanessa, que
+     * traía ~980. Se aceptó porque la fila entera crece hasta la reseña más
+     * larga —`.review-card` no recorta ni trunca—, así que el coste es alto de
+     * tarjeta y no desbordamiento: medido a 1440/992/767/390, cero desbordes,
+     * las seis tarjetas idénticas y la fila **81px más alta**. Si se alarga otra
+     * reseña por encima de 280, se vuelve a medir eso. El `role` de `t3` gasta
+     * los 40 caracteres exactos que permite el esquema —y a 992 envuelve a dos
+     * líneas—: si hay que retocarlo, hay que acortarlo a la vez.
      */
     items: [
       {
@@ -432,13 +442,13 @@ export const home: HomeContent = {
       },
       {
         id: "t3",
-        name: "Laura Céspedes Mora",
-        role: "Baby shower en Ciudad Colón",
+        name: "Vanessa Manco",
+        role: "Clienta de 4 años, Piedades de Santa Ana",
         quote:
-          "Le envié una foto de lo que tenía en mente y me entregó algo aún mejor. " +
-          "Coordinamos color, tamaño y fecha por WhatsApp en un solo día, y no tuve que " +
-          "explicar nada dos veces.",
-        todo: true,
+          "Tengo cuatro años comprándole a Ale y la calidad siempre es excepcional. Su queque " +
+          "de zanahoria es el más rico que he probado: esponjoso, fresco y con el sabor natural " +
+          "de lo hecho en casa. Los polvorones españoles, deliciosos. Todo con ingredientes " +
+          "naturales y cuidando el azúcar.",
       },
       {
         id: "t4",

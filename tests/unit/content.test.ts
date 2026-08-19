@@ -184,16 +184,15 @@ describe("los TODO están marcados, no escondidos", () => {
     /**
      * Sustituye a dos tests anteriores: «van marcadas todas o ninguna» y «hoy
      * las 6 siguen siendo de andamio». Ambos daban por hecho que las reseñas
-     * reales llegarían de golpe. Llegan por tandas —`t1` y `t2` ya son de Ale—
-     * así que el estado mixto es el normal hasta que estén las seis, y prohibirlo
-     * sólo obligaba a esconder las reales.
+     * reales llegarían de golpe. Llegan por tandas —`t1`, `t2` y `t3` ya son de
+     * Ale— así que el estado mixto es el normal hasta que estén las seis, y
+     * prohibirlo sólo obligaba a esconder las reales.
      *
      * El guardarraíl deja de contar y pasa a NOMBRAR: publicar una de andamio
      * como si fuera real, o añadir una nueva sin marcar, rompe el test igual.
      * Cuando llegue la última, esto queda en `[]` y el bloqueante se cierra.
      */
     expect(home.testimonials.items.filter((t) => t.todo).map((t) => t.id)).toEqual([
-      "t3",
       "t4",
       "t5",
       "t6",
