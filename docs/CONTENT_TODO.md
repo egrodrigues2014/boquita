@@ -49,10 +49,16 @@ editar, lo que se cambió al publicarlo y el estado de su permiso están en
 ago 2026 y la de Vanessa el 19 ago 2026). Queda anotado en `docs/TESTIMONIOS_FUENTES.md`; para las
 tres que falten hace falta el mismo permiso.
 
-⚠ **La de Vanessa es la primera que se publica resumida.** Su original medía ~980 caracteres contra
-un tope de 320, así que lo publicado son 280 que conservan sus cinco argumentos; el detalle de qué se
-comprimió y qué se atenuó está en su ficha del registro. Si llegan más reseñas largas, el mismo
-criterio: se resume en el registro y se justifica ahí, nunca en silencio.
+⚠ **La de Vanessa se publica LITERAL, y por eso subió el tope del esquema.** Se probó resumida a 280
+caracteres y el cliente prefirió sus palabras exactas, así que se publican los dos últimos párrafos
+tal cual —400 caracteres, con su ❤️— y `quote` pasó de un tope de 320 a **400**. El coste está medido
+y es de composición, no de rotura: la fila de tarjetas sube a **579px a 992 y 525px a 390**, y las
+reseñas cortas quedan con 199-226px de crema debajo porque las seis igualan altura. Si llega otra reseña larga,
+mismo criterio: se mide antes de subir el tope, y lo que se descarte del original se anota en el
+registro.
+
+⚠ **Su cita afirma «sin aditivos químicos»**, que es una afirmación sobre el producto y no sólo una
+opinión de sabor. Va en boca de ella y con su permiso; es el único sitio del sitio donde aparece.
 
 No hacen falta fotos: la tarjeta **ya no lleva retrato** (desvío D-34). El `rol` es la **ocasión del
 pedido** («Cumpleaños en Santa Ana», «Pedido de oficina, Escazú»), no un cargo — eso es lo que da
@@ -78,8 +84,11 @@ Vanessa no dio puntuación—. No hay campo `rating` y no debe haberlo mientras 
 decidir si las estrellas siguen siendo diseño o pasan a ser la puntuación de cada persona.
 
 Restricciones de forma, ya validadas por `content/schema.ts`: exactamente **6 items** (o 0 para
-apagar el bloque), `name` y `role` de 2 a 40 caracteres, y `quote` de 40 a **320** — el tope está
-medido contra el `min-height` de `.review-card`, pasarlo desborda la tarjeta más corta.
+apagar el bloque), `name` y `role` de 2 a 40 caracteres, y `quote` de 40 a **400** (era 320 hasta el
+19 ago). El tope **no** impide que la tarjeta desborde —`.review-card` no recorta ni trunca, así que
+una cita larga sólo estira la fila—: es un límite de composición, y lo que cuesta cada tramo está
+medido en el comentario del esquema. Y ojo con el `role`: pasado ~29 caracteres envuelve a dos líneas
+a 992 y desalinea el párrafo de esa tarjeta.
 
 ### 4. La métrica nº 1
 

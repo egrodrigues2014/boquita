@@ -407,19 +407,23 @@ export const home: HomeContent = {
      * «Cook»/«Manager» porque es una plantilla genérica; en una repostería lo
      * que da credibilidad es dónde y para qué se encargó.
      *
-     * Las citas miden a propósito entre ~110 y ~280 caracteres: la referencia
-     * describe tarjetas de 3 a 5 líneas, y el `min-height` de `.review-card`
-     * existe justo para que esa desigualdad no descuadre la fila. El tope duro
-     * son 320 caracteres (`content/schema.ts`), medido contra ese mismo alto.
+     * Las citas de andamio miden entre ~190 y ~230 caracteres: la referencia
+     * describe tarjetas de 3 a 5 líneas. El tope duro son 400 caracteres
+     * (`content/schema.ts`), y ahí está medido lo que cuesta cada tramo.
      *
-     * `t3` mide 280 y es la más larga: un resumen del original de Vanessa, que
-     * traía ~980. Se aceptó porque la fila entera crece hasta la reseña más
-     * larga —`.review-card` no recorta ni trunca—, así que el coste es alto de
-     * tarjeta y no desbordamiento: medido a 1440/992/767/390, cero desbordes,
-     * las seis tarjetas idénticas y la fila **81px más alta**. Si se alarga otra
-     * reseña por encima de 280, se vuelve a medir eso. El `role` de `t3` gasta
-     * los 40 caracteres exactos que permite el esquema —y a 992 envuelve a dos
-     * líneas—: si hay que retocarlo, hay que acortarlo a la vez.
+     * ⚠ `t3` mide 400 y es, con diferencia, la más larga. Es CITA LITERAL —los
+     * dos últimos párrafos de lo que escribió Vanessa, con su ❤️— y por eso se
+     * subió el tope de 320 a 400: entre resumirla y publicarla entera, se
+     * eligió entera. Lo que cuesta, medido a 992 y 390 sobre el build: la fila
+     * pasa a 579 y 525px —+108px sobre la resumida de 280— y las reseñas cortas
+     * quedan con 199-226px de crema debajo, porque las seis igualan altura. No
+     * desborda ninguna: `.review-card` no recorta ni trunca.
+     *
+     * El `role` de `t3` dice «Piedades» y no «Piedades de Santa Ana» por una
+     * razón de composición, no de dato: con el nombre completo pasaba de los 40
+     * del esquema y salía en DOS líneas a 992, dejando su párrafo 27px por
+     * debajo del de las vecinas. Cualquier `role` de hasta ~29 caracteres cabe
+     * en una línea; comprobado a 992 y 390.
      */
     items: [
       {
@@ -443,12 +447,14 @@ export const home: HomeContent = {
       {
         id: "t3",
         name: "Vanessa Manco",
-        role: "Clienta de 4 años, Piedades de Santa Ana",
+        role: "Clienta + de 4 años, Piedades",
         quote:
-          "Tengo cuatro años comprándole a Ale y la calidad siempre es excepcional. Su queque " +
-          "de zanahoria es el más rico que he probado: esponjoso, fresco y con el sabor natural " +
-          "de lo hecho en casa. Los polvorones españoles, deliciosos. Todo con ingredientes " +
-          "naturales y cuidando el azúcar.",
+          "Algo que valoro muchísimo de Boquita es que sus productos se elaboran con " +
+          "ingredientes naturales, sin aditivos químicos y cuidando el nivel de azúcar, " +
+          "logrando postres deliciosos y con una propuesta más saludable, sin sacrificar el " +
+          "sabor. Después de cinco años comprándoles, los sigo recomendando con muchísimo " +
+          "gusto. Boquita es sinónimo de sabor casero, calidad y productos hechos con " +
+          "dedicación. ❤️",
       },
       {
         id: "t4",

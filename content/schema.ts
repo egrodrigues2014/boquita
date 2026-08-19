@@ -78,9 +78,18 @@ const testimonial = z.object({
   id: z.string().min(1),
   name: z.string().min(2).max(40),
   role: z.string().min(2).max(40),
-  // `.review-card` tiene min-height 420/398/393/312/420: pasado ~320 caracteres
-  // la tarjeta más corta desborda.
-  quote: z.string().min(40).max(320),
+  // El tope NO es un límite de la tarjeta: `.review-card` no recorta ni trunca,
+  // así que una cita larga no desborda, sólo estira la fila —las seis igualan
+  // altura por `flex`—. Es un límite de composición, y el motivo del número está
+  // medido a 992/390 sobre el build: `t3` con 400 deja la fila en 579/525px,
+  // contra 471/417 con 280 y 417/363 con 238. Cada ~60 caracteres son ~27px de
+  // fila, y la fila la pagan las SEIS tarjetas. Subirlo otra vez es diseño, no
+  // un arreglo: se mide antes. Era 320, justificado contra unos `min-height` de
+  // `.review-card` que se borraron en D-41; se subió a 400 el 19 ago para poder
+  // publicar la reseña de Vanessa literal en vez de resumida. Ella gasta los 400
+  // exactos, así que añadir un carácter a `t3` rompe el test: es a propósito —
+  // obliga a volver a decidir el tope en vez de arrastrarlo.
+  quote: z.string().min(40).max(400),
   todo: z.boolean().optional(),
 });
 

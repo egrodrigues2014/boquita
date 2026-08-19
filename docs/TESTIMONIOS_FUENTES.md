@@ -69,24 +69,39 @@ dieron el visto bueno a publicar su reseña con nombre.
 > Vanessa Manco
 > Piedades de Santa Ana
 
-**Qué se cambió al publicar.** Ésta es la única de las tres que se **resume**, y por eso hace falta
-detallarlo: el original mide ~980 caracteres y el tope de `quote` son 320, así que no cabía entera.
-Lo publicado (280 car.) conserva sus cinco argumentos en su orden —cuatro años de clienta, el queque
-de zanahoria como favorito, la textura y el sabor casero, los polvorones españoles, y los
-ingredientes naturales con el azúcar cuidada— y **no le atribuye ningún producto que ella no
-nombrara**. Los cambios, uno a uno:
+**Segunda versión, también suya (19 ago).** Ale reenvió los dos últimos párrafos con dos correcciones
+de ella misma —«**cinco** años» donde antes decía «tantos años», y «**Boquita**» sin la `s`—, y es de
+esta versión de donde sale lo publicado:
 
-- **Se comprime, no se reescribe.** Cinco párrafos pasan a cuatro frases; el vocabulario es suyo.
-- **Cae el `❤️`** del cierre: ninguna tarjeta lleva emoji.
-- **Cae la marca escrita.** Ella dice «Boquitas» (y una vez «Boquita»); la cita publicada habla de
-  «Ale», como las otras dos, en vez de citar el nombre comercial con una `s` de más.
-- **«sin aditivos químicos» se atenúa** a «con ingredientes naturales y cuidando el azúcar». Es su
-  opinión, pero en la portada una frase así funciona como reclamo del producto, y el sitio no afirma
-  eso en ningún otro sitio. Igual se cae «propuesta más saludable».
-- **Cae el superlativo del cierre** («sinónimo de sabor casero…»), que era resumen de lo anterior.
+> Algo que valoro muchísimo de Boquita es que sus productos se elaboran con ingredientes naturales,
+> sin aditivos químicos y cuidando el nivel de azúcar, logrando postres deliciosos y con una
+> propuesta más saludable, sin sacrificar el sabor.
+>
+> Después de cinco años comprándoles, los sigo recomendando con muchísimo gusto. Boquita es sinónimo
+> de sabor casero, calidad y productos hechos con dedicación. ❤️
 
-⚠ **«queque» aquí es palabra suya.** A diferencia de `t1` y `t2`, que dicen «torta», esta reseña ya
-usa el vocabulario del sitio: no se corrigió nada.
+**Qué se cambió al publicar: nada del texto.** Es **cita literal** de esos dos párrafos, con su ❤️,
+unidos en un solo párrafo porque la tarjeta rinde un único `<p>`. Son 400 caracteres.
+
+Hubo una versión intermedia, resumida a 280, que estuvo publicada unas horas del 19 ago: se descartó
+porque el cliente prefirió sus palabras exactas. **Para poder publicarla entera se subió el tope de
+`quote` de 320 a 400** en `content/schema.ts`, con el coste medido sobre el build: la fila de
+tarjetas pasa a **579px a 992 y 525px a 390** —+108px sobre la versión resumida— y las de andamio
+quedan con 199-226px de crema debajo, porque las seis igualan altura. Ninguna desborda: la tarjeta no
+recorta ni trunca, así que una cita larga estira la fila y no rompe nada.
+
+Lo que **no** se publica de su original son los dos primeros párrafos (los cuatro años, el queque de
+zanahoria y los polvorones), que se quedaron fuera al elegir este fragmento. Están arriba, íntegros,
+por si algún día se rota la cita.
+
+⚠ **«queque» era palabra suya** en los párrafos que no se publican. En el fragmento publicado no
+aparece ningún nombre de producto, así que no hay nada que «corregir» al vocabulario del sitio.
+
+⚠ **«sin aditivos químicos» se publica tal cual, y es una afirmación sobre el producto**, no sólo una
+opinión de sabor. Va en boca de ella y con su permiso, pero el sitio no lo afirma en ningún otro
+sitio: si algún día hay que sostenerlo, éste es el único lugar donde aparece.
+
+⚠ **Es la única tarjeta con emoji.** El `❤️` es suyo y se respeta.
 
 **No dio estrellas**, así que la tarjeta no contradice ninguna puntuación (a diferencia de `t1`).
 Las cinco son el elemento fijo de diseño de siempre (desvío D-41).
@@ -103,11 +118,14 @@ la reseña con nombre completo.
   sinónimo de la categoría, así que nadie se pierde.
 - El campo `role` de la tarjeta es la **ocasión del pedido**, y ninguna de las tres la dio: sólo
   dijeron la zona. «Clienta frecuente» sale de lo que cuentan María Elena y Mirella —que han probado
-  varias recetas—, no de un dato que hayan aportado. El de Vanessa sí es dato suyo: «Clienta de 4
-  años» son los cuatro años que ella misma cuenta, y gasta los **40 caracteres exactos** que permite
-  el esquema, así que retocarlo obliga a acortarlo. Si Ale sabe la ocasión real, es mejor.
+  varias recetas—, no de un dato que hayan aportado. El de Vanessa sí es dato suyo: «Clienta + de 4
+  años» es la fórmula que pidió el cliente. Dice «Piedades» y no «Piedades de Santa Ana» **por
+  composición**: con el distrito completo pasaba de los 40 del esquema y salía en dos líneas a 992,
+  bajando su párrafo 27px respecto a las vecinas. Hasta ~29 caracteres cabe en una línea.
 - Restricciones que valida `content/schema.ts`: `name` y `role` de 2 a 40 caracteres, `quote` de 40 a
-  320, y **exactamente 6 reseñas o ninguna**. Por eso las tres de andamio siguen en su sitio.
+  **400** (era 320 hasta el 19 ago), y **exactamente 6 reseñas o ninguna**. Por eso las tres de
+  andamio siguen en su sitio. `t3` gasta los 400 exactos: añadirle un carácter rompe el test a
+  propósito, para que subir el tope vuelva a ser una decisión y no un arrastre.
 
 ## Faltan (t4 a t6)
 
